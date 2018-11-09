@@ -2,7 +2,8 @@ from data_structures import Image2BInpainted, Patch
 import numpy as np
 import matplotlib.pyplot as plt
 import imageio
-from efficient_energy_optimization import initialization
+import efficient_energy_optimization
+import eeo
 from label_pruning import label_pruning
 # import random
 # import sys
@@ -55,10 +56,10 @@ def main():
 
 
 
-    nodes = initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY)
+    patches = eeo.initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY)
 
 
-    label_pruning(nodes.nodes_count, nodes.nodes_priority, nodes.nodes_differences, nodes.nodes_labels, nodes.nodes_coords, image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS)
+    #label_pruning(nodes.nodes_count, nodes.nodes_priority, nodes.nodes_differences, nodes.nodes_labels, nodes.nodes_coords, image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS)
 
 
 

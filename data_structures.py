@@ -11,12 +11,15 @@ class Image2BInpainted:
 
 class Patch:
 
-    def __init__(self, patch_id, belonging_region, coords, priority=None, labels=None, differences=None):
+
+    def __init__(self, patch_id, overlap_source_region, overlap_target_region, x_coord, y_coord, priority=None, labels=None, differences=None):
 
         # properties of all patches
         self.patch_id = patch_id
-        self.belonging_region = belonging_region # whether it is source region, target region, or both
-        self.coords = coords
+        self.overlap_source_region = overlap_source_region
+        self.overlap_target_region = overlap_target_region
+        self.x_coord = x_coord
+        self.y_coord = y_coord
 
         # properties of patches having an intersection with the target region (i.e. patches to be inpainted)
         if priority is None:
