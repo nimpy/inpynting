@@ -13,7 +13,7 @@ image = None
 patch_size = 0
 gap = 0
 
-THRESHOLD_UNCERTAINTY = 80000
+THRESHOLD_UNCERTAINTY = 80000 # TODO to be adjusted
 MAX_NB_LABELS = 10
 
 def loading_data():

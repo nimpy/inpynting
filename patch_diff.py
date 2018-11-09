@@ -10,6 +10,7 @@ def patch_diff(patch_1, patch_2):
         for j in range (width):
             for k in range(nr_channels):
                 #diff = patch_1[i][j][k] - patch_2[i][j][k]
-                diff = patch_1[i,j,k] - patch_2[i,j,k]
+                #diff = patch_1[i, j, k] - patch_2[i, j, k]
+                diff = int(patch_1[i,j,k]) - int(patch_2[i,j,k])
                 ssd += diff * diff
     return ssd

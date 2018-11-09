@@ -18,6 +18,8 @@ patches = []
 
 def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
 
+    global patches
+
     patch_id_counter = 0
     temp_nodes_count = 0
 
@@ -53,8 +55,9 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
                     for y_compare in range(0, image.width - patch_size, gap):
                         for x_compare in range(0, image.height - patch_size, gap):
                             # TODO don't do it twice, but once
-                            # TODO take into account the mask for comparing...
-                            # TODO ... use codes instead of the pixel values
+
+                            # TODO take into account the mask for comparing
+                            # TODO use codes instead of the pixel values
 
                             patch_difference = patch_diff(patch_rgb,
                                                           image.rgb[x_compare: x_compare + patch_size, y_compare: y_compare + patch_size, :])
@@ -64,7 +67,8 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
 
                             patch_compare_id_counter += 1
 
-                    temp = list(patch.differences.values()) - min(list(patch.differences.values()))
+                    #temp = list(patch.differences.values()) - min(list(patch.differences.values()))
+                    temp = [value - min(list(patch.differences.values())) for value in list(patch.differences.values())]
                     patch_uncertainty = len([val for (i, val) in enumerate(temp) if val < THRESHOLD_UNCERTAINTY])
                     del temp
 
@@ -77,18 +81,21 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
 
                             patch_compare_id_counter += 1
 
+                    patch_uncertainty = 1
+
                     # TODO something mentioned in the other file (find_label_pos)
 
+                # the higher priority the higher priority :D
                 patch.priority = len(patch.labels) / max(patch_uncertainty, 1)
 
                 temp_nodes_count +=1
 
             patches.append(patch)
-
             patch_id_counter += 1
 
             if temp_nodes_count == 7:
                 break
 
 
-
+    print(len(patches))
+    print(patches[774])
