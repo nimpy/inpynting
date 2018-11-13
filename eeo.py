@@ -3,9 +3,9 @@ from data_structures import Patch
 from patch_diff import patch_diff
 
 
-
+# the indices in the list match the patch_id
 patches = []
-
+nodes_count = 0
 
 
 # -- 1st phase --
@@ -19,10 +19,12 @@ patches = []
 def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
 
     global patches
+    global nodes_count
 
     patch_id_counter = 0
-    temp_nodes_count = 0
 
+    #TODO taking the patches that are not fully in the image, or not taking some that are? deal with this
+    #TODO it should be image.width - patch_size + 1 (I think)
     # for all the patches in an image (not all, but with $gap stride)
     for y in range(0, image.width - patch_size, gap):
         for x in range(0, image.height - patch_size, gap):
@@ -88,14 +90,63 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
                 # the higher priority the higher priority :D
                 patch.priority = len(patch.labels) / max(patch_uncertainty, 1)
 
-                temp_nodes_count +=1
+                nodes_count +=1
 
             patches.append(patch)
             patch_id_counter += 1
 
-            if temp_nodes_count == 7:
+            if nodes_count == 7:
                 break
 
 
     print(len(patches))
     print(patches[774])
+
+
+def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
+
+    global patches
+    global nodes_count
+
+    nodes_visiting_order = np.zeros(nodes_count, dtype=np.int32)
+
+    # for all the patches that have an overlap with the target region (aka nodes)
+    for i in range(nodes_count):
+
+        #TODO this can maybe be done faster, by sorting the nodes by priority once,
+        #TODO unless the priorities are changing, which might actually be the case :D
+        # find the node with the highest priority that hasn't yet been visited
+        highest_priority = -1
+        patch_highest_priority_id = -1
+        for patch in patches:
+            if not patch.committed and patch.priority > highest_priority:
+                highest_priority = patch.priority
+                patch_highest_priority_id = patch.patch_id
+
+
+        patch = patches[patch_highest_priority_id]
+        patch.committed = True
+        nodes_visiting_order[i] = patch_highest_priority_id
+
+        # prune the labels of this node
+        patch.prune_labels(MAX_NB_LABELS)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
