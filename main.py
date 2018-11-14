@@ -58,8 +58,7 @@ def main():
 
     patches = eeo.initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY)
 
-
-    #label_pruning(nodes.nodes_count, nodes.nodes_priority, nodes.nodes_differences, nodes.nodes_labels, nodes.nodes_coords, image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS)
+    eeo.label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS)
 
 
 

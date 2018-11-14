@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 from data_structures import Patch
 from patch_diff import patch_diff
 
@@ -26,8 +27,8 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
     #TODO taking the patches that are not fully in the image, or not taking some that are? deal with this
     #TODO it should be image.width - patch_size + 1 (I think)
     # for all the patches in an image (not all, but with $gap stride)
-    for y in range(0, image.width - patch_size, gap):
-        for x in range(0, image.height - patch_size, gap):
+    for y in range(0, image.width - patch_size + 1, gap):
+        for x in range(0, image.height - patch_size + 1, gap):
 
             patch_mask_overlap = image.mask[x: x + patch_size, y: y + patch_size]
             patch_mask_overlap_nonzero_elements = np.count_nonzero(patch_mask_overlap)
@@ -47,7 +48,7 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
 
             if patch.overlap_target_region:
 
-                patch_rgb = image.rgb[x: x + patch_size, y: y + patch_size, :]
+                patch_rgb = image.rgb[x : x + patch_size, y : y + patch_size, :]
 
 
                 if patch.overlap_source_region:
@@ -95,12 +96,11 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
             patches.append(patch)
             patch_id_counter += 1
 
-            if nodes_count == 7:
-                break
+            # if nodes_count == 7:
+            #     break
 
 
-    print(len(patches))
-    print(patches[774])
+    print("len(patches) = ", len(patches))
 
 
 def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
@@ -124,29 +124,197 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
                 patch_highest_priority_id = patch.patch_id
 
 
+        nodes_visiting_order[i] = patch_highest_priority_id
         patch = patches[patch_highest_priority_id]
         patch.committed = True
-        nodes_visiting_order[i] = patch_highest_priority_id
 
-        # prune the labels of this node
         patch.prune_labels(MAX_NB_LABELS)
 
+        print(patch_highest_priority_id)
+
+        # get the neighbors if they exist
+        patch_neighbor_up_id = patch.get_up_neighbor_position(image, patch_size, gap)
+        if patch_neighbor_up_id == None:
+            patch_neighbor_up = None
+        else:
+            patch_neighbor_up = patches[patch_neighbor_up_id]
+
+        patch_neighbor_down_id = patch.get_down_neighbor_position(image, patch_size, gap)
+        if patch_neighbor_down_id == None:
+            patch_neighbor_down = None
+        else:
+            patch_neighbor_down = patches[patch_neighbor_down_id]
+
+        patch_neighbor_left_id = patch.get_left_neighbor_position(image, patch_size, gap)
+        if patch_neighbor_left_id == None:
+            patch_neighbor_left = None
+        else:
+            patch_neighbor_left = patches[patch_neighbor_left_id]
+
+        patch_neighbor_right_id = patch.get_right_neighbor_position(image, patch_size, gap)
+        if patch_neighbor_right_id == None:
+            patch_neighbor_right = None
+        else:
+            patch_neighbor_right = patches[patch_neighbor_right_id]
 
 
+        # UP
+        if patch_neighbor_up.overlap_target_region and not patch_neighbor_up.committed:
+
+            min_additional_difference = sys.maxsize
+            additional_differences = {}
+
+            for patch_neighbors_label_id in patch_neighbor_up.labels:
+
+                patch_neighbors_label_x_coord = patches[patch_neighbors_label_id].x_coord
+                patch_neighbors_label_y_coord = patches[patch_neighbors_label_id].y_coord
+
+                patch_neighbors_label_rgb = image.rgb[patch_neighbors_label_x_coord : patch_neighbors_label_x_coord + patch_size, patch_neighbors_label_y_coord : patch_neighbors_label_y_coord + patch_size, :]
 
 
+                for patchs_label_id in patch.pruned_labels:
+
+                    patchs_label_x_coord = patches[patchs_label_id].x_coord
+                    patchs_label_y_coord = patches[patchs_label_id].y_coord
+
+                    patchs_label_rgb = image.rgb[patchs_label_x_coord : patchs_label_x_coord + patch_size, patchs_label_y_coord : patchs_label_y_coord + patch_size, :]
+
+                    difference = patch_diff(patch_neighbors_label_rgb, patchs_label_rgb)
+
+                    if (difference < min_additional_difference):
+                        min_additional_difference = difference
 
 
+                additional_differences[patch_neighbors_label_id] = min_additional_difference
+                min_additional_difference = sys.maxsize
+
+            # patch_neighbor_up.differences += differences #TODO this isn't gonna work
+            for key in additional_differences.keys():
+                patch_neighbor_up.differences[key] += additional_differences[key]
+
+            #TODO understand what's happening here
+            temp = [value - min(patch_neighbor_up.differences.values()) for value in list(patch_neighbor_up.differences.values())]
+            patch_neighbor_up_uncertainty = [value < THRESHOLD_UNCERTAINTY for (i, value) in enumerate(temp)].count(True)
+            del temp
+
+            patch_neighbor_up.priority = len(patch_neighbor_up.differences) / patch_neighbor_up_uncertainty
 
 
+        # DOWN
+        if patch_neighbor_down.overlap_target_region and not patch_neighbor_down.committed:
+
+            min_additional_difference = sys.maxsize
+            additional_differences = {}
+
+            for patch_neighbors_label_id in patch_neighbor_down.labels:
+
+                patch_neighbors_label_x_coord = patches[patch_neighbors_label_id].x_coord
+                patch_neighbors_label_y_coord = patches[patch_neighbors_label_id].y_coord
+
+                patch_neighbors_label_rgb = image.rgb[patch_neighbors_label_x_coord : patch_neighbors_label_x_coord + patch_size, patch_neighbors_label_y_coord : patch_neighbors_label_y_coord + patch_size, :]
 
 
+                for patchs_label_id in patch.pruned_labels:
+
+                    patchs_label_x_coord = patches[patchs_label_id].x_coord
+                    patchs_label_y_coord = patches[patchs_label_id].y_coord
+
+                    patchs_label_rgb = image.rgb[patchs_label_x_coord : patchs_label_x_coord + patch_size, patchs_label_y_coord : patchs_label_y_coord + patch_size, :]
+
+                    difference = patch_diff(patch_neighbors_label_rgb, patchs_label_rgb)
+
+                    if (difference < min_additional_difference):
+                        min_additional_difference = difference
 
 
+                additional_differences[patch_neighbors_label_id] = min_additional_difference
+                min_additional_difference = sys.maxsize
+
+            for key in additional_differences.keys():
+                patch_neighbor_down.differences[key] += additional_differences[key]
+
+            temp = [value - min(patch_neighbor_down.differences.values()) for value in list(patch_neighbor_down.differences.values())]
+            patch_neighbor_down_uncertainty = [value < THRESHOLD_UNCERTAINTY for (i, value) in enumerate(temp)].count(True)
+            del temp
+
+            patch_neighbor_down.priority = len(patch_neighbor_down.differences) / patch_neighbor_down_uncertainty
 
 
+        # LEFT
+        if patch_neighbor_left.overlap_target_region and not patch_neighbor_left.committed:
+
+            min_additional_difference = sys.maxsize
+            additional_differences = {}
+
+            for patch_neighbors_label_id in patch_neighbor_left.labels:
+
+                patch_neighbors_label_x_coord = patches[patch_neighbors_label_id].x_coord
+                patch_neighbors_label_y_coord = patches[patch_neighbors_label_id].y_coord
+
+                patch_neighbors_label_rgb = image.rgb[patch_neighbors_label_x_coord : patch_neighbors_label_x_coord + patch_size, patch_neighbors_label_y_coord : patch_neighbors_label_y_coord + patch_size, :]
 
 
+                for patchs_label_id in patch.pruned_labels:
+
+                    patchs_label_x_coord = patches[patchs_label_id].x_coord
+                    patchs_label_y_coord = patches[patchs_label_id].y_coord
+
+                    patchs_label_rgb = image.rgb[patchs_label_x_coord : patchs_label_x_coord + patch_size, patchs_label_y_coord : patchs_label_y_coord + patch_size, :]
+
+                    difference = patch_diff(patch_neighbors_label_rgb, patchs_label_rgb)
+
+                    if (difference < min_additional_difference):
+                        min_additional_difference = difference
 
 
+                additional_differences[patch_neighbors_label_id] = min_additional_difference
+                min_additional_difference = sys.maxsize
 
+            for key in additional_differences.keys():
+                patch_neighbor_left.differences[key] += additional_differences[key]
+
+            temp = [value - min(patch_neighbor_left.differences.values()) for value in list(patch_neighbor_left.differences.values())]
+            patch_neighbor_left_uncertainty = [value < THRESHOLD_UNCERTAINTY for (i, value) in enumerate(temp)].count(True)
+            del temp
+
+            patch_neighbor_left.priority = len(patch_neighbor_left.differences) / patch_neighbor_left_uncertainty
+
+
+        # RIGHT
+        if patch_neighbor_right.overlap_target_region and not patch_neighbor_right.committed:
+
+            min_additional_difference = sys.maxsize
+            additional_differences = {}
+
+            for patch_neighbors_label_id in patch_neighbor_right.labels:
+
+                patch_neighbors_label_x_coord = patches[patch_neighbors_label_id].x_coord
+                patch_neighbors_label_y_coord = patches[patch_neighbors_label_id].y_coord
+
+                patch_neighbors_label_rgb = image.rgb[patch_neighbors_label_x_coord : patch_neighbors_label_x_coord + patch_size, patch_neighbors_label_y_coord : patch_neighbors_label_y_coord + patch_size, :]
+
+
+                for patchs_label_id in patch.pruned_labels:
+
+                    patchs_label_x_coord = patches[patchs_label_id].x_coord
+                    patchs_label_y_coord = patches[patchs_label_id].y_coord
+
+                    patchs_label_rgb = image.rgb[patchs_label_x_coord : patchs_label_x_coord + patch_size, patchs_label_y_coord : patchs_label_y_coord + patch_size, :]
+
+                    difference = patch_diff(patch_neighbors_label_rgb, patchs_label_rgb)
+
+                    if (difference < min_additional_difference):
+                        min_additional_difference = difference
+
+
+                additional_differences[patch_neighbors_label_id] = min_additional_difference
+                min_additional_difference = sys.maxsize
+
+            for key in additional_differences.keys():
+                patch_neighbor_right.differences[key] += additional_differences[key]
+
+            temp = [value - min(patch_neighbor_right.differences.values()) for value in list(patch_neighbor_right.differences.values())]
+            patch_neighbor_right_uncertainty = [value < THRESHOLD_UNCERTAINTY for (i, value) in enumerate(temp)].count(True)
+            del temp
+
+            patch_neighbor_right.priority = len(patch_neighbor_right.differences) / patch_neighbor_right_uncertainty
