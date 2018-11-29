@@ -22,9 +22,14 @@ def loading_data():
     global gap
 
     # inputs
-    folder_path = '/home/niaki/Code/Inpainting_Tijana/images'
-    image_filename = 'Lenna.png'
-    mask_filename = 'Mask512.jpg'
+    # folder_path = '/home/niaki/Code/Inpainting_Tijana/images'
+    # image_filename = 'Lenna.png'
+    # mask_filename = 'Mask512.jpg'
+
+    folder_path = '/home/niaki/Downloads'
+    image_filename = 'girl64.jpg'
+    mask_filename = 'girl64_mask.png'
+
     image_inpainted_name = 'Lenna'
     image_inpainted_version = '1st_try'
     patch_size = 16

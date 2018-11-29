@@ -21,13 +21,23 @@ def testing_coordinates_to_position():
     pos = coordinates_to_position(x, y, image_width, patch_size, gap)
     print(pos)
 
+def change_patch(patch):
+    patch.differences[1] = 0
+
+def testing_change_patch():
+    patch = Patch(0, False, False, 0, 0, 0, [1, 2, 3, 4, 5], None, {1: 7, 2: 9, 3: 6, 4: 8, 5: 10}, False) # 3 1 4 2 5
+    change_patch(patch)
+    print(patch.differences[1])
+
 
 def main():
     # testing_prune_labels()
     print("---")
-    testing_get_neighbor_position()
+    # testing_get_neighbor_position()
     print("---")
     # testing_coordinates_to_position()
+    print("---")
+    testing_change_patch()
 
 if __name__ == "__main__":
     main()
