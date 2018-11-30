@@ -129,38 +129,51 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
         patch.prune_labels(MAX_NB_LABELS)
 
         print(patch_highest_priority_id)
-        if patch_highest_priority_id == 794:
-            print("error about to happen!")
 
-        # get the neighbors if they exist
-        patch_neighbor_up_id = patch.get_up_neighbor_position(image, patch_size, gap)
-        if patch_neighbor_up_id == None:
-            patch_neighbor_up = None
-        else:
-            patch_neighbor_up = patches[patch_neighbor_up_id]
-
-        patch_neighbor_down_id = patch.get_down_neighbor_position(image, patch_size, gap)
-        if patch_neighbor_down_id == None:
-            patch_neighbor_down = None
-        else:
-            patch_neighbor_down = patches[patch_neighbor_down_id]
-
-        patch_neighbor_left_id = patch.get_left_neighbor_position(image, patch_size, gap)
-        if patch_neighbor_left_id == None:
-            patch_neighbor_left = None
-        else:
-            patch_neighbor_left = patches[patch_neighbor_left_id]
-
-        patch_neighbor_right_id = patch.get_right_neighbor_position(image, patch_size, gap)
-        if patch_neighbor_right_id == None:
-            patch_neighbor_right = None
-        else:
-            patch_neighbor_right = patches[patch_neighbor_right_id]
+        # get the neighbors if they exist and have overlap with the target region
+        patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right = get_patch_neighbor_nodes(
+            patch, image, patch_size, gap)
 
         update_patchs_neighbors_differences_and_priority(patch, patch_neighbor_up, image, patch_size, THRESHOLD_UNCERTAINTY)
         update_patchs_neighbors_differences_and_priority(patch, patch_neighbor_down, image, patch_size, THRESHOLD_UNCERTAINTY)
         update_patchs_neighbors_differences_and_priority(patch, patch_neighbor_left, image, patch_size, THRESHOLD_UNCERTAINTY)
         update_patchs_neighbors_differences_and_priority(patch, patch_neighbor_right, image, patch_size, THRESHOLD_UNCERTAINTY)
+
+
+def get_patch_neighbor_nodes(patch, image, patch_size, gap):
+
+    patch_neighbor_up_id = patch.get_up_neighbor_position(image, patch_size, gap)
+    if patch_neighbor_up_id is None:
+        patch_neighbor_up = None
+    else:
+        patch_neighbor_up = patches[patch_neighbor_up_id]
+        if not patch_neighbor_up.overlap_target_region:
+            patch_neighbor_up = None
+
+    patch_neighbor_down_id = patch.get_down_neighbor_position(image, patch_size, gap)
+    if patch_neighbor_down_id is None:
+        patch_neighbor_down = None
+    else:
+        patch_neighbor_down = patches[patch_neighbor_down_id]
+        if not patch_neighbor_down.overlap_target_region:
+            patch_neighbor_down = None
+
+    patch_neighbor_left_id = patch.get_left_neighbor_position(image, patch_size, gap)
+    if patch_neighbor_left_id is None:
+        patch_neighbor_left = None
+    else:
+        patch_neighbor_left = patches[patch_neighbor_left_id]
+        if not patch_neighbor_left.overlap_target_region:
+            patch_neighbor_left = None
+
+    patch_neighbor_right_id = patch.get_right_neighbor_position(image, patch_size, gap)
+    if patch_neighbor_right_id is None:
+        patch_neighbor_right = None
+    else:
+        patch_neighbor_right = patches[patch_neighbor_right_id]
+        if not patch_neighbor_right.overlap_target_region:
+            patch_neighbor_right = None
+    return patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right
 
 
 def update_patchs_neighbors_differences_and_priority(patch, patch_neighbor, image, patch_size, THRESHOLD_UNCERTAINTY):
@@ -207,3 +220,80 @@ def update_patchs_neighbors_differences_and_priority(patch, patch_neighbor, imag
         del temp
 
         patch_neighbor.priority = len(patch_neighbor.differences) / patch_neighbor_uncertainty
+
+
+def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
+
+    global patches
+    global nodes_count
+
+    for patch in patches:
+        if patch.overlap_target_region:
+
+            # get the neighbors if they exist and have overlap with the target region
+            patch_neighbor_up, _, patch_neighbor_left, _ = get_patch_neighbor_nodes(patch, image, patch_size, gap)
+
+
+
+
+            if not patch_neighbor_up is None:
+
+                potential_matrix = np.zeros((MAX_NB_LABELS, MAX_NB_LABELS))
+
+                for i, patchs_label_id in enumerate(patch.pruned_labels):
+
+                    patchs_label_x_coord = patches[patchs_label_id].x_coord
+                    patchs_label_y_coord = patches[patchs_label_id].y_coord
+
+                    patchs_label_upper_rgb = image.rgb[patchs_label_x_coord : patchs_label_x_coord + patch_size - gap,
+                                       patchs_label_y_coord : patchs_label_y_coord + patch_size, :]
+
+
+                    for j, patchs_neighbors_label_id in enumerate(patch_neighbor_up.pruned_labels):
+
+                        patchs_neighbors_label_x_coord = patches[patchs_neighbors_label_id].x_coord
+                        patchs_neighbors_label_y_coord = patches[patchs_neighbors_label_id].y_coord
+
+                        patchs_neighbors_label_lower_rgb = image.rgb[patchs_neighbors_label_x_coord + gap : patchs_neighbors_label_x_coord + patch_size,
+                                                     patchs_neighbors_label_y_coord : patchs_neighbors_label_y_coord + patch_size, :]
+
+                        potential_matrix[i, j] = patch_diff(patchs_label_upper_rgb, patchs_neighbors_label_lower_rgb)
+
+                
+                patch.potential_matrix_up = potential_matrix
+                patch_neighbor_up.potential_matrix_down = potential_matrix
+
+
+
+            if not patch_neighbor_left is None:
+
+                potential_matrix = np.zeros((MAX_NB_LABELS, MAX_NB_LABELS))
+
+                for i, patchs_label_id in enumerate(patch.pruned_labels):
+
+                    patchs_label_x_coord = patches[patchs_label_id].x_coord
+                    patchs_label_y_coord = patches[patchs_label_id].y_coord
+
+                    patchs_label_left_rgb = image.rgb[patchs_label_x_coord : patchs_label_x_coord + patch_size,
+                                       patchs_label_y_coord : patchs_label_y_coord + patch_size - gap, :]
+
+
+                    for j, patchs_neighbors_label_id in enumerate(patch_neighbor_left.pruned_labels):
+
+                        patchs_neighbors_label_x_coord = patches[patchs_neighbors_label_id].x_coord
+                        patchs_neighbors_label_y_coord = patches[patchs_neighbors_label_id].y_coord
+
+                        patchs_neighbors_label_right_rgb = image.rgb[patchs_neighbors_label_x_coord : patchs_neighbors_label_x_coord + patch_size,
+                                                     patchs_neighbors_label_y_coord + gap : patchs_neighbors_label_y_coord + patch_size, :]
+
+                        potential_matrix[i, j] = patch_diff(patchs_label_left_rgb, patchs_neighbors_label_right_rgb)
+
+
+                patch.potential_matrix_left = potential_matrix
+                patch_neighbor_left.potential_matrix_right = potential_matrix
+
+
+
+# -- 3rd phase --
+# inference
+# (???)

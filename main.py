@@ -65,6 +65,7 @@ def main():
 
     eeo.label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS)
 
+    eeo.compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS)
 
 
 

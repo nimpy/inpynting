@@ -12,7 +12,9 @@ class Image2BInpainted:
 class Patch:
 
 
-    def __init__(self, patch_id, overlap_source_region, overlap_target_region, x_coord, y_coord, priority=None, labels=None, pruned_labels=None, differences=None, committed=False):
+    def __init__(self, patch_id, overlap_source_region, overlap_target_region, x_coord, y_coord,
+                 priority=0, labels=[], pruned_labels=[], differences={}, committed=False,
+                 potential_matrix_up=None, potential_matrix_down=None, potential_matrix_left=None, potential_matrix_right=None):
 
         # properties of all patches
         self.patch_id = patch_id
@@ -22,30 +24,16 @@ class Patch:
         self.y_coord = y_coord
 
         # properties of patches having an intersection with the target region (i.e. patches to be inpainted)
-        if priority is None:
-            self.priority = 0
-        else:
-            self.priority = priority
+        self.priority = priority
+        self.labels = labels
+        self.pruned_labels = pruned_labels
+        self.differences = differences
+        self.committed = committed
 
-        if labels is None:
-            self.labels = []
-        else:
-            self.labels = labels
-
-        if pruned_labels is None:
-            self.pruned_labels = []
-        else:
-            self.pruned_labels = pruned_labels
-
-        if differences is None:
-            self.differences = {}
-        else:
-            self.differences = differences
-
-        if committed is None:
-            self.committed = False
-        else:
-            self.committed = committed
+        self.potential_matrix_up = potential_matrix_up
+        self.potential_matrix_down = potential_matrix_down
+        self.potential_matrix_left = potential_matrix_left
+        self.potential_matrix_right = potential_matrix_right
 
 
     def prune_labels(self, MAX_NB_LABELS):
