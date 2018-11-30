@@ -67,6 +67,8 @@ def main():
 
     eeo.compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS)
 
+    eeo.compute_label_cost(image, patch_size, MAX_NB_LABELS)
+
 
 
 

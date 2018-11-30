@@ -259,7 +259,7 @@ def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
 
                         potential_matrix[i, j] = patch_diff(patchs_label_upper_rgb, patchs_neighbors_label_lower_rgb)
 
-                
+
                 patch.potential_matrix_up = potential_matrix
                 patch_neighbor_up.potential_matrix_down = potential_matrix
 
@@ -292,6 +292,34 @@ def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
                 patch.potential_matrix_left = potential_matrix
                 patch_neighbor_left.potential_matrix_right = potential_matrix
 
+
+def compute_label_cost(image, patch_size, MAX_NB_LABELS):
+
+    global patches
+    global nodes_count
+
+
+    for patch in patches:
+        if patch.overlap_target_region:
+
+            patch.label_cost = [0 for i in range(MAX_NB_LABELS)]
+
+            if patch.overlap_source_region:
+
+                patch_rgb = image.rgb[patch.x_coord : patch.x_coord + patch_size,
+                            patch.y_coord : patch.y_coord + patch_size, :]
+
+                for i, patchs_label_id in enumerate(patch.pruned_labels):
+
+                    patchs_label_rgb = image.rgb[patches[patchs_label_id].x_coord : patches[patchs_label_id].x_coord + patch_size,
+                                       patches[patchs_label_id].y_coord : patches[patchs_label_id].y_coord + patch_size, :]
+
+                    patch.label_cost[i] = patch_diff(patch_rgb, patchs_label_rgb)
+
+
+
+
+#TODO check what happens if there's less than MAX_NB_LABELS even without pruning
 
 
 # -- 3rd phase --
