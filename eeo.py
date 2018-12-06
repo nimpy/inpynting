@@ -2,7 +2,7 @@ import numpy as np
 import sys
 from data_structures import Patch
 from patch_diff import patch_diff
-
+import math
 
 # the indices in the list match the patch_id
 patches = []
@@ -262,6 +262,8 @@ def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
 
                 patch.potential_matrix_up = potential_matrix
                 patch_neighbor_up.potential_matrix_down = potential_matrix
+                print("potential matrix UD")
+                print(potential_matrix)
 
 
 
@@ -291,6 +293,8 @@ def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
 
                 patch.potential_matrix_left = potential_matrix
                 patch_neighbor_left.potential_matrix_right = potential_matrix
+                print("potential matrix LR")
+                print(potential_matrix)
 
 
 def compute_label_cost(image, patch_size, MAX_NB_LABELS):
@@ -317,6 +321,17 @@ def compute_label_cost(image, patch_size, MAX_NB_LABELS):
                     patch.label_cost[i] = patch_diff(patch_rgb, patchs_label_rgb)
 
 
+            patch.local_likelihood = [math.exp(-cost * (1/100000)) for cost in patch.label_cost]
+            print("patch", patch.patch_id, "label cost", patch.label_cost)
+            print("patch", patch.patch_id, "local likelihood", patch.local_likelihood)
+
+            #TODO (for the moment it's just the index in [0..MAX_NB_LABELS)
+            # but maybe should be the label of the patch with the highest local likelihood
+            #patch.mask = patch.pruned_labels[patch.local_likelihood.index(max(patch.local_likelihood))]
+            patch.mask = patch.local_likelihood.index(max(patch.local_likelihood))
+
+#TODO maybe rename local_likelihood to likelihood?
+#TODO also calculate InitMask after local_likelihood
 
 
 #TODO check what happens if there's less than MAX_NB_LABELS even without pruning
@@ -325,3 +340,70 @@ def compute_label_cost(image, patch_size, MAX_NB_LABELS):
 # -- 3rd phase --
 # inference
 # (???)
+
+
+def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS, MAX_ITERATION_NR):
+
+    global patches
+    global nodes_count
+
+    converged = False
+    iteration_nr = 0
+
+    # initialisation of the nodes' beliefs and messages
+    for patch in patches:
+        if patch.overlap_target_region:
+
+            #patch.messages = [1 for i in range(MAX_NB_LABELS)]
+            patch.messages = np.ones(MAX_NB_LABELS)
+
+            #patch.beliefs = [0 for i in range(MAX_NB_LABELS)]
+            patch.beliefs = np.zeros(MAX_NB_LABELS)
+            patch.beliefs[patch.mask] = 1
+
+
+
+    while not converged and iteration_nr < MAX_ITERATION_NR:
+
+        for patch in patches:
+            if patch.overlap_target_region:
+
+
+                patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right = get_patch_neighbor_nodes(
+                    patch, image, patch_size, gap)
+
+
+                #TODO figure out how to do the matrix multiplication cleaner, without the reshaping
+                #TODO big problem! they are overriding each other!!
+                if not patch_neighbor_up is None:
+                    patch.messages = np.matmul(np.matrix(patch.potential_matrix_up), patch_neighbor_up.beliefs.reshape((MAX_NB_LABELS, 1)))
+                if not patch_neighbor_down is None:
+                    patch.messages = np.matmul(np.matrix(patch.potential_matrix_down), patch_neighbor_down.beliefs.reshape((MAX_NB_LABELS, 1)))
+                if not patch_neighbor_left is None:
+                    patch.messages = np.matmul(np.matrix(patch.potential_matrix_left), patch_neighbor_left.beliefs.reshape((MAX_NB_LABELS, 1)))
+                if not patch_neighbor_right is None:
+                    patch.messages = np.matmul(np.matrix(patch.potential_matrix_right), patch_neighbor_right.beliefs.reshape((MAX_NB_LABELS, 1)))
+
+                print(patch.messages)
+                patch.messages = np.matrix([math.exp(-message*(1/100000)) for message in patch.messages.reshape((10,1))])
+
+
+
+
+                print(patch.messages)
+                print(patch.local_likelihood)
+                # TODO maybe should be new beliefs? (nah, i don't think so)
+                patch.beliefs = np.multiply(patch.messages, patch.local_likelihood)
+
+
+                print(patch.beliefs)
+                # normalise to sum up to 1
+                #TODO make sure it's element-wise
+                patch.beliefs = patch.beliefs / patch.beliefs.sum()
+
+
+                #TODO fix this disgraceful code
+                patch.mask = patch.beliefs.tolist()[0].index(max(patch.beliefs.tolist()[0]))
+
+
+        iteration_nr += 1

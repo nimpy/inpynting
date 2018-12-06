@@ -15,7 +15,8 @@ class Patch:
     def __init__(self, patch_id, overlap_source_region, overlap_target_region, x_coord, y_coord,
                  priority=0, labels=[], pruned_labels=[], differences={}, committed=False,
                  potential_matrix_up=None, potential_matrix_down=None, potential_matrix_left=None, potential_matrix_right=None,
-                 label_cost=None):
+                 label_cost=None, local_likelihood=None, mask=None,
+                 messages=None, beliefs=None):
 
         # properties of all patches
         self.patch_id = patch_id
@@ -37,6 +38,12 @@ class Patch:
         self.potential_matrix_right = potential_matrix_right
 
         self.label_cost = label_cost
+        self.local_likelihood = local_likelihood
+
+        self.mask = mask
+
+        self.messages = messages
+        self. beliefs = beliefs
 
 
     def prune_labels(self, MAX_NB_LABELS):

@@ -13,14 +13,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.37520868">
+    <splitter split-orientation="horizontal" split-proportion="0.28255427">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/main.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="786">
-                  <caret line="69" column="46" selection-start-line="69" selection-start-column="46" selection-end-line="69" selection-end-column="46" />
+                <state relative-caret-position="818">
+                  <caret line="73" selection-start-line="73" selection-end-line="73" />
                   <folding>
                     <element signature="e#0#51#0" expanded="true" />
                   </folding>
@@ -31,14 +31,14 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/data_structures.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="380">
-                  <caret line="38" column="36" selection-start-line="38" selection-start-column="36" selection-end-line="38" selection-end-column="36" />
+                <state relative-caret-position="131">
+                  <caret line="18" column="25" selection-start-line="18" selection-start-column="25" selection-end-line="18" selection-end-column="25" />
                   <folding>
-                    <marker date="1543587423209" expanded="true" signature="23:24" ph="..." />
-                    <marker date="1543587423209" expanded="true" signature="23:68" ph="..." />
-                    <marker date="1543587423209" expanded="true" signature="279:280" ph="..." />
-                    <marker date="1543587423209" expanded="true" signature="279:284" ph="..." />
-                    <marker date="1543587423209" expanded="true" signature="3071:3080" ph="..." />
+                    <marker date="1543939377154" expanded="true" signature="23:24" ph="..." />
+                    <marker date="1543939377154" expanded="true" signature="23:68" ph="..." />
+                    <marker date="1543939377154" expanded="true" signature="279:280" ph="..." />
+                    <marker date="1543939377154" expanded="true" signature="279:284" ph="..." />
+                    <marker date="1543939377154" expanded="true" signature="3292:3301" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -71,7 +71,7 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/patch_diff.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="19">
@@ -87,15 +87,25 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/eeo.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="615">
-                  <caret line="317" lean-forward="true" selection-start-line="317" selection-end-line="317" />
+                <state relative-caret-position="974">
+                  <caret line="404" column="23" selection-start-line="404" selection-start-column="23" selection-end-line="404" selection-end-column="23" />
                   <folding>
-                    <marker date="1543593390975" expanded="true" signature="378:379" ph="..." />
-                    <marker date="1543593390975" expanded="true" signature="4153:4154" ph="..." />
-                    <marker date="1543593390975" expanded="true" signature="4153:4263" ph="..." />
-                    <marker date="1543593390975" expanded="true" signature="4153:7361" ph="..." />
-                    <marker date="1543593390975" expanded="true" signature="7481:7482" ph="..." />
+                    <element signature="e#0#18#0" expanded="true" />
+                    <marker date="1544089557598" expanded="true" signature="389:390" ph="..." />
+                    <marker date="1544089557598" expanded="true" signature="4164:4165" ph="..." />
+                    <marker date="1544089557598" expanded="true" signature="4164:4274" ph="..." />
+                    <marker date="1544089557598" expanded="true" signature="4164:7372" ph="..." />
+                    <marker date="1544089557598" expanded="true" signature="7492:7493" ph="..." />
                   </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$USER_HOME$/anaconda3/envs/tensorflow/lib/python3.6/site-packages/numpy/matrixlib/defmatrix.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="322">
+                  <caret line="214" selection-start-line="214" selection-end-line="214" />
                 </state>
               </provider>
             </entry>
@@ -103,7 +113,7 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/temp.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="437">
+                <state relative-caret-position="418">
                   <caret line="23" column="24" selection-start-line="23" selection-start-column="24" selection-end-line="23" selection-end-column="24" />
                   <folding>
                     <element signature="e#0#76#0" expanded="true" />
@@ -138,6 +148,12 @@
       <find>potent</find>
       <find>potential matrix</find>
       <find>print</find>
+      <find>labels</find>
+      <find>get_patch_neighbor_nodes</find>
+      <find>*</find>
+      <find>left</find>
+      <find>potential_matrix_up</find>
+      <find>local_likelihood</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -282,8 +298,8 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.2399086" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49980292" weight="0.25884956" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.16527037" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49980292" weight="0.25818735" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32952815" />
@@ -353,9 +369,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/patch_diff.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="19">
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/temp.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="437">
+        <state relative-caret-position="418">
           <caret line="23" column="24" selection-start-line="23" selection-start-column="24" selection-end-line="23" selection-end-column="24" />
           <folding>
             <element signature="e#0#76#0" expanded="true" />
@@ -368,45 +391,46 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/data_structures.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="380">
-          <caret line="38" column="36" selection-start-line="38" selection-start-column="36" selection-end-line="38" selection-end-column="36" />
+        <state relative-caret-position="131">
+          <caret line="18" column="25" selection-start-line="18" selection-start-column="25" selection-end-line="18" selection-end-column="25" />
           <folding>
-            <marker date="1543587423209" expanded="true" signature="23:24" ph="..." />
-            <marker date="1543587423209" expanded="true" signature="23:68" ph="..." />
-            <marker date="1543587423209" expanded="true" signature="279:280" ph="..." />
-            <marker date="1543587423209" expanded="true" signature="279:284" ph="..." />
-            <marker date="1543587423209" expanded="true" signature="3071:3080" ph="..." />
+            <marker date="1543939377154" expanded="true" signature="23:24" ph="..." />
+            <marker date="1543939377154" expanded="true" signature="23:68" ph="..." />
+            <marker date="1543939377154" expanded="true" signature="279:280" ph="..." />
+            <marker date="1543939377154" expanded="true" signature="279:284" ph="..." />
+            <marker date="1543939377154" expanded="true" signature="3292:3301" ph="..." />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/anaconda3/envs/tensorflow/lib/python3.6/site-packages/numpy/matrixlib/defmatrix.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="322">
+          <caret line="214" selection-start-line="214" selection-end-line="214" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="786">
-          <caret line="69" column="46" selection-start-line="69" selection-start-column="46" selection-end-line="69" selection-end-column="46" />
+        <state relative-caret-position="818">
+          <caret line="73" selection-start-line="73" selection-end-line="73" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/patch_diff.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="19">
-          <caret line="1" selection-start-line="1" selection-end-line="1" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/eeo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="615">
-          <caret line="317" lean-forward="true" selection-start-line="317" selection-end-line="317" />
+        <state relative-caret-position="974">
+          <caret line="404" column="23" selection-start-line="404" selection-start-column="23" selection-end-line="404" selection-end-column="23" />
           <folding>
-            <marker date="1543593390975" expanded="true" signature="378:379" ph="..." />
-            <marker date="1543593390975" expanded="true" signature="4153:4154" ph="..." />
-            <marker date="1543593390975" expanded="true" signature="4153:4263" ph="..." />
-            <marker date="1543593390975" expanded="true" signature="4153:7361" ph="..." />
-            <marker date="1543593390975" expanded="true" signature="7481:7482" ph="..." />
+            <element signature="e#0#18#0" expanded="true" />
+            <marker date="1544089557598" expanded="true" signature="389:390" ph="..." />
+            <marker date="1544089557598" expanded="true" signature="4164:4165" ph="..." />
+            <marker date="1544089557598" expanded="true" signature="4164:4274" ph="..." />
+            <marker date="1544089557598" expanded="true" signature="4164:7372" ph="..." />
+            <marker date="1544089557598" expanded="true" signature="7492:7493" ph="..." />
           </folding>
         </state>
       </provider>

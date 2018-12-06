@@ -15,6 +15,7 @@ gap = 0
 
 THRESHOLD_UNCERTAINTY = 80000 # TODO to be adjusted
 MAX_NB_LABELS = 10
+MAX_ITERATION_NR = 10
 
 def loading_data():
     global image
@@ -69,7 +70,8 @@ def main():
 
     eeo.compute_label_cost(image, patch_size, MAX_NB_LABELS)
 
-
+    print('NCSP')
+    eeo.neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS, MAX_ITERATION_NR)
 
 
 if __name__ == "__main__":
