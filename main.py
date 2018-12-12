@@ -12,6 +12,7 @@ image = None
 
 patch_size = 0
 gap = 0
+output_filename = None
 
 THRESHOLD_UNCERTAINTY = 80000 # TODO to be adjusted
 MAX_NB_LABELS = 10
@@ -21,6 +22,7 @@ def loading_data():
     global image
     global patch_size
     global gap
+    global output_filename
 
     # inputs
     # folder_path = '/home/niaki/Code/Inpainting_Tijana/images'
@@ -46,9 +48,16 @@ def loading_data():
 
     image = Image2BInpainted(image_rgb, mask)
 
+    output_filename = folder_path + '/' + image_inpainted_name + '_' + image_inpainted_version + '.jpg'
+
 
 
 def main():
+
+    global image
+    global patch_size
+    global gap
+    global output_filename
 
     loading_data()
 
@@ -72,6 +81,12 @@ def main():
 
     print('NCSP')
     eeo.neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS, MAX_ITERATION_NR)
+
+    print('generate output')
+    eeo.generate_output(image, patch_size)
+
+    plt.imshow(image.inpainted, interpolation='nearest')
+    imageio.imwrite(output_filename, image.inpainted)
 
 
 if __name__ == "__main__":

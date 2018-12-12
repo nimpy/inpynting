@@ -1,5 +1,8 @@
 from data_structures import Patch, Image2BInpainted, coordinates_to_position
+from eeo import generate_smooth_filter, generate_blend_mask
+
 import numpy as np
+from scipy import signal
 
 def testing_prune_labels():
     patch = Patch(0, False, False, 0, 0, 0, [1, 2, 3, 4, 5], None, {1: 7, 2: 9, 3: 6, 4: 8, 5: 10}, False) # 3 1 4 2 5
@@ -29,6 +32,20 @@ def testing_change_patch():
     change_patch(patch)
     print(patch.differences[1])
 
+def testing_smooth_filter_blend_mask_convolve():
+    filter_size = 4  # should be > 1
+    patch_size = 8
+
+    smooth_filter = generate_smooth_filter(filter_size)
+    blend_mask = generate_blend_mask(patch_size)
+
+    print(smooth_filter.shape)
+    print(blend_mask.shape)
+
+    blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
+
+
+    print(blend_mask)
 
 def main():
     # testing_prune_labels()
@@ -37,7 +54,11 @@ def main():
     print("---")
     # testing_coordinates_to_position()
     print("---")
-    testing_change_patch()
+    # testing_change_patch()
+    print("---")
+    # generate_smooth_filter(4)
+    print("---")
+    testing_smooth_filter_blend_mask_convolve()
 
 if __name__ == "__main__":
     main()

@@ -3,10 +3,13 @@ import sys
 from data_structures import Patch
 from patch_diff import patch_diff
 import math
+import scipy.ndimage as ndimage
+from scipy import signal
 
 # the indices in the list match the patch_id
 patches = []
 nodes_count = 0
+nodes_order = []
 
 
 # -- 1st phase --
@@ -105,6 +108,7 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
 
     global patches
     global nodes_count
+    global nodes_order
 
     nodes_visiting_order = np.zeros(nodes_count, dtype=np.int32)
 
@@ -129,6 +133,7 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
         patch.prune_labels(MAX_NB_LABELS)
 
         print(patch_highest_priority_id)
+        nodes_order.append(patch_highest_priority_id)
 
         # get the neighbors if they exist and have overlap with the target region
         patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right = get_patch_neighbor_nodes(
@@ -302,7 +307,6 @@ def compute_label_cost(image, patch_size, MAX_NB_LABELS):
     global patches
     global nodes_count
 
-
     for patch in patches:
         if patch.overlap_target_region:
 
@@ -407,3 +411,95 @@ def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS
 
 
         iteration_nr += 1
+
+
+def generate_smooth_filter(kernel_size):
+
+    if kernel_size <= 1:
+        print("Error in arguments -- kernel size for the smooth filter should be larger than 1.")
+        return 0
+
+    kernel_1D = np.array([0.5, 0.5]).transpose()
+
+    for i in range(kernel_size - 2):
+        kernel_1D = np.convolve(np.array([0.5, 0.5]).transpose(), kernel_1D)
+
+    kernel_1D = kernel_1D.reshape((kernel_size, 1))
+
+    kernel_2D = np.matmul(kernel_1D, kernel_1D.transpose())
+
+    return kernel_2D
+
+
+#TODO this is just a hacky way to implement something similar to what is needed
+def generate_blend_mask(patch_size):
+
+    blend_mask = np.zeros((patch_size, patch_size))
+    for i in range(patch_size // 3):
+        blend_mask[i, :] = 1
+        blend_mask[:, i] = 1
+
+    # blend_mask = ndimage.gaussian_filter(blend_mask, sigma=(1, 1), order=0)
+
+    return blend_mask
+
+
+#TODO rename
+def generate_output(image, patch_size):
+
+    global patches
+    global nodes_count
+    global nodes_order
+
+
+    image.inpainted = image.rgb.copy()
+
+    target_region = image.mask
+
+    filter_size = 4 # should be > 1
+
+    smooth_filter = generate_smooth_filter(filter_size)
+
+
+    for i in range(len(nodes_order)):
+
+        patch_id = nodes_order[i]
+
+        patch = patches[patch_id]
+
+        patchs_mask_patch = patches[patch.pruned_labels[patch.mask]]
+
+        patch_rgb = image.rgb[patch.x_coord: patch.x_coord + patch_size,
+                    patch.y_coord: patch.y_coord + patch_size, :]
+
+        patch_rgb_new = image.rgb[patchs_mask_patch.x_coord: patchs_mask_patch.x_coord + patch_size,
+                        patchs_mask_patch.y_coord: patchs_mask_patch.y_coord + patch_size, :]
+
+
+        squared_error_3channels = (patch_rgb - patch_rgb_new)**2
+
+        squared_error_1channel = np.dot(squared_error_3channels[..., :3], [1/3, 1/3, 1/3])
+
+        print(squared_error_1channel.shape)
+        print(squared_error_1channel)
+
+        blend_mask = generate_blend_mask(patch_size)
+
+        blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
+
+        blend_mask_rgb = np.repeat(blend_mask, 3, axis=1).reshape((patch_size, patch_size, 3))
+
+
+        image.inpainted[patch.x_coord : patch.x_coord + patch_size,
+            patch.y_coord : patch.y_coord + patch_size, :] = np.multiply(patch_rgb, blend_mask_rgb) + \
+                                                             np.multiply(patch_rgb_new, 1 - blend_mask_rgb)
+
+
+
+        target_region[patch.x_coord : patch.x_coord + patch_size, patch.y_coord : patch.y_coord + patch_size] = 0
+
+
+    image.inpainted = image.inpainted.astype(int)
+
+    print(image.inpainted.shape)
+
