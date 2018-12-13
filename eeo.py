@@ -3,10 +3,9 @@ import sys
 from data_structures import Patch
 from patch_diff import patch_diff
 import math
-import scipy.ndimage as ndimage
 from scipy import signal
 
-# the indices in the list match the patch_id
+# the indices in this list patches match the patch_id
 patches = []
 nodes_count = 0
 nodes_order = []
@@ -98,7 +97,8 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
             #     break
 
 
-    print("len(patches) = ", len(patches))
+    print("Total number of patches: ", len(patches))
+    print("Number of patches to be inpainted: ", nodes_count)
 
 # -- 2nd phase --
 # label pruning
@@ -132,7 +132,7 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
 
         patch.prune_labels(MAX_NB_LABELS)
 
-        print(patch_highest_priority_id)
+        print("Highest priority patch: ", patch_highest_priority_id)
         nodes_order.append(patch_highest_priority_id)
 
         # get the neighbors if they exist and have overlap with the target region
@@ -267,8 +267,8 @@ def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
 
                 patch.potential_matrix_up = potential_matrix
                 patch_neighbor_up.potential_matrix_down = potential_matrix
-                print("potential matrix UD")
-                print(potential_matrix)
+                # print("potential matrix UpDown")
+                # print(potential_matrix)
 
 
 
@@ -298,8 +298,8 @@ def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
 
                 patch.potential_matrix_left = potential_matrix
                 patch_neighbor_left.potential_matrix_right = potential_matrix
-                print("potential matrix LR")
-                print(potential_matrix)
+                # print("potential matrix LeftRight")
+                # print(potential_matrix)
 
 
 def compute_label_cost(image, patch_size, MAX_NB_LABELS):
@@ -326,8 +326,8 @@ def compute_label_cost(image, patch_size, MAX_NB_LABELS):
 
 
             patch.local_likelihood = [math.exp(-cost * (1/100000)) for cost in patch.label_cost]
-            print("patch", patch.patch_id, "label cost", patch.label_cost)
-            print("patch", patch.patch_id, "local likelihood", patch.local_likelihood)
+            # print("patch", patch.patch_id, "label cost", patch.label_cost)
+            # print("patch", patch.patch_id, "local likelihood", patch.local_likelihood)
 
             #TODO (for the moment it's just the index in [0..MAX_NB_LABELS)
             # but maybe should be the label of the patch with the highest local likelihood
@@ -416,8 +416,7 @@ def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS
 def generate_smooth_filter(kernel_size):
 
     if kernel_size <= 1:
-        print("Error in arguments -- kernel size for the smooth filter should be larger than 1.")
-        return 0
+        raise Exception('Kernel size for the smooth filter should be larger than 1, but is {}.'.format(kernel_size))
 
     kernel_1D = np.array([0.5, 0.5]).transpose()
 
@@ -439,24 +438,22 @@ def generate_blend_mask(patch_size):
         blend_mask[i, :] = 1
         blend_mask[:, i] = 1
 
-    # blend_mask = ndimage.gaussian_filter(blend_mask, sigma=(1, 1), order=0)
-
     return blend_mask
 
 
 #TODO rename
-def generate_output(image, patch_size):
+def generate_inpainted_image(image, patch_size):
 
     global patches
     global nodes_count
     global nodes_order
 
-
-    image.inpainted = image.rgb.copy()
-
     target_region = image.mask
 
-    filter_size = 4 # should be > 1
+    image.inpainted = np.multiply(image.rgb,
+                                  np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
+
+    filter_size = 4  # should be > 1
 
     smooth_filter = generate_smooth_filter(filter_size)
 
@@ -475,13 +472,9 @@ def generate_output(image, patch_size):
         patch_rgb_new = image.rgb[patchs_mask_patch.x_coord: patchs_mask_patch.x_coord + patch_size,
                         patchs_mask_patch.y_coord: patchs_mask_patch.y_coord + patch_size, :]
 
-
-        squared_error_3channels = (patch_rgb - patch_rgb_new)**2
-
-        squared_error_1channel = np.dot(squared_error_3channels[..., :3], [1/3, 1/3, 1/3])
-
-        print(squared_error_1channel.shape)
-        print(squared_error_1channel)
+        # sqaured error is used to calculate the blend mask
+        #squared_error_3channels = (patch_rgb - patch_rgb_new)**2
+        #squared_error_1channel = np.dot(squared_error_3channels[..., :3], [1/3, 1/3, 1/3])
 
         blend_mask = generate_blend_mask(patch_size)
 
@@ -499,7 +492,12 @@ def generate_output(image, patch_size):
         target_region[patch.x_coord : patch.x_coord + patch_size, patch.y_coord : patch.y_coord + patch_size] = 0
 
 
-    image.inpainted = image.inpainted.astype(int)
+    image.inpainted = image.inpainted.astype(np.int32)
 
-    print(image.inpainted.shape)
+
+
+    # In the Tijana's code, this line makes a difference because the mask is not looked as a binary thing,
+    # but as a scale (for some reason). Here, it's binary, and hence this line doesn't do anything.
+    # image.inpainted = np.multiply(image.inpainted, np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
+
 

@@ -2,6 +2,9 @@ from data_structures import Image2BInpainted, Patch
 import numpy as np
 import matplotlib.pyplot as plt
 import imageio
+import os
+import datetime
+
 import efficient_energy_optimization
 import eeo
 from label_pruning import label_pruning
@@ -29,27 +32,35 @@ def loading_data():
     # image_filename = 'Lenna.png'
     # mask_filename = 'Mask512.jpg'
 
-    folder_path = '/home/niaki/Downloads'
-    image_filename = 'girl64.jpg'
-    mask_filename = 'girl64_mask.png'
+    # folder_path = '/home/niaki/Downloads'
+    # image_filename = 'building64.jpg'
+    # mask_filename = 'girl64_mask.png'
 
-    image_inpainted_name = 'Lenna'
-    image_inpainted_version = '1st_try'
-    patch_size = 16
-    gap = 8
+    folder_path = '/home/niaki/Downloads'
+    image_filename = 'building128_damaged.jpeg'
+    mask_filename = 'mask128.jpg'
+
+    image_inpainted_name, _ = os.path.splitext(image_filename)
+    image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # settings
     np.set_printoptions(threshold=np.nan)
+    patch_size = 16
+    gap = 8
 
     # loading the image and the mask
     image_rgb = imageio.imread(folder_path + '/' + image_filename)
+
     mask = imageio.imread(folder_path + '/' + mask_filename)
     mask = mask[:, :, 0]
+    mask = mask / 255
+    for i in range(mask.shape[0]):
+        for j in range(mask.shape[1]):
+            mask[i,j] = round(mask[i,j])
 
     image = Image2BInpainted(image_rgb, mask)
 
     output_filename = folder_path + '/' + image_inpainted_name + '_' + image_inpainted_version + '.jpg'
-
 
 
 def main():
@@ -66,24 +77,31 @@ def main():
     plt.imshow(image.mask, cmap='gray')
     plt.show()
 
+    print("Number of pixels to be inpainted: " + str(np.count_nonzero(image.mask)))
 
-    #mask = mask // 255
+    print()
+    print("... Initialization ...")
+    eeo.initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY)
 
-
-
-    patches = eeo.initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY)
-
+    print()
+    print("... Label pruning ...")
     eeo.label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS)
 
+    print()
+    print("... Computing pairwise potential matrix ...")
     eeo.compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS)
 
+    print()
+    print("... Computing label cost ...")
     eeo.compute_label_cost(image, patch_size, MAX_NB_LABELS)
 
-    print('NCSP')
+    print()
+    print("... Neighborhood consensus message passing ...")
     eeo.neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS, MAX_ITERATION_NR)
 
-    print('generate output')
-    eeo.generate_output(image, patch_size)
+    print()
+    print("... Generating inpainted image ...")
+    eeo.generate_inpainted_image(image, patch_size)
 
     plt.imshow(image.inpainted, interpolation='nearest')
     imageio.imwrite(output_filename, image.inpainted)

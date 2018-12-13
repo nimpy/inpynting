@@ -3,8 +3,7 @@ class Image2BInpainted:
     #TODO maybe discard patch_size and gap
     def __init__(self, rgb, mask, inpainted=None):
         self.rgb = rgb
-        #self.mask = mask
-        self.mask = mask // 255
+        self.mask = mask
         self.height = self.rgb.shape[0]
         self.width = self.rgb.shape[1]
         self.inpainted = inpainted
