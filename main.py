@@ -17,7 +17,7 @@ patch_size = 0
 gap = 0
 output_filename = None
 
-THRESHOLD_UNCERTAINTY = 80000 # TODO to be adjusted
+THRESHOLD_UNCERTAINTY = 6755360 # TODO to be adjusted
 MAX_NB_LABELS = 10
 MAX_ITERATION_NR = 10
 
@@ -28,17 +28,17 @@ def loading_data():
     global output_filename
 
     # inputs
-    # folder_path = '/home/niaki/Code/Inpainting_Tijana/images'
-    # image_filename = 'Lenna.png'
-    # mask_filename = 'Mask512.jpg'
+    folder_path = '/home/niaki/Code/Inpainting_Tijana/images'
+    image_filename = 'Lenna.png'
+    mask_filename = 'Mask512.jpg'
 
     # folder_path = '/home/niaki/Downloads'
     # image_filename = 'building64.jpg'
     # mask_filename = 'girl64_mask.png'
 
-    folder_path = '/home/niaki/Downloads'
-    image_filename = 'building128_damaged.jpeg'
-    mask_filename = 'mask128.jpg'
+    # folder_path = '/home/niaki/Downloads'
+    # image_filename = 'building128.jpeg'
+    # mask_filename = 'mask128.jpg'
 
     image_inpainted_name, _ = os.path.splitext(image_filename)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -57,6 +57,14 @@ def loading_data():
     for i in range(mask.shape[0]):
         for j in range(mask.shape[1]):
             mask[i,j] = round(mask[i,j])
+
+    # on the image: set everything that's under the mask to white
+    for i in range(image_rgb.shape[0]):
+        for j in range(image_rgb.shape[1]):
+            for k in range(image_rgb.shape[2]):
+                if mask[i,j] == 1:
+                    image_rgb[i, j, k] = 255
+
 
     image = Image2BInpainted(image_rgb, mask)
 

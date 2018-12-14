@@ -47,6 +47,16 @@ def testing_smooth_filter_blend_mask_convolve():
 
     print(blend_mask)
 
+def testing_OOP():
+    patches_list = []
+
+    for i in range(5):
+        p = Patch(i, True, True, i, i)
+        patches_list.append(p)
+
+    for i in range(5):
+        print(patches_list[i].patch_id)
+
 def main():
     # testing_prune_labels()
     print("---")
@@ -58,7 +68,10 @@ def main():
     print("---")
     # generate_smooth_filter(4)
     print("---")
-    testing_smooth_filter_blend_mask_convolve()
+    # testing_smooth_filter_blend_mask_convolve()
+    print("---")
+    testing_OOP()
+
 
 if __name__ == "__main__":
     main()

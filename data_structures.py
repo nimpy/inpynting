@@ -13,7 +13,7 @@ class Patch:
 
 
     def __init__(self, patch_id, overlap_source_region, overlap_target_region, x_coord, y_coord,
-                 priority=0, labels=[], pruned_labels=[], differences={}, committed=False,
+                 priority=0, labels=None, pruned_labels=None, differences=None, committed=False,
                  potential_matrix_up=None, potential_matrix_down=None, potential_matrix_left=None, potential_matrix_right=None,
                  label_cost=None, local_likelihood=None, mask=None,
                  messages=None, beliefs=None):
@@ -27,9 +27,18 @@ class Patch:
 
         # properties of patches having an intersection with the target region (i.e. patches to be inpainted)
         self.priority = priority
-        self.labels = labels
-        self.pruned_labels = pruned_labels
-        self.differences = differences
+        if labels is None:
+            self.labels = []
+        else:
+            self.labels = labels
+        if pruned_labels is None:
+            self.pruned_labels = []
+        else:
+            self.pruned_labels = pruned_labels
+        if differences is None:
+            self.differences = {}
+        else:
+            self.differences = differences
         self.committed = committed
 
         self.potential_matrix_up = potential_matrix_up

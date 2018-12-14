@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d366a607-62fe-42c9-a88a-1d4fa1f5480f" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data_structures.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_structures.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/eeo.py" beforeDir="false" afterPath="$PROJECT_DIR$/eeo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temp.py" beforeDir="false" afterPath="$PROJECT_DIR$/temp.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,11 +17,11 @@
     <splitter split-orientation="horizontal" split-proportion="0.41571754">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/main.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1301">
-                  <caret line="79" column="9" selection-start-line="79" selection-start-column="4" selection-end-line="79" selection-end-column="9" />
+                <state relative-caret-position="291">
+                  <caret line="39" column="29" lean-forward="true" selection-start-line="39" selection-start-column="29" selection-end-line="39" selection-end-column="29" />
                   <folding>
                     <element signature="e#0#51#0" expanded="true" />
                   </folding>
@@ -29,17 +29,17 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/data_structures.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="665">
-                  <caret line="35" column="42" lean-forward="true" selection-start-line="35" selection-start-column="42" selection-end-line="35" selection-end-column="42" />
+                <state relative-caret-position="798">
+                  <caret line="42" lean-forward="true" selection-start-line="42" selection-end-line="42" />
                   <folding>
-                    <marker date="1544629101791" expanded="true" signature="23:24" ph="..." />
-                    <marker date="1544629101791" expanded="true" signature="23:68" ph="..." />
-                    <marker date="1544629101791" expanded="true" signature="297:298" ph="..." />
-                    <marker date="1544629101791" expanded="true" signature="297:302" ph="..." />
-                    <marker date="1544629101791" expanded="true" signature="3310:3319" ph="..." />
+                    <marker date="1544782878064" expanded="true" signature="23:24" ph="..." />
+                    <marker date="1544782878064" expanded="true" signature="23:68" ph="..." />
+                    <marker date="1544782878064" expanded="true" signature="297:298" ph="..." />
+                    <marker date="1544782878064" expanded="true" signature="297:302" ph="..." />
+                    <marker date="1544782878064" expanded="true" signature="3562:3571" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -61,15 +61,15 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/eeo.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1881">
-                  <caret line="99" column="9" selection-start-line="99" selection-start-column="4" selection-end-line="99" selection-end-column="9" />
+                <state relative-caret-position="75">
+                  <caret line="26" column="7" selection-start-line="26" selection-start-column="7" selection-end-line="26" selection-end-column="7" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
-                    <marker date="1544706394491" expanded="true" signature="440:441" ph="..." />
-                    <marker date="1544706394491" expanded="true" signature="4287:4288" ph="..." />
-                    <marker date="1544706394491" expanded="true" signature="4287:4420" ph="..." />
-                    <marker date="1544706394491" expanded="true" signature="4287:7600" ph="..." />
-                    <marker date="1544706394491" expanded="true" signature="7720:7721" ph="..." />
+                    <marker date="1544715540828" expanded="true" signature="440:441" ph="..." />
+                    <marker date="1544715540828" expanded="true" signature="4357:4358" ph="..." />
+                    <marker date="1544715540828" expanded="true" signature="4357:4490" ph="..." />
+                    <marker date="1544715540828" expanded="true" signature="4357:7670" ph="..." />
+                    <marker date="1544715540828" expanded="true" signature="7790:7791" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -78,12 +78,13 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/temp.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-57">
-                  <caret line="3" column="18" lean-forward="true" selection-start-line="3" selection-start-column="18" selection-end-line="4" selection-end-column="24" />
+                <state relative-caret-position="798">
+                  <caret line="54" column="30" lean-forward="true" selection-start-line="54" selection-start-column="30" selection-end-line="54" selection-end-column="30" />
                   <folding>
-                    <marker date="1544611784289" expanded="true" signature="881:1447" ph="..." />
-                    <marker date="1544611784289" expanded="true" signature="1458:1463" ph="..." />
-                    <marker date="1544611784289" expanded="true" signature="1458:1761" ph="..." />
+                    <element signature="e#0#76#0" expanded="true" />
+                    <marker date="1544780001974" expanded="true" signature="881:1647" ph="..." />
+                    <marker date="1544780001974" expanded="true" signature="1658:1663" ph="..." />
+                    <marker date="1544780001974" expanded="true" signature="1658:1999" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -124,6 +125,7 @@
       <find>image.mask</find>
       <find>return</find>
       <find>ndimage</find>
+      <find>0, image.width - patch_size</find>
       <find>print</find>
     </findStrings>
   </component>
@@ -137,10 +139,10 @@
         <option value="$PROJECT_DIR$/label_pruning.py" />
         <option value="$PROJECT_DIR$/efficient_energy_optimization.py" />
         <option value="$PROJECT_DIR$/patch_diff.py" />
+        <option value="$PROJECT_DIR$/eeo.py" />
         <option value="$PROJECT_DIR$/temp.py" />
         <option value="$PROJECT_DIR$/data_structures.py" />
         <option value="$PROJECT_DIR$/main.py" />
-        <option value="$PROJECT_DIR$/eeo.py" />
       </list>
     </option>
   </component>
@@ -262,18 +264,17 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1919" y="0" width="2562" height="1441" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.055577453" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.16603199" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49980292" weight="0.25818735" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.28408226" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49980292" weight="0.37395278" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.32952815" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32901752" />
       <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.32952815" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5001971" side_tool="true" weight="0.39954337" />
@@ -300,6 +301,16 @@
           <url>file://$PROJECT_DIR$/efficient_energy_optimization.py</url>
           <line>19</line>
           <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/eeo.py</url>
+          <line>100</line>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/eeo.py</url>
+          <line>71</line>
+          <option name="timeStamp" value="23" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -340,43 +351,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/temp.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-57">
-          <caret line="3" column="18" lean-forward="true" selection-start-line="3" selection-start-column="18" selection-end-line="4" selection-end-column="24" />
-          <folding>
-            <marker date="1544611784289" expanded="true" signature="881:1447" ph="..." />
-            <marker date="1544611784289" expanded="true" signature="1458:1463" ph="..." />
-            <marker date="1544611784289" expanded="true" signature="1458:1761" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/eeo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1881">
-          <caret line="99" column="9" selection-start-line="99" selection-start-column="4" selection-end-line="99" selection-end-column="9" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <marker date="1544706394491" expanded="true" signature="440:441" ph="..." />
-            <marker date="1544706394491" expanded="true" signature="4287:4288" ph="..." />
-            <marker date="1544706394491" expanded="true" signature="4287:4420" ph="..." />
-            <marker date="1544706394491" expanded="true" signature="4287:7600" ph="..." />
-            <marker date="1544706394491" expanded="true" signature="7720:7721" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1301">
-          <caret line="79" column="9" selection-start-line="79" selection-start-column="4" selection-end-line="79" selection-end-column="9" />
-          <folding>
-            <element signature="e#0#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/label_pruning.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="190">
@@ -400,16 +374,54 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/temp.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="798">
+          <caret line="54" column="30" lean-forward="true" selection-start-line="54" selection-start-column="30" selection-end-line="54" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#76#0" expanded="true" />
+            <marker date="1544780001974" expanded="true" signature="881:1647" ph="..." />
+            <marker date="1544780001974" expanded="true" signature="1658:1663" ph="..." />
+            <marker date="1544780001974" expanded="true" signature="1658:1999" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eeo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="26" column="7" selection-start-line="26" selection-start-column="7" selection-end-line="26" selection-end-column="7" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <marker date="1544715540828" expanded="true" signature="440:441" ph="..." />
+            <marker date="1544715540828" expanded="true" signature="4357:4358" ph="..." />
+            <marker date="1544715540828" expanded="true" signature="4357:4490" ph="..." />
+            <marker date="1544715540828" expanded="true" signature="4357:7670" ph="..." />
+            <marker date="1544715540828" expanded="true" signature="7790:7791" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/data_structures.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="665">
-          <caret line="35" column="42" lean-forward="true" selection-start-line="35" selection-start-column="42" selection-end-line="35" selection-end-column="42" />
+        <state relative-caret-position="798">
+          <caret line="42" lean-forward="true" selection-start-line="42" selection-end-line="42" />
           <folding>
-            <marker date="1544629101791" expanded="true" signature="23:24" ph="..." />
-            <marker date="1544629101791" expanded="true" signature="23:68" ph="..." />
-            <marker date="1544629101791" expanded="true" signature="297:298" ph="..." />
-            <marker date="1544629101791" expanded="true" signature="297:302" ph="..." />
-            <marker date="1544629101791" expanded="true" signature="3310:3319" ph="..." />
+            <marker date="1544782878064" expanded="true" signature="23:24" ph="..." />
+            <marker date="1544782878064" expanded="true" signature="23:68" ph="..." />
+            <marker date="1544782878064" expanded="true" signature="297:298" ph="..." />
+            <marker date="1544782878064" expanded="true" signature="297:302" ph="..." />
+            <marker date="1544782878064" expanded="true" signature="3562:3571" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="291">
+          <caret line="39" column="29" lean-forward="true" selection-start-line="39" selection-start-column="29" selection-end-line="39" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#51#0" expanded="true" />
           </folding>
         </state>
       </provider>

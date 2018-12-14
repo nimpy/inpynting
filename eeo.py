@@ -52,8 +52,8 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
 
                     # compare the patch to all the other patches (that are not completely in the target?)
                     patch_compare_id_counter = 0
-                    for y_compare in range(0, image.width - patch_size, gap):
-                        for x_compare in range(0, image.height - patch_size, gap):
+                    for y_compare in range(0, image.width - patch_size + 1, gap):
+                        for x_compare in range(0, image.height - patch_size + 1, gap):
                             # TODO don't do it twice, but once
 
                             # TODO take into account the mask for comparing
@@ -62,6 +62,7 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
                             patch_difference = patch_diff(patch_rgb,
                                                           image.rgb[x_compare: x_compare + patch_size, y_compare: y_compare + patch_size, :])
                             patch.differences[patch_compare_id_counter] = patch_difference
+                            # print(patch_difference)
 
                             patch.labels.append(patch_compare_id_counter)
 
@@ -74,8 +75,8 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
 
                 else:
                     patch_compare_id_counter = 0
-                    for y_compare in range(0, image.width - patch_size, gap):
-                        for x_compare in range(0, image.height - patch_size, gap):
+                    for y_compare in range(0, image.width - patch_size + 1, gap):
+                        for x_compare in range(0, image.height - patch_size + 1, gap):
 
                             patch.labels.append(patch_compare_id_counter)
 
@@ -388,19 +389,19 @@ def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS
                 if not patch_neighbor_right is None:
                     patch.messages = np.matmul(np.matrix(patch.potential_matrix_right), patch_neighbor_right.beliefs.reshape((MAX_NB_LABELS, 1)))
 
-                print(patch.messages)
+
                 patch.messages = np.matrix([math.exp(-message*(1/100000)) for message in patch.messages.reshape((10,1))])
 
 
 
 
-                print(patch.messages)
-                print(patch.local_likelihood)
+                # print(patch.messages)
+                # print(patch.local_likelihood)
                 # TODO maybe should be new beliefs? (nah, i don't think so)
                 patch.beliefs = np.multiply(patch.messages, patch.local_likelihood)
 
 
-                print(patch.beliefs)
+                # print(patch.beliefs)
                 # normalise to sum up to 1
                 #TODO make sure it's element-wise
                 patch.beliefs = patch.beliefs / patch.beliefs.sum()
