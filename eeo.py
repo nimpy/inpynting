@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 from data_structures import Patch
-from patch_diff import patch_diff
+from patch_diff import patch_diff, non_masked_patch_diff
 import math
 from scipy import signal
 
@@ -21,8 +21,6 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
 
     patch_id_counter = 0
 
-    #TODO taking the patches that are not fully in the image, or not taking some that are? deal with this
-    #TODO it should be image.width - patch_size + 1 (I think)
     # for all the patches in an image (not all, but with $gap stride)
     for y in range(0, image.width - patch_size + 1, gap):
         for x in range(0, image.height - patch_size + 1, gap):
@@ -43,63 +41,55 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
 
             patch = Patch(patch_id_counter, patch_overlap_source_region, patch_overlap_target_region, x, y)
 
-            if patch.overlap_target_region:
-
-                patch_rgb = image.rgb[x : x + patch_size, y : y + patch_size, :]
-
-
-                if patch.overlap_source_region:
-
-                    # compare the patch to all the other patches (that are not completely in the target?)
-                    patch_compare_id_counter = 0
-                    for y_compare in range(0, image.width - patch_size + 1, gap):
-                        for x_compare in range(0, image.height - patch_size + 1, gap):
-                            # TODO don't do it twice, but once
-
-                            # TODO take into account the mask for comparing
-                            # TODO use codes instead of the pixel values
-
-                            patch_difference = patch_diff(patch_rgb,
-                                                          image.rgb[x_compare: x_compare + patch_size, y_compare: y_compare + patch_size, :])
-                            patch.differences[patch_compare_id_counter] = patch_difference
-                            # print(patch_difference)
-
-                            patch.labels.append(patch_compare_id_counter)
-
-                            patch_compare_id_counter += 1
-
-                    #temp = list(patch.differences.values()) - min(list(patch.differences.values()))
-                    temp = [value - min(list(patch.differences.values())) for value in list(patch.differences.values())]
-                    patch_uncertainty = len([val for (i, val) in enumerate(temp) if val < THRESHOLD_UNCERTAINTY])
-                    del temp
-
-                else:
-                    patch_compare_id_counter = 0
-                    for y_compare in range(0, image.width - patch_size + 1, gap):
-                        for x_compare in range(0, image.height - patch_size + 1, gap):
-
-                            patch.labels.append(patch_compare_id_counter)
-
-                            patch_compare_id_counter += 1
-
-                    patch_uncertainty = 1
-
-                    # TODO something mentioned in the other file (find_label_pos)
-
-                # the higher priority the higher priority :D
-                patch.priority = len(patch.labels) / max(patch_uncertainty, 1)
-
-                nodes_count +=1
-
             patches.append(patch)
             patch_id_counter += 1
+
+    for patch in patches:
+
+        if patch.overlap_target_region:
+
+            if patch.overlap_source_region:
+
+                # compare the patch to all patches that are completely in the source region
+                for patch_compare in patches:
+                    if patch_compare.overlap_source_region and not patch_compare.overlap_target_region:
+
+                        patch_difference = non_masked_patch_diff(image, patch_size, patch.x_coord, patch.y_coord, patch_compare.x_coord, patch_compare.y_coord)
+
+                        patch.differences[patch_compare.patch_id] = patch_difference
+
+                        patch.labels.append(patch_compare.patch_id)
+
+                temp = [value - min(list(patch.differences.values())) for value in list(patch.differences.values())]
+                #TODO change THRESHOLD_UNCERTAINTY such that only patches which are completely in the target region
+                #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
+                patch_uncertainty = len([val for (i, val) in enumerate(temp) if val < THRESHOLD_UNCERTAINTY])
+                del temp
+
+            # if the patch is completely in the target region
+            else:
+
+                # make all patches that are completely in the source region be the label of the patch
+                for patch_compare in patches:
+                    if patch_compare.overlap_source_region and not patch_compare.overlap_target_region:
+
+                        patch.labels.append(patch_compare.patch_id)
+
+                patch_uncertainty = 1
+
+                # TODO something mentioned in the other file (find_label_pos)
+
+            # the higher priority the higher priority :D
+            patch.priority = len(patch.labels) / max(patch_uncertainty, 1)
+
+            nodes_count +=1
 
             # if nodes_count == 7:
             #     break
 
-
     print("Total number of patches: ", len(patches))
     print("Number of patches to be inpainted: ", nodes_count)
+
 
 # -- 2nd phase --
 # label pruning
@@ -111,21 +101,22 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
     global nodes_count
     global nodes_order
 
+    #TODO do I need this?
     nodes_visiting_order = np.zeros(nodes_count, dtype=np.int32)
 
     # for all the patches that have an overlap with the target region (aka nodes)
     for i in range(nodes_count):
 
         #TODO this can maybe be done faster, by sorting the nodes by priority once,
-        #TODO unless the priorities are changing, which might actually be the case :D
+        #     unless the priorities are changing, which might actually be the case :D
+
         # find the node with the highest priority that hasn't yet been visited
         highest_priority = -1
         patch_highest_priority_id = -1
         for patch in patches:
-            if not patch.committed and patch.priority > highest_priority:
+            if patch.overlap_target_region and not patch.committed and patch.priority > highest_priority:
                 highest_priority = patch.priority
                 patch_highest_priority_id = patch.patch_id
-
 
         nodes_visiting_order[i] = patch_highest_priority_id
         patch = patches[patch_highest_priority_id]
@@ -133,7 +124,7 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
 
         patch.prune_labels(MAX_NB_LABELS)
 
-        print("Highest priority patch: ", patch_highest_priority_id)
+        print('Highest priority patch {0:3d}/{1:3d}: {2:d}'.format(i, nodes_count, patch_highest_priority_id))
         nodes_order.append(patch_highest_priority_id)
 
         # get the neighbors if they exist and have overlap with the target region
@@ -184,7 +175,8 @@ def get_patch_neighbor_nodes(patch, image, patch_size, gap):
 
 def update_patchs_neighbors_differences_and_priority(patch, patch_neighbor, image, patch_size, THRESHOLD_UNCERTAINTY):
 
-    if not patch_neighbor is None and patch_neighbor.overlap_target_region and not patch_neighbor.committed:
+    # TODO don't need the overlap_target_region check since we did that in get_patch_neighbor_nodes() method?
+    if patch_neighbor is not None and patch_neighbor.overlap_target_region and not patch_neighbor.committed:
 
         min_additional_difference = sys.maxsize
         additional_differences = {}
@@ -206,26 +198,39 @@ def update_patchs_neighbors_differences_and_priority(patch, patch_neighbor, imag
                 patchs_label_rgb = image.rgb[patchs_label_x_coord: patchs_label_x_coord + patch_size,
                                    patchs_label_y_coord: patchs_label_y_coord + patch_size, :]
 
+                #TODO should be the difference only of the overlapping region (i.e. half of the patch)
                 difference = patch_diff(patch_neighbors_label_rgb, patchs_label_rgb)
 
-                if (difference < min_additional_difference):
+                if difference < min_additional_difference:
                     min_additional_difference = difference
 
             additional_differences[patch_neighbors_label_id] = min_additional_difference
             min_additional_difference = sys.maxsize
 
+
+        #TODO don’t make this change to the patch_neighbor.differences, but to some temporary variable, just to calculate the priority
+        # actually, just store it in additional differences
+
         for key in additional_differences.keys():
             if key in patch_neighbor.differences:
-                patch_neighbor.differences[key] += additional_differences[key]
+                additional_differences[key] += patch_neighbor.differences[key]
             else:
-                patch_neighbor.differences[key] = additional_differences[key]
+                print("will it ever come to this?")
 
-        temp = [value - min(patch_neighbor.differences.values()) for value in
-                list(patch_neighbor.differences.values())]
+        # for key in additional_differences.keys():
+        #     if key in patch_neighbor.differences:
+        #         patch_neighbor.differences[key] += additional_differences[key]
+        #     else:
+        #         #TODO will it ever come to this?
+        #         patch_neighbor.differences[key] = additional_differences[key]
+
+        #TODO why isn't this calculated in the same way as above?
+        temp = [value - min(additional_differences.values()) for value in
+                list(additional_differences.values())]
         patch_neighbor_uncertainty = [value < THRESHOLD_UNCERTAINTY for (i, value) in enumerate(temp)].count(True)
         del temp
 
-        patch_neighbor.priority = len(patch_neighbor.differences) / patch_neighbor_uncertainty
+        patch_neighbor.priority = len(additional_differences) / patch_neighbor_uncertainty #len(patch_neighbor.differences)?
 
 
 def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
@@ -334,6 +339,7 @@ def compute_label_cost(image, patch_size, MAX_NB_LABELS):
             # but maybe should be the label of the patch with the highest local likelihood
             #patch.mask = patch.pruned_labels[patch.local_likelihood.index(max(patch.local_likelihood))]
             patch.mask = patch.local_likelihood.index(max(patch.local_likelihood))
+            print(patch.mask)
 
 #TODO maybe rename local_likelihood to likelihood?
 #TODO also calculate InitMask after local_likelihood
@@ -465,7 +471,7 @@ def generate_inpainted_image(image, patch_size):
 
         patch = patches[patch_id]
 
-        patchs_mask_patch = patches[patch.pruned_labels[patch.mask]]
+        patchs_mask_patch = patches[patch.pruned_labels[patch.mask]] #TODO IndexError: list index out of range
 
         patch_rgb = image.rgb[patch.x_coord: patch.x_coord + patch_size,
                     patch.y_coord: patch.y_coord + patch_size, :]

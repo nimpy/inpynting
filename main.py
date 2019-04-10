@@ -28,17 +28,17 @@ def loading_data():
     global output_filename
 
     # inputs
-    folder_path = '/home/niaki/Code/Inpainting_Tijana/images'
-    image_filename = 'Lenna.png'
-    mask_filename = 'Mask512.jpg'
+    # folder_path = '/home/niaki/Code/Inpainting_Tijana/images'
+    # image_filename = 'Lenna.png'
+    # mask_filename = 'Mask512.jpg'
 
     # folder_path = '/home/niaki/Downloads'
     # image_filename = 'building64.jpg'
     # mask_filename = 'girl64_mask.png'
 
-    # folder_path = '/home/niaki/Downloads'
-    # image_filename = 'building128.jpeg'
-    # mask_filename = 'mask128.jpg'
+    folder_path = '/home/niaki/Downloads'
+    image_filename = 'building128.jpeg'
+    mask_filename = 'mask128.jpg'
 
     image_inpainted_name, _ = os.path.splitext(image_filename)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
