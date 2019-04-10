@@ -101,14 +101,8 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
     global nodes_count
     global nodes_order
 
-    #TODO do I need this?
-    nodes_visiting_order = np.zeros(nodes_count, dtype=np.int32)
-
     # for all the patches that have an overlap with the target region (aka nodes)
     for i in range(nodes_count):
-
-        #TODO this can maybe be done faster, by sorting the nodes by priority once,
-        #     unless the priorities are changing, which might actually be the case :D
 
         # find the node with the highest priority that hasn't yet been visited
         highest_priority = -1
@@ -118,7 +112,6 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
                 highest_priority = patch.priority
                 patch_highest_priority_id = patch.patch_id
 
-        nodes_visiting_order[i] = patch_highest_priority_id
         patch = patches[patch_highest_priority_id]
         patch.committed = True
 
@@ -131,10 +124,10 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
         patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right = get_patch_neighbor_nodes(
             patch, image, patch_size, gap)
 
-        update_patchs_neighbors_differences_and_priority(patch, patch_neighbor_up, image, patch_size, THRESHOLD_UNCERTAINTY)
-        update_patchs_neighbors_differences_and_priority(patch, patch_neighbor_down, image, patch_size, THRESHOLD_UNCERTAINTY)
-        update_patchs_neighbors_differences_and_priority(patch, patch_neighbor_left, image, patch_size, THRESHOLD_UNCERTAINTY)
-        update_patchs_neighbors_differences_and_priority(patch, patch_neighbor_right, image, patch_size, THRESHOLD_UNCERTAINTY)
+        update_patchs_neighbors_priority(patch, patch_neighbor_up, image, patch_size, THRESHOLD_UNCERTAINTY)
+        update_patchs_neighbors_priority(patch, patch_neighbor_down, image, patch_size, THRESHOLD_UNCERTAINTY)
+        update_patchs_neighbors_priority(patch, patch_neighbor_left, image, patch_size, THRESHOLD_UNCERTAINTY)
+        update_patchs_neighbors_priority(patch, patch_neighbor_right, image, patch_size, THRESHOLD_UNCERTAINTY)
 
 
 def get_patch_neighbor_nodes(patch, image, patch_size, gap):
@@ -173,10 +166,12 @@ def get_patch_neighbor_nodes(patch, image, patch_size, gap):
     return patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right
 
 
-def update_patchs_neighbors_differences_and_priority(patch, patch_neighbor, image, patch_size, THRESHOLD_UNCERTAINTY):
+def update_patchs_neighbors_priority(patch, patch_neighbor, image, patch_size, THRESHOLD_UNCERTAINTY):
 
-    # TODO don't need the overlap_target_region check since we did that in get_patch_neighbor_nodes() method?
-    if patch_neighbor is not None and patch_neighbor.overlap_target_region and not patch_neighbor.committed:
+    if patch_neighbor is not None and not patch_neighbor.committed:
+
+        if not patch_neighbor.overlap_target_region:
+            print("Will it ever come to this? (TODO delete if unnecessary)")
 
         min_additional_difference = sys.maxsize
         additional_differences = {}
@@ -207,24 +202,13 @@ def update_patchs_neighbors_differences_and_priority(patch, patch_neighbor, imag
             additional_differences[patch_neighbors_label_id] = min_additional_difference
             min_additional_difference = sys.maxsize
 
-
-        #TODO don’t make this change to the patch_neighbor.differences, but to some temporary variable, just to calculate the priority
-        # actually, just store it in additional differences
-
         for key in additional_differences.keys():
             if key in patch_neighbor.differences:
                 additional_differences[key] += patch_neighbor.differences[key]
             else:
-                print("will it ever come to this?")
+                print("Will it ever come to this? (TODO delete if unnecessary)")
 
-        # for key in additional_differences.keys():
-        #     if key in patch_neighbor.differences:
-        #         patch_neighbor.differences[key] += additional_differences[key]
-        #     else:
-        #         #TODO will it ever come to this?
-        #         patch_neighbor.differences[key] = additional_differences[key]
-
-        #TODO why isn't this calculated in the same way as above?
+        # TODO why isn't this calculated in the same way as above?
         temp = [value - min(additional_differences.values()) for value in
                 list(additional_differences.values())]
         patch_neighbor_uncertainty = [value < THRESHOLD_UNCERTAINTY for (i, value) in enumerate(temp)].count(True)

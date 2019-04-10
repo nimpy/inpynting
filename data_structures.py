@@ -60,11 +60,6 @@ class Patch:
         sorted_differences = sorted(self.differences.items(), key=lambda kv: kv[1])[:MAX_NB_LABELS] #, reverse=True
         self.pruned_labels = [label for (label, diff) in sorted_differences]
 
-        print()
-        print(sorted_differences)
-        for pruned_label in self.pruned_labels:
-            print(self.differences[pruned_label])
-
 
     def get_up_neighbor_position(self, image, patch_size, gap):
 
