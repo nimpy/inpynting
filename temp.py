@@ -1,4 +1,4 @@
-from data_structures import Patch, Image2BInpainted, coordinates_to_position
+from data_structures import Patch, Image2BInpainted, coordinates_to_position, UP, DOWN, LEFT, RIGHT, get_half_patch_from_patch
 from eeo import generate_smooth_filter, generate_blend_mask
 
 import numpy as np
@@ -57,6 +57,15 @@ def testing_OOP():
     for i in range(5):
         print(patches_list[i].patch_id)
 
+
+def testing_half_patch():
+    patch_size = 16
+    temp = np.arange(0, patch_size**2).reshape((patch_size, patch_size))
+    print(temp)
+    temp3ch = np.repeat(temp, 3, axis=1).reshape((patch_size, patch_size, 3))
+    print()
+    print(get_half_patch_from_patch(temp3ch, RIGHT)[:,:,0])
+
 def main():
     # testing_prune_labels()
     print("---")
@@ -70,8 +79,9 @@ def main():
     print("---")
     # testing_smooth_filter_blend_mask_convolve()
     print("---")
-    testing_OOP()
-
+    # testing_OOP()
+    print("---")
+    testing_half_patch()
 
 if __name__ == "__main__":
     main()

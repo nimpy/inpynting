@@ -103,4 +103,27 @@ class Patch:
 
 
 def coordinates_to_position(x, y, image_width, patch_size, gap):
-        return (y // gap) * len(range(0, image_width - patch_size + 1, gap)) + (x // gap)
+    return (y // gap) * len(range(0, image_width - patch_size + 1, gap)) + (x // gap)
+
+
+UP = 1
+DOWN = -1
+LEFT = 2
+RIGHT = -2
+
+
+def opposite_side(side):
+    return -side
+
+
+def get_half_patch_from_patch(patch, gap, side):
+    patch_size = patch.shape[0]
+    if side == UP:
+        half_patch = patch[0: gap, :, :]
+    elif side == DOWN:
+        half_patch = patch[gap: patch_size, :, :]
+    elif side == LEFT:
+        half_patch = patch[:, 0: gap, :]
+    else:
+        half_patch = patch[:, gap: patch_size, :]
+    return half_patch

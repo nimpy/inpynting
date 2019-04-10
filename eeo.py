@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 from data_structures import Patch
+from data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
 from patch_diff import patch_diff, non_masked_patch_diff
 import math
 from scipy import signal
@@ -103,6 +104,12 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
 
     # for all the patches that have an overlap with the target region (aka nodes)
     for i in range(nodes_count):
+        print()
+        print("Uncomitted nodes' IDs and priorities:")
+        for patch in patches:
+            if patch.overlap_target_region and not patch.committed:
+                print(patch.patch_id, patch.priority)
+        print()
 
         # find the node with the highest priority that hasn't yet been visited
         highest_priority = -1
@@ -117,17 +124,17 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
 
         patch.prune_labels(MAX_NB_LABELS)
 
-        print('Highest priority patch {0:3d}/{1:3d}: {2:d}'.format(i, nodes_count, patch_highest_priority_id))
+        print('Highest priority patch {0:3d}/{1:3d}: {2:d}'.format(i + 1, nodes_count, patch_highest_priority_id))
         nodes_order.append(patch_highest_priority_id)
 
         # get the neighbors if they exist and have overlap with the target region
         patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right = get_patch_neighbor_nodes(
             patch, image, patch_size, gap)
 
-        update_patchs_neighbors_priority(patch, patch_neighbor_up, image, patch_size, THRESHOLD_UNCERTAINTY)
-        update_patchs_neighbors_priority(patch, patch_neighbor_down, image, patch_size, THRESHOLD_UNCERTAINTY)
-        update_patchs_neighbors_priority(patch, patch_neighbor_left, image, patch_size, THRESHOLD_UNCERTAINTY)
-        update_patchs_neighbors_priority(patch, patch_neighbor_right, image, patch_size, THRESHOLD_UNCERTAINTY)
+        update_patchs_neighbors_priority(patch, patch_neighbor_up, UP, image, gap, patch_size, THRESHOLD_UNCERTAINTY)
+        update_patchs_neighbors_priority(patch, patch_neighbor_down, DOWN, gap, image, patch_size, THRESHOLD_UNCERTAINTY)
+        update_patchs_neighbors_priority(patch, patch_neighbor_left, LEFT, gap, image, patch_size, THRESHOLD_UNCERTAINTY)
+        update_patchs_neighbors_priority(patch, patch_neighbor_right, RIGHT, gap, image, patch_size, THRESHOLD_UNCERTAINTY)
 
 
 def get_patch_neighbor_nodes(patch, image, patch_size, gap):
@@ -166,7 +173,7 @@ def get_patch_neighbor_nodes(patch, image, patch_size, gap):
     return patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right
 
 
-def update_patchs_neighbors_priority(patch, patch_neighbor, image, patch_size, THRESHOLD_UNCERTAINTY):
+def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, gap, patch_size, THRESHOLD_UNCERTAINTY):
 
     if patch_neighbor is not None and not patch_neighbor.committed:
 
@@ -185,6 +192,8 @@ def update_patchs_neighbors_priority(patch, patch_neighbor, image, patch_size, T
                                         patch_neighbors_label_x_coord: patch_neighbors_label_x_coord + patch_size,
                                         patch_neighbors_label_y_coord: patch_neighbors_label_y_coord + patch_size, :]
 
+            patch_neighbors_label_rgb_half = get_half_patch_from_patch(patch_neighbors_label_rgb, gap, opposite_side(side))
+
             for patchs_label_id in patch.pruned_labels:
 
                 patchs_label_x_coord = patches[patchs_label_id].x_coord
@@ -193,8 +202,9 @@ def update_patchs_neighbors_priority(patch, patch_neighbor, image, patch_size, T
                 patchs_label_rgb = image.rgb[patchs_label_x_coord: patchs_label_x_coord + patch_size,
                                    patchs_label_y_coord: patchs_label_y_coord + patch_size, :]
 
-                #TODO should be the difference only of the overlapping region (i.e. half of the patch)
-                difference = patch_diff(patch_neighbors_label_rgb, patchs_label_rgb)
+                patchs_label_rgb_half = get_half_patch_from_patch(patchs_label_rgb, gap, side)
+
+                difference = patch_diff(patch_neighbors_label_rgb_half, patchs_label_rgb_half)
 
                 if difference < min_additional_difference:
                     min_additional_difference = difference
@@ -231,7 +241,7 @@ def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
 
 
 
-            if not patch_neighbor_up is None:
+            if patch_neighbor_up is not None:
 
                 potential_matrix = np.zeros((MAX_NB_LABELS, MAX_NB_LABELS))
 
@@ -262,7 +272,7 @@ def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
 
 
 
-            if not patch_neighbor_left is None:
+            if patch_neighbor_left is not None:
 
                 potential_matrix = np.zeros((MAX_NB_LABELS, MAX_NB_LABELS))
 
