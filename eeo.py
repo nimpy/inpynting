@@ -1,5 +1,7 @@
 import numpy as np
 import sys
+import matplotlib.pyplot as plt
+
 from data_structures import Patch
 from data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
 from patch_diff import patch_diff, non_masked_patch_diff
@@ -104,12 +106,12 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
 
     # for all the patches that have an overlap with the target region (aka nodes)
     for i in range(nodes_count):
-        print()
-        print("Uncomitted nodes' IDs and priorities:")
-        for patch in patches:
-            if patch.overlap_target_region and not patch.committed:
-                print(patch.patch_id, patch.priority)
-        print()
+        # print()
+        # print("Uncomitted nodes' IDs and priorities:")
+        # for patch in patches:
+        #     if patch.overlap_target_region and not patch.committed:
+        #         print(patch.patch_id, patch.priority)
+        # print()
 
         # find the node with the highest priority that hasn't yet been visited
         highest_priority = -1
@@ -132,9 +134,9 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
             patch, image, patch_size, gap)
 
         update_patchs_neighbors_priority(patch, patch_neighbor_up, UP, image, gap, patch_size, THRESHOLD_UNCERTAINTY)
-        update_patchs_neighbors_priority(patch, patch_neighbor_down, DOWN, gap, image, patch_size, THRESHOLD_UNCERTAINTY)
-        update_patchs_neighbors_priority(patch, patch_neighbor_left, LEFT, gap, image, patch_size, THRESHOLD_UNCERTAINTY)
-        update_patchs_neighbors_priority(patch, patch_neighbor_right, RIGHT, gap, image, patch_size, THRESHOLD_UNCERTAINTY)
+        update_patchs_neighbors_priority(patch, patch_neighbor_down, DOWN, image, gap, patch_size, THRESHOLD_UNCERTAINTY)
+        update_patchs_neighbors_priority(patch, patch_neighbor_left, LEFT, image, gap, patch_size, THRESHOLD_UNCERTAINTY)
+        update_patchs_neighbors_priority(patch, patch_neighbor_right, RIGHT, image, gap, patch_size, THRESHOLD_UNCERTAINTY)
 
 
 def get_patch_neighbor_nodes(patch, image, patch_size, gap):
@@ -178,7 +180,7 @@ def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, gap, pa
     if patch_neighbor is not None and not patch_neighbor.committed:
 
         if not patch_neighbor.overlap_target_region:
-            print("Will it ever come to this? (TODO delete if unnecessary)")
+            print("Will it ever come to this? (1) (TODO delete if unnecessary)")
 
         min_additional_difference = sys.maxsize
         additional_differences = {}
@@ -216,7 +218,7 @@ def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, gap, pa
             if key in patch_neighbor.differences:
                 additional_differences[key] += patch_neighbor.differences[key]
             else:
-                print("Will it ever come to this? (TODO delete if unnecessary)")
+                print("Will it ever come to this? (2) (TODO delete if unnecessary)")
 
         # TODO why isn't this calculated in the same way as above?
         temp = [value - min(additional_differences.values()) for value in
@@ -232,15 +234,14 @@ def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
     global patches
     global nodes_count
 
+    # calculate pairwise potential matrix for all pairs of nodes (pathces that have overlap with the target region)
     for patch in patches:
         if patch.overlap_target_region:
 
-            # get the neighbors if they exist and have overlap with the target region
+            # get the neighbors if they exist and have overlap with the target region (i.e. if they're nodes)
             patch_neighbor_up, _, patch_neighbor_left, _ = get_patch_neighbor_nodes(patch, image, patch_size, gap)
 
-
-
-
+            # TODO make this a method
             if patch_neighbor_up is not None:
 
                 potential_matrix = np.zeros((MAX_NB_LABELS, MAX_NB_LABELS))
@@ -250,27 +251,27 @@ def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
                     patchs_label_x_coord = patches[patchs_label_id].x_coord
                     patchs_label_y_coord = patches[patchs_label_id].y_coord
 
-                    patchs_label_upper_rgb = image.rgb[patchs_label_x_coord : patchs_label_x_coord + patch_size - gap,
-                                       patchs_label_y_coord : patchs_label_y_coord + patch_size, :]
+                    patchs_label_rgb = image.rgb[patchs_label_x_coord: patchs_label_x_coord + patch_size,
+                                       patchs_label_y_coord: patchs_label_y_coord + patch_size, :]
 
+                    patchs_label_rgb_up = get_half_patch_from_patch(patchs_label_rgb, gap, UP)
 
                     for j, patchs_neighbors_label_id in enumerate(patch_neighbor_up.pruned_labels):
 
                         patchs_neighbors_label_x_coord = patches[patchs_neighbors_label_id].x_coord
                         patchs_neighbors_label_y_coord = patches[patchs_neighbors_label_id].y_coord
 
-                        patchs_neighbors_label_lower_rgb = image.rgb[patchs_neighbors_label_x_coord + gap : patchs_neighbors_label_x_coord + patch_size,
-                                                     patchs_neighbors_label_y_coord : patchs_neighbors_label_y_coord + patch_size, :]
+                        patchs_neighbors_label_rgb = image.rgb[patchs_neighbors_label_x_coord: patchs_neighbors_label_x_coord + patch_size,
+                                                     patchs_neighbors_label_y_coord: patchs_neighbors_label_y_coord + patch_size, :]
 
-                        potential_matrix[i, j] = patch_diff(patchs_label_upper_rgb, patchs_neighbors_label_lower_rgb)
+                        patchs_neighbors_label_rgb_down = get_half_patch_from_patch(patchs_neighbors_label_rgb, gap, DOWN)
 
+                        potential_matrix[i, j] = patch_diff(patchs_label_rgb_up, patchs_neighbors_label_rgb_down)
 
                 patch.potential_matrix_up = potential_matrix
                 patch_neighbor_up.potential_matrix_down = potential_matrix
                 # print("potential matrix UpDown")
                 # print(potential_matrix)
-
-
 
             if patch_neighbor_left is not None:
 
@@ -281,20 +282,25 @@ def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
                     patchs_label_x_coord = patches[patchs_label_id].x_coord
                     patchs_label_y_coord = patches[patchs_label_id].y_coord
 
-                    patchs_label_left_rgb = image.rgb[patchs_label_x_coord : patchs_label_x_coord + patch_size,
-                                       patchs_label_y_coord : patchs_label_y_coord + patch_size - gap, :]
+                    patchs_label_rgb = image.rgb[patchs_label_x_coord: patchs_label_x_coord + patch_size,
+                                       patchs_label_y_coord: patchs_label_y_coord + patch_size, :]
 
+                    patchs_label_rgb_left = get_half_patch_from_patch(patchs_label_rgb, gap, LEFT)
 
                     for j, patchs_neighbors_label_id in enumerate(patch_neighbor_left.pruned_labels):
 
                         patchs_neighbors_label_x_coord = patches[patchs_neighbors_label_id].x_coord
                         patchs_neighbors_label_y_coord = patches[patchs_neighbors_label_id].y_coord
 
-                        patchs_neighbors_label_right_rgb = image.rgb[patchs_neighbors_label_x_coord : patchs_neighbors_label_x_coord + patch_size,
-                                                     patchs_neighbors_label_y_coord + gap : patchs_neighbors_label_y_coord + patch_size, :]
+                        patchs_neighbors_label_rgb = image.rgb[
+                                                     patchs_neighbors_label_x_coord: patchs_neighbors_label_x_coord + patch_size,
+                                                     patchs_neighbors_label_y_coord: patchs_neighbors_label_y_coord + patch_size,
+                                                     :]
 
-                        potential_matrix[i, j] = patch_diff(patchs_label_left_rgb, patchs_neighbors_label_right_rgb)
+                        patchs_neighbors_label_rgb_right = get_half_patch_from_patch(patchs_neighbors_label_rgb, gap,
+                                                                                    RIGHT)
 
+                        potential_matrix[i, j] = patch_diff(patchs_label_rgb_left, patchs_neighbors_label_rgb_right)
 
                 patch.potential_matrix_left = potential_matrix
                 patch_neighbor_left.potential_matrix_right = potential_matrix
@@ -310,21 +316,24 @@ def compute_label_cost(image, patch_size, MAX_NB_LABELS):
     for patch in patches:
         if patch.overlap_target_region:
 
-            patch.label_cost = [0 for i in range(MAX_NB_LABELS)]
+            patch.label_cost = [0 for _ in range(MAX_NB_LABELS)]
 
             if patch.overlap_source_region:
 
-                patch_rgb = image.rgb[patch.x_coord : patch.x_coord + patch_size,
-                            patch.y_coord : patch.y_coord + patch_size, :]
+                # patch_rgb = image.rgb[patch.x_coord : patch.x_coord + patch_size,
+                #             patch.y_coord : patch.y_coord + patch_size, :]
 
                 for i, patchs_label_id in enumerate(patch.pruned_labels):
 
-                    patchs_label_rgb = image.rgb[patches[patchs_label_id].x_coord : patches[patchs_label_id].x_coord + patch_size,
-                                       patches[patchs_label_id].y_coord : patches[patchs_label_id].y_coord + patch_size, :]
+                    # patchs_label_rgb = image.rgb[patches[patchs_label_id].x_coord: patches[patchs_label_id].x_coord + patch_size,
+                    #                    patches[patchs_label_id].y_coord: patches[patchs_label_id].y_coord + patch_size, :]
 
-                    patch.label_cost[i] = patch_diff(patch_rgb, patchs_label_rgb)
+                    # patch.label_cost[i] = patch_diff(patch_rgb, patchs_label_rgb)
+                    patch.label_cost[i] = non_masked_patch_diff(image, patch_size, patch.x_coord, patch.y_coord,
+                                          patches[patchs_label_id].x_coord, patches[patchs_label_id].y_coord)
 
 
+            #TODO maybe this constant needs adjusting?
             patch.local_likelihood = [math.exp(-cost * (1/100000)) for cost in patch.label_cost]
             # print("patch", patch.patch_id, "label cost", patch.label_cost)
             # print("patch", patch.patch_id, "local likelihood", patch.local_likelihood)
@@ -332,6 +341,7 @@ def compute_label_cost(image, patch_size, MAX_NB_LABELS):
             #TODO (for the moment it's just the index in [0..MAX_NB_LABELS)
             # but maybe should be the label of the patch with the highest local likelihood
             #patch.mask = patch.pruned_labels[patch.local_likelihood.index(max(patch.local_likelihood))]
+            #TODO patch.mask always seems to be zero, why?
             patch.mask = patch.local_likelihood.index(max(patch.local_likelihood))
             print(patch.mask)
 
@@ -346,14 +356,10 @@ def compute_label_cost(image, patch_size, MAX_NB_LABELS):
 # inference
 # (???)
 
-
 def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS, MAX_ITERATION_NR):
 
     global patches
     global nodes_count
-
-    converged = False
-    iteration_nr = 0
 
     # initialisation of the nodes' beliefs and messages
     for patch in patches:
@@ -367,32 +373,30 @@ def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS
             patch.beliefs[patch.mask] = 1
 
 
+    converged = False
+    iteration_nr = 0
 
     while not converged and iteration_nr < MAX_ITERATION_NR:
 
         for patch in patches:
             if patch.overlap_target_region:
 
-
                 patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right = get_patch_neighbor_nodes(
                     patch, image, patch_size, gap)
 
-
                 #TODO figure out how to do the matrix multiplication cleaner, without the reshaping
                 #TODO big problem! they are overriding each other!!
-                if not patch_neighbor_up is None:
-                    patch.messages = np.matmul(np.matrix(patch.potential_matrix_up), patch_neighbor_up.beliefs.reshape((MAX_NB_LABELS, 1)))
-                if not patch_neighbor_down is None:
-                    patch.messages = np.matmul(np.matrix(patch.potential_matrix_down), patch_neighbor_down.beliefs.reshape((MAX_NB_LABELS, 1)))
-                if not patch_neighbor_left is None:
-                    patch.messages = np.matmul(np.matrix(patch.potential_matrix_left), patch_neighbor_left.beliefs.reshape((MAX_NB_LABELS, 1)))
-                if not patch_neighbor_right is None:
-                    patch.messages = np.matmul(np.matrix(patch.potential_matrix_right), patch_neighbor_right.beliefs.reshape((MAX_NB_LABELS, 1)))
+                if patch_neighbor_up is not None:
+                    patch.messages = np.matmul(patch.potential_matrix_up, patch_neighbor_up.beliefs.reshape((MAX_NB_LABELS, 1)))
+                if patch_neighbor_down is not None:
+                    patch.messages = np.matmul(patch.potential_matrix_down, patch_neighbor_down.beliefs.reshape((MAX_NB_LABELS, 1)))
+                if patch_neighbor_left is not None:
+                    patch.messages = np.matmul(patch.potential_matrix_left, patch_neighbor_left.beliefs.reshape((MAX_NB_LABELS, 1)))
+                if patch_neighbor_right is not None:
+                    patch.messages = np.matmul(patch.potential_matrix_right, patch_neighbor_right.beliefs.reshape((MAX_NB_LABELS, 1)))
 
 
-                patch.messages = np.matrix([math.exp(-message*(1/100000)) for message in patch.messages.reshape((10,1))])
-
-
+                patch.messages = np.array([math.exp(-message * (1 / 100000)) for message in patch.messages.reshape((MAX_NB_LABELS,1))]).reshape(1, MAX_NB_LABELS)
 
 
                 # print(patch.messages)
@@ -412,6 +416,83 @@ def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS
 
 
         iteration_nr += 1
+
+
+#TODO rename
+def generate_inpainted_image(image, patch_size):
+
+    global patches
+    global nodes_count
+    global nodes_order
+
+    target_region = image.mask
+
+    image.inpainted = np.multiply(image.rgb,
+                                  np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
+
+    filter_size = 4  # should be > 1
+
+    smooth_filter = generate_smooth_filter(filter_size)
+
+
+    for i in range(len(nodes_order)):
+
+        patch_id = nodes_order[i]
+
+        patch = patches[patch_id]
+
+        print(len(patches), len(patch.pruned_labels))
+        print(patch.mask)
+        print(patch.pruned_labels[patch.mask])
+        patchs_mask_patch = patches[patch.pruned_labels[patch.mask]] #TODO IndexError: list index out of range
+
+        patch_rgb = image.inpainted[patch.x_coord: patch.x_coord + patch_size,
+                    patch.y_coord: patch.y_coord + patch_size, :]
+
+        patch_rgb_new = image.inpainted[patchs_mask_patch.x_coord: patchs_mask_patch.x_coord + patch_size,
+                        patchs_mask_patch.y_coord: patchs_mask_patch.y_coord + patch_size, :]
+
+        # sqaured error is used to calculate the blend mask
+        #squared_error_3channels = (patch_rgb - patch_rgb_new)**2
+        #squared_error_1channel = np.dot(squared_error_3channels[..., :3], [1/3, 1/3, 1/3])
+
+        blend_mask = generate_blend_mask(patch_size)
+
+        blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
+
+        blend_mask_rgb = np.repeat(blend_mask, 3, axis=1).reshape((patch_size, patch_size, 3))
+
+        print("inpainted")
+        plt.imshow(image.inpainted[patch.x_coord : patch.x_coord + patch_size,
+            patch.y_coord : patch.y_coord + patch_size, :].astype(np.uint8), interpolation='nearest')
+        # plt.show()
+        plt.imshow((np.multiply(patch_rgb, blend_mask_rgb) + np.multiply(patch_rgb_new, 1 - blend_mask_rgb)).astype(np.uint8), interpolation='nearest')
+        # plt.show()
+
+        print(image.inpainted[patch.x_coord : patch.x_coord + patch_size,
+            patch.y_coord : patch.y_coord + patch_size, 0])
+        print((np.multiply(patch_rgb, blend_mask_rgb) + np.multiply(patch_rgb_new, 1 - blend_mask_rgb))[:,:,0])
+
+
+
+        image.inpainted[patch.x_coord : patch.x_coord + patch_size,
+            patch.y_coord : patch.y_coord + patch_size, :] = np.multiply(patch_rgb, blend_mask_rgb) + \
+                                                             np.multiply(patch_rgb_new, 1 - blend_mask_rgb)
+
+
+
+        target_region[patch.x_coord : patch.x_coord + patch_size, patch.y_coord : patch.y_coord + patch_size] = 0
+
+
+    image.inpainted = image.inpainted.astype(np.uint8)
+
+
+
+    # In the Tijana's code, this line makes a difference because the mask is not looked as a binary thing,
+    # but as a scale (for some reason). Here, it's binary, and hence this line doesn't do anything.
+    # image.inpainted = np.multiply(image.inpainted, np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
+
+
 
 
 def generate_smooth_filter(kernel_size):
@@ -440,65 +521,3 @@ def generate_blend_mask(patch_size):
         blend_mask[:, i] = 1
 
     return blend_mask
-
-
-#TODO rename
-def generate_inpainted_image(image, patch_size):
-
-    global patches
-    global nodes_count
-    global nodes_order
-
-    target_region = image.mask
-
-    image.inpainted = np.multiply(image.rgb,
-                                  np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
-
-    filter_size = 4  # should be > 1
-
-    smooth_filter = generate_smooth_filter(filter_size)
-
-
-    for i in range(len(nodes_order)):
-
-        patch_id = nodes_order[i]
-
-        patch = patches[patch_id]
-
-        patchs_mask_patch = patches[patch.pruned_labels[patch.mask]] #TODO IndexError: list index out of range
-
-        patch_rgb = image.rgb[patch.x_coord: patch.x_coord + patch_size,
-                    patch.y_coord: patch.y_coord + patch_size, :]
-
-        patch_rgb_new = image.rgb[patchs_mask_patch.x_coord: patchs_mask_patch.x_coord + patch_size,
-                        patchs_mask_patch.y_coord: patchs_mask_patch.y_coord + patch_size, :]
-
-        # sqaured error is used to calculate the blend mask
-        #squared_error_3channels = (patch_rgb - patch_rgb_new)**2
-        #squared_error_1channel = np.dot(squared_error_3channels[..., :3], [1/3, 1/3, 1/3])
-
-        blend_mask = generate_blend_mask(patch_size)
-
-        blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
-
-        blend_mask_rgb = np.repeat(blend_mask, 3, axis=1).reshape((patch_size, patch_size, 3))
-
-
-        image.inpainted[patch.x_coord : patch.x_coord + patch_size,
-            patch.y_coord : patch.y_coord + patch_size, :] = np.multiply(patch_rgb, blend_mask_rgb) + \
-                                                             np.multiply(patch_rgb_new, 1 - blend_mask_rgb)
-
-
-
-        target_region[patch.x_coord : patch.x_coord + patch_size, patch.y_coord : patch.y_coord + patch_size] = 0
-
-
-    image.inpainted = image.inpainted.astype(np.int32)
-
-
-
-    # In the Tijana's code, this line makes a difference because the mask is not looked as a binary thing,
-    # but as a scale (for some reason). Here, it's binary, and hence this line doesn't do anything.
-    # image.inpainted = np.multiply(image.inpainted, np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
-
-

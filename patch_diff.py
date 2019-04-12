@@ -25,5 +25,6 @@ def non_masked_patch_diff(image, patch_size, x, y, x_compare, y_compare):
 
     return np.sum((np.array(patch_rgb, dtype=np.float32) - np.array(patch_compare_rgb, dtype=np.float32)) ** 2)
 
-
-# def half_patch_diff(patch1, patch2, )
+# TODO?
+def half_patch_diff(patch1, patch2, ):
+    return -1
