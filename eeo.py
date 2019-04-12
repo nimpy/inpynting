@@ -76,9 +76,13 @@ def initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY):
                 for patch_compare in patches:
                     if patch_compare.overlap_source_region and not patch_compare.overlap_target_region:
 
+                        patch.differences[patch_compare.patch_id] = 0
+
                         patch.labels.append(patch_compare.patch_id)
 
-                patch_uncertainty = 1
+                        #TODO set differences to zeros
+
+                patch_uncertainty = len(patch.labels)
 
                 # TODO something mentioned in the other file (find_label_pos)
 

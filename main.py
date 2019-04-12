@@ -28,15 +28,16 @@ def loading_data():
     global output_filename
 
     # inputs
-    folder_path = '/home/niaki/Code/Inpainting_Tijana/images'
+    folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'
     mask_filename = 'Mask512.jpg'
+    mask_filename = 'Mask512_3.png'
 
     # folder_path = '/home/niaki/Downloads'
     # image_filename = 'building64.jpg'
     # mask_filename = 'girl64_mask.png'
 
-    # folder_path = '/home/niaki/Downloads'
+    # folder_path = '/home/niaki/Code/inpynting_images/building'
     # image_filename = 'building128.jpeg'
     # mask_filename = 'mask128.jpg'
 
@@ -111,10 +112,10 @@ def main():
     print("... Generating inpainted image ...")
     eeo.generate_inpainted_image(image, patch_size)
 
+    imageio.imwrite(output_filename, image.inpainted)
     plt.imshow(image.inpainted, interpolation='nearest')
     plt.show()
-    print(image.inpainted[:,:,0])
-    imageio.imwrite(output_filename, image.inpainted)
+
 
 
 
