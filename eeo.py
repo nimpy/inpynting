@@ -376,11 +376,11 @@ def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS
             patch.beliefs = np.zeros(MAX_NB_LABELS)
             patch.beliefs[patch.mask] = 1
 
+            patch.beliefs_new = patch.beliefs.copy()
 
-    converged = False
-    iteration_nr = 0
+    # TODO implement convergence check and then change this for loop to a while loop
 
-    while not converged and iteration_nr < MAX_ITERATION_NR:
+    for i in range(MAX_ITERATION_NR):
 
         for patch in patches:
             if patch.overlap_target_region:
@@ -399,27 +399,23 @@ def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS
                 if patch_neighbor_right is not None:
                     patch.messages = np.matmul(patch.potential_matrix_right, patch_neighbor_right.beliefs.reshape((MAX_NB_LABELS, 1)))
 
+                patch.messages = np.array([math.exp(-message * (1 / 100000)) for message in
+                                           patch.messages.reshape((MAX_NB_LABELS, 1))]).reshape(1, MAX_NB_LABELS)
 
-                patch.messages = np.array([math.exp(-message * (1 / 100000)) for message in patch.messages.reshape((MAX_NB_LABELS,1))]).reshape(1, MAX_NB_LABELS)
+                # TODO maybe should be new beliefs? (nah, i don't think so) Actually, yes.
+                patch.beliefs_new = np.multiply(patch.messages, patch.local_likelihood)
 
-
-                # print(patch.messages)
-                # print(patch.local_likelihood)
-                # TODO maybe should be new beliefs? (nah, i don't think so)
-                patch.beliefs = np.multiply(patch.messages, patch.local_likelihood)
-
-
-                # print(patch.beliefs)
                 # normalise to sum up to 1
-                #TODO make sure it's element-wise
-                patch.beliefs = patch.beliefs / patch.beliefs.sum()
+                patch.beliefs_new = patch.beliefs_new / patch.beliefs_new.sum()
+
+        # update the mask and beliefs for all the nodes
+        for patch in patches:
+            if patch.overlap_target_region:
+
+                patch.mask = patch.beliefs_new.argmax()
+                patch.beliefs = patch.beliefs_new
 
 
-                #TODO fix this disgraceful code
-                patch.mask = patch.beliefs.tolist()[0].index(max(patch.beliefs.tolist()[0]))
-
-
-        iteration_nr += 1
 
 
 #TODO rename

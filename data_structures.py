@@ -16,7 +16,7 @@ class Patch:
                  priority=0, labels=None, pruned_labels=None, differences=None, committed=False,
                  potential_matrix_up=None, potential_matrix_down=None, potential_matrix_left=None, potential_matrix_right=None,
                  label_cost=None, local_likelihood=None, mask=None,
-                 messages=None, beliefs=None):
+                 messages=None, beliefs=None, beliefs_new=None):
 
         # properties of all patches
         self.patch_id = patch_id
@@ -53,6 +53,8 @@ class Patch:
 
         self.messages = messages
         self. beliefs = beliefs
+        self.beliefs_new = beliefs_new
+
 
 
     def prune_labels(self, MAX_NB_LABELS):

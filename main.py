@@ -17,7 +17,7 @@ patch_size = 0
 gap = 0
 output_filename = None
 
-THRESHOLD_UNCERTAINTY = 6755360 # TODO to be adjusted
+THRESHOLD_UNCERTAINTY = 6755360 #6755360 # TODO to be adjusted
 MAX_NB_LABELS = 10
 MAX_ITERATION_NR = 10
 
@@ -31,7 +31,7 @@ def loading_data():
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'
     mask_filename = 'Mask512.jpg'
-    mask_filename = 'Mask512_3.png'
+    # # mask_filename = 'Mask512_3.png'
 
     # folder_path = '/home/niaki/Downloads'
     # image_filename = 'building64.jpg'
@@ -42,7 +42,7 @@ def loading_data():
     # mask_filename = 'mask128.jpg'
 
     image_inpainted_name, _ = os.path.splitext(image_filename)
-    image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_threshUncert" + str(THRESHOLD_UNCERTAINTY)
 
     # settings
     np.set_printoptions(threshold=np.nan)
