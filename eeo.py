@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
+import pickle
 
 from data_structures import Patch
 from data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
@@ -349,6 +350,7 @@ def compute_label_cost(image, patch_size, MAX_NB_LABELS):
             patch.mask = patch.local_likelihood.index(max(patch.local_likelihood))
             print(patch.mask)
 
+
 #TODO maybe rename local_likelihood to likelihood?
 #TODO also calculate InitMask after local_likelihood
 
@@ -378,7 +380,7 @@ def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS
 
             patch.beliefs_new = patch.beliefs.copy()
 
-    # TODO implement convergence check and then change this for loop to a while loop
+    # TODO implement convergence check (what's the criteria?) and then change this for loop to a while loop
 
     for i in range(MAX_ITERATION_NR):
 
@@ -402,11 +404,8 @@ def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS
                 patch.messages = np.array([math.exp(-message * (1 / 100000)) for message in
                                            patch.messages.reshape((MAX_NB_LABELS, 1))]).reshape(1, MAX_NB_LABELS)
 
-                # TODO maybe should be new beliefs? (nah, i don't think so) Actually, yes.
                 patch.beliefs_new = np.multiply(patch.messages, patch.local_likelihood)
-
-                # normalise to sum up to 1
-                patch.beliefs_new = patch.beliefs_new / patch.beliefs_new.sum()
+                patch.beliefs_new = patch.beliefs_new / patch.beliefs_new.sum()  # normalise to sum up to 1
 
         # update the mask and beliefs for all the nodes
         for patch in patches:
@@ -414,8 +413,6 @@ def neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS
 
                 patch.mask = patch.beliefs_new.argmax()
                 patch.beliefs = patch.beliefs_new
-
-
 
 
 #TODO rename
@@ -431,20 +428,17 @@ def generate_inpainted_image(image, patch_size):
                                   np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
 
     filter_size = 4  # should be > 1
-
     smooth_filter = generate_smooth_filter(filter_size)
-
+    blend_mask = generate_blend_mask(patch_size)
+    blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
+    blend_mask_rgb = np.repeat(blend_mask, 3, axis=1).reshape((patch_size, patch_size, 3))
 
     for i in range(len(nodes_order)):
 
         patch_id = nodes_order[i]
-
         patch = patches[patch_id]
 
-        print(len(patches), len(patch.pruned_labels))
-        print(patch.mask)
-        print(patch.pruned_labels[patch.mask])
-        patchs_mask_patch = patches[patch.pruned_labels[patch.mask]] #TODO IndexError: list index out of range
+        patchs_mask_patch = patches[patch.pruned_labels[patch.mask]]
 
         patch_rgb = image.inpainted[patch.x_coord: patch.x_coord + patch_size,
                     patch.y_coord: patch.y_coord + patch_size, :]
@@ -452,46 +446,19 @@ def generate_inpainted_image(image, patch_size):
         patch_rgb_new = image.inpainted[patchs_mask_patch.x_coord: patchs_mask_patch.x_coord + patch_size,
                         patchs_mask_patch.y_coord: patchs_mask_patch.y_coord + patch_size, :]
 
-        # sqaured error is used to calculate the blend mask
-        #squared_error_3channels = (patch_rgb - patch_rgb_new)**2
-        #squared_error_1channel = np.dot(squared_error_3channels[..., :3], [1/3, 1/3, 1/3])
 
-        blend_mask = generate_blend_mask(patch_size)
-
-        blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
-
-        blend_mask_rgb = np.repeat(blend_mask, 3, axis=1).reshape((patch_size, patch_size, 3))
-
-        print("inpainted")
-        plt.imshow(image.inpainted[patch.x_coord : patch.x_coord + patch_size,
-            patch.y_coord : patch.y_coord + patch_size, :].astype(np.uint8), interpolation='nearest')
-        # plt.show()
-        plt.imshow((np.multiply(patch_rgb, blend_mask_rgb) + np.multiply(patch_rgb_new, 1 - blend_mask_rgb)).astype(np.uint8), interpolation='nearest')
-        # plt.show()
-
-        print(image.inpainted[patch.x_coord : patch.x_coord + patch_size,
-            patch.y_coord : patch.y_coord + patch_size, 0])
-        print((np.multiply(patch_rgb, blend_mask_rgb) + np.multiply(patch_rgb_new, 1 - blend_mask_rgb))[:,:,0])
-
-
-
-        image.inpainted[patch.x_coord : patch.x_coord + patch_size,
-            patch.y_coord : patch.y_coord + patch_size, :] = np.multiply(patch_rgb, blend_mask_rgb) + \
+        image.inpainted[patch.x_coord: patch.x_coord + patch_size,
+            patch.y_coord: patch.y_coord + patch_size, :] = np.multiply(patch_rgb, blend_mask_rgb) + \
                                                              np.multiply(patch_rgb_new, 1 - blend_mask_rgb)
 
-
-
-        target_region[patch.x_coord : patch.x_coord + patch_size, patch.y_coord : patch.y_coord + patch_size] = 0
+        target_region[patch.x_coord: patch.x_coord + patch_size, patch.y_coord: patch.y_coord + patch_size] = 0
 
 
     image.inpainted = image.inpainted.astype(np.uint8)
 
-
-
     # In the Tijana's code, this line makes a difference because the mask is not looked as a binary thing,
     # but as a scale (for some reason). Here, it's binary, and hence this line doesn't do anything.
     # image.inpainted = np.multiply(image.inpainted, np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
-
 
 
 
@@ -521,3 +488,21 @@ def generate_blend_mask(patch_size):
         blend_mask[:, i] = 1
 
     return blend_mask
+
+
+def pickle_global_vars(file_version):
+    global patches
+    global nodes_count
+    global nodes_order
+
+    pickle_patches_file_path = '/home/niaki/Code/inpynting_images/pickles/eeo_global_vars_' + file_version + '.pickle'
+    pickle.dump((patches, nodes_count, nodes_order), open(pickle_patches_file_path, "wb"))
+
+
+def unpickle_global_vars(file_version):
+    global patches
+    global nodes_count
+    global nodes_order
+
+    pickle_patches_file_path = '/home/niaki/Code/inpynting_images/pickles/eeo_global_vars_' + file_version + '.pickle'
+    patches, nodes_count, nodes_order = pickle.load(open(pickle_patches_file_path, "rb"))
