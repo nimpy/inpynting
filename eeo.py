@@ -109,6 +109,12 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
     global nodes_count
     global nodes_order
 
+    # make a copy of the differences which we can edit and use in this method, and afterwards disregard
+    for patch in patches:
+        if patch.overlap_target_region:
+            patch.additional_differences = patch.differences.copy()
+
+
     # for all the patches that have an overlap with the target region (aka nodes)
     for i in range(nodes_count):
         # print()
@@ -142,42 +148,6 @@ def label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS):
         update_patchs_neighbors_priority(patch, patch_neighbor_down, DOWN, image, gap, patch_size, THRESHOLD_UNCERTAINTY)
         update_patchs_neighbors_priority(patch, patch_neighbor_left, LEFT, image, gap, patch_size, THRESHOLD_UNCERTAINTY)
         update_patchs_neighbors_priority(patch, patch_neighbor_right, RIGHT, image, gap, patch_size, THRESHOLD_UNCERTAINTY)
-
-
-def get_patch_neighbor_nodes(patch, image, patch_size, gap):
-
-    patch_neighbor_up_id = patch.get_up_neighbor_position(image, patch_size, gap)
-    if patch_neighbor_up_id is None:
-        patch_neighbor_up = None
-    else:
-        patch_neighbor_up = patches[patch_neighbor_up_id]
-        if not patch_neighbor_up.overlap_target_region:
-            patch_neighbor_up = None
-
-    patch_neighbor_down_id = patch.get_down_neighbor_position(image, patch_size, gap)
-    if patch_neighbor_down_id is None:
-        patch_neighbor_down = None
-    else:
-        patch_neighbor_down = patches[patch_neighbor_down_id]
-        if not patch_neighbor_down.overlap_target_region:
-            patch_neighbor_down = None
-
-    patch_neighbor_left_id = patch.get_left_neighbor_position(image, patch_size, gap)
-    if patch_neighbor_left_id is None:
-        patch_neighbor_left = None
-    else:
-        patch_neighbor_left = patches[patch_neighbor_left_id]
-        if not patch_neighbor_left.overlap_target_region:
-            patch_neighbor_left = None
-
-    patch_neighbor_right_id = patch.get_right_neighbor_position(image, patch_size, gap)
-    if patch_neighbor_right_id is None:
-        patch_neighbor_right = None
-    else:
-        patch_neighbor_right = patches[patch_neighbor_right_id]
-        if not patch_neighbor_right.overlap_target_region:
-            patch_neighbor_right = None
-    return patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right
 
 
 def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, gap, patch_size, THRESHOLD_UNCERTAINTY):
@@ -220,18 +190,55 @@ def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, gap, pa
             min_additional_difference = sys.maxsize
 
         for key in additional_differences.keys():
-            if key in patch_neighbor.differences:
-                additional_differences[key] += patch_neighbor.differences[key]
+            if key in patch_neighbor.additional_differences:
+                patch_neighbor.additional_differences[key] += additional_differences[key]
             else:
+                patch_neighbor.additional_differences[key] = additional_differences[key]
                 print("Will it ever come to this? (2) (TODO delete if unnecessary)")
 
         # TODO why isn't this calculated in the same way as above?
-        temp = [value - min(additional_differences.values()) for value in
-                list(additional_differences.values())]
+        temp = [value - min(patch_neighbor.additional_differences.values()) for value in
+                list(patch_neighbor.additional_differences.values())]
         patch_neighbor_uncertainty = [value < THRESHOLD_UNCERTAINTY for (i, value) in enumerate(temp)].count(True)
         del temp
 
-        patch_neighbor.priority = len(additional_differences) / patch_neighbor_uncertainty #len(patch_neighbor.differences)?
+        patch_neighbor.priority = len(patch_neighbor.additional_differences) / patch_neighbor_uncertainty #len(patch_neighbor.differences)?
+
+
+def get_patch_neighbor_nodes(patch, image, patch_size, gap):
+
+    patch_neighbor_up_id = patch.get_up_neighbor_position(image, patch_size, gap)
+    if patch_neighbor_up_id is None:
+        patch_neighbor_up = None
+    else:
+        patch_neighbor_up = patches[patch_neighbor_up_id]
+        if not patch_neighbor_up.overlap_target_region:
+            patch_neighbor_up = None
+
+    patch_neighbor_down_id = patch.get_down_neighbor_position(image, patch_size, gap)
+    if patch_neighbor_down_id is None:
+        patch_neighbor_down = None
+    else:
+        patch_neighbor_down = patches[patch_neighbor_down_id]
+        if not patch_neighbor_down.overlap_target_region:
+            patch_neighbor_down = None
+
+    patch_neighbor_left_id = patch.get_left_neighbor_position(image, patch_size, gap)
+    if patch_neighbor_left_id is None:
+        patch_neighbor_left = None
+    else:
+        patch_neighbor_left = patches[patch_neighbor_left_id]
+        if not patch_neighbor_left.overlap_target_region:
+            patch_neighbor_left = None
+
+    patch_neighbor_right_id = patch.get_right_neighbor_position(image, patch_size, gap)
+    if patch_neighbor_right_id is None:
+        patch_neighbor_right = None
+    else:
+        patch_neighbor_right = patches[patch_neighbor_right_id]
+        if not patch_neighbor_right.overlap_target_region:
+            patch_neighbor_right = None
+    return patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right
 
 
 def compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS):
@@ -440,6 +447,8 @@ def generate_inpainted_image(image, patch_size):
 
         patchs_mask_patch = patches[patch.pruned_labels[patch.mask]]
 
+        print(patch_id, patchs_mask_patch.patch_id)
+
         patch_rgb = image.inpainted[patch.x_coord: patch.x_coord + patch_size,
                     patch.y_coord: patch.y_coord + patch_size, :]
 
@@ -456,6 +465,7 @@ def generate_inpainted_image(image, patch_size):
 
     image.inpainted = image.inpainted.astype(np.uint8)
 
+    # TODO
     # In the Tijana's code, this line makes a difference because the mask is not looked as a binary thing,
     # but as a scale (for some reason). Here, it's binary, and hence this line doesn't do anything.
     # image.inpainted = np.multiply(image.inpainted, np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))

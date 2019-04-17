@@ -28,18 +28,18 @@ def loading_data():
     global output_filename
 
     # inputs
-    folder_path = '/home/niaki/Code/inpynting_images/Lenna'
-    image_filename = 'Lenna.png'
-    mask_filename = 'Mask512.jpg'
-    # # mask_filename = 'Mask512_3.png'
+    # folder_path = '/home/niaki/Code/inpynting_images/Lenna'
+    # image_filename = 'Lenna.png'
+    # mask_filename = 'Mask512.jpg'
+    # mask_filename = 'Mask512_3.png'
 
     # folder_path = '/home/niaki/Downloads'
     # image_filename = 'building64.jpg'
     # mask_filename = 'girl64_mask.png'
 
-    # folder_path = '/home/niaki/Code/inpynting_images/building'
-    # image_filename = 'building128.jpeg'
-    # mask_filename = 'mask128.jpg'
+    folder_path = '/home/niaki/Code/inpynting_images/building'
+    image_filename = 'building128.jpeg'
+    mask_filename = 'mask128.jpg'
 
     image_inpainted_name, _ = os.path.splitext(image_filename)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_threshUncert" + str(THRESHOLD_UNCERTAINTY)
@@ -92,39 +92,39 @@ def main():
 
     # already done and pickled - start
 
-    # print()
-    # print("... Initialization ...")
-    # eeo.initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY)
-    #
-    # eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
-    #
-    # print()
-    # print("... Label pruning ...")
-    # eeo.label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS)
-    #
-    # eeo.pickle_global_vars(image_inpainted_name + eeo.label_pruning.__name__)
-    #
-    # print()
-    # print("... Computing pairwise potential matrix ...")
-    # eeo.compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS)
-    #
-    # eeo.pickle_global_vars(image_inpainted_name + eeo.compute_pairwise_potential_matrix.__name__)
-    #
-    # print()
-    # print("... Computing label cost ...")
-    # eeo.compute_label_cost(image, patch_size, MAX_NB_LABELS)
-    #
-    # eeo.pickle_global_vars(image_inpainted_name + eeo.compute_label_cost.__name__)
-    #
-    # print()
-    # print("... Neighborhood consensus message passing ...")
-    # eeo.neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS, MAX_ITERATION_NR)
-    #
-    # eeo.pickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
+    print()
+    print("... Initialization ...")
+    eeo.initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY)
+
+    eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
+
+    print()
+    print("... Label pruning ...")
+    eeo.label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS)
+
+    eeo.pickle_global_vars(image_inpainted_name + eeo.label_pruning.__name__)
+
+    print()
+    print("... Computing pairwise potential matrix ...")
+    eeo.compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS)
+
+    eeo.pickle_global_vars(image_inpainted_name + eeo.compute_pairwise_potential_matrix.__name__)
+
+    print()
+    print("... Computing label cost ...")
+    eeo.compute_label_cost(image, patch_size, MAX_NB_LABELS)
+
+    eeo.pickle_global_vars(image_inpainted_name + eeo.compute_label_cost.__name__)
+
+    print()
+    print("... Neighborhood consensus message passing ...")
+    eeo.neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS, MAX_ITERATION_NR)
+
+    eeo.pickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
 
     # already done and pickled - end
 
-    eeo.unpickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
+    # eeo.unpickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
 
     print()
     print("... Generating inpainted image ...")
