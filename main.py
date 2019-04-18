@@ -5,9 +5,8 @@ import imageio
 import os
 import datetime
 
-import efficient_energy_optimization
+
 import eeo
-from label_pruning import label_pruning
 # import random
 # import sys
 
@@ -15,7 +14,8 @@ image = None
 
 patch_size = 0
 gap = 0
-output_filename = None
+filename_inpainted = None
+filename_order_image = None
 
 THRESHOLD_UNCERTAINTY = 155360 #100000 #155360 #255360 #6755360 # TODO to be adjusted
 MAX_NB_LABELS = 10
@@ -25,13 +25,18 @@ def loading_data():
     global image
     global patch_size
     global gap
-    global output_filename
+    global filename_inpainted
+    global filename_order_image
 
     # inputs
-    folder_path = '/home/niaki/Code/inpynting_images/Lenna'
-    image_filename = 'Lenna.png'
-    mask_filename = 'Mask512.jpg'
+    # folder_path = '/home/niaki/Code/inpynting_images/Lenna'
+    # image_filename = 'Lenna.png'
+    # mask_filename = 'Mask512.jpg'
     # mask_filename = 'Mask512_3.png'
+
+    folder_path = '/home/niaki/Code/inpynting_images/Greenland'
+    image_filename = 'Greenland.jpg'
+    mask_filename = 'Mask512.jpg'
 
     # folder_path = '/home/niaki/Downloads'
     # image_filename = 'building64.jpg'
@@ -69,7 +74,8 @@ def loading_data():
 
     image = Image2BInpainted(image_rgb, mask)
 
-    output_filename = folder_path + '/' + image_inpainted_name + '_' + image_inpainted_version + '.jpg'
+    filename_inpainted = folder_path + '/' + image_inpainted_name + '_' + image_inpainted_version + '.jpg'
+    filename_order_image = folder_path + '/' + image_inpainted_name + '_orderimg_' + image_inpainted_version + '.jpg'
 
     return image_inpainted_name
 
@@ -78,7 +84,8 @@ def main():
     global image
     global patch_size
     global gap
-    global output_filename
+    global filename_inpainted
+    global filename_order_image
 
     image_inpainted_name = loading_data()
     image_inpainted_name = image_inpainted_name + '_'
@@ -130,10 +137,17 @@ def main():
     print("... Generating inpainted image ...")
     eeo.generate_inpainted_image(image, patch_size)
 
-    imageio.imwrite(output_filename, image.inpainted)
+    print()
+    print("... Generating order image ...")
+    eeo.generate_order_image(image, patch_size)
+
+    imageio.imwrite(filename_inpainted, image.inpainted)
     plt.imshow(image.inpainted, interpolation='nearest')
     plt.show()
 
+    imageio.imwrite(filename_order_image, image.order_image)
+    plt.imshow(image.order_image, cmap='gray')
+    plt.show()
 
 
 
