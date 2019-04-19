@@ -1,13 +1,12 @@
 class Image2BInpainted:
 
     #TODO maybe discard patch_size and gap
-    def __init__(self, rgb, mask, inpainted=None, order_image=None):
+    def __init__(self, rgb, mask, inpainted=None):
         self.rgb = rgb
         self.mask = mask
         self.height = self.rgb.shape[0]
         self.width = self.rgb.shape[1]
         self.inpainted = inpainted
-        self.order_image = order_image
 
 
 class Patch:
