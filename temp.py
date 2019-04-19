@@ -20,8 +20,8 @@ def testing_coordinates_to_position():
     y = 1
     image_width = 16
     patch_size = 4
-    gap = 1
-    pos = coordinates_to_position(x, y, image_width, patch_size, gap)
+    stride = 1
+    pos = coordinates_to_position(x, y, image_width, patch_size, stride)
     print(pos)
 
 def change_patch(patch):

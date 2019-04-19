@@ -6,6 +6,8 @@
       <change beforePath="$PROJECT_DIR$/data_structures.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_structures.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/eeo.py" beforeDir="false" afterPath="$PROJECT_DIR$/eeo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/patch_diff.py" beforeDir="false" afterPath="$PROJECT_DIR$/patch_diff.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temp.py" beforeDir="false" afterPath="$PROJECT_DIR$/temp.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -20,20 +22,11 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/main.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="551">
-                  <caret line="29" lean-forward="true" selection-start-line="29" selection-end-line="29" />
+                <state relative-caret-position="2280">
+                  <caret line="120" column="24" selection-start-line="120" selection-start-column="16" selection-end-line="120" selection-end-column="24" />
                   <folding>
-                    <element signature="e#0#51#0" expanded="true" />
+                    <element signature="e#0#18#0" expanded="true" />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$USER_HOME$/anaconda3/envs/tensorflow/lib/python3.6/site-packages/imageio/core/functions.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="317">
-                  <caret line="233" selection-start-line="233" selection-end-line="233" />
                 </state>
               </provider>
             </entry>
@@ -41,11 +34,14 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/data_structures.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="418">
-                  <caret line="88" column="48" lean-forward="true" selection-start-line="88" selection-start-column="48" selection-end-line="88" selection-end-column="48" />
+                <state relative-caret-position="437">
+                  <caret line="89" column="48" lean-forward="true" selection-start-line="89" selection-start-column="48" selection-end-line="89" selection-end-column="48" />
                   <folding>
-                    <marker date="1555677832628" expanded="true" signature="23:24" ph="..." />
-                    <marker date="1555677832628" expanded="true" signature="23:25" ph="..." />
+                    <marker date="1555663015469" expanded="true" signature="23:24" ph="..." />
+                    <marker date="1555663015469" expanded="true" signature="23:25" ph="..." />
+                    <marker date="1555663015469" expanded="true" signature="401:402" ph="..." />
+                    <marker date="1555663015469" expanded="true" signature="401:406" ph="..." />
+                    <marker date="1555663015469" expanded="true" signature="4009:4014" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -67,10 +63,15 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/eeo.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="807">
-                  <caret line="522" column="16" lean-forward="true" selection-start-line="522" selection-start-column="16" selection-end-line="522" selection-end-column="16" />
+                <state relative-caret-position="104">
+                  <caret line="501" column="21" selection-start-line="501" selection-start-column="21" selection-end-line="501" selection-end-column="21" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
+                    <marker date="1555663039694" expanded="true" signature="552:553" ph="..." />
+                    <marker date="1555663039694" expanded="true" signature="4017:4018" ph="..." />
+                    <marker date="1555663039694" expanded="true" signature="4017:4324" ph="..." />
+                    <marker date="1555663039694" expanded="true" signature="4017:6016" ph="..." />
+                    <marker date="1555663039694" expanded="true" signature="6111:6112" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -83,9 +84,9 @@
                   <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
                   <folding>
                     <element signature="e#0#76#0" expanded="true" />
-                    <marker date="1555675257160" expanded="true" signature="931:1984" ph="..." />
-                    <marker date="1555675257160" expanded="true" signature="1995:2000" ph="..." />
-                    <marker date="1555675257160" expanded="true" signature="1995:2379" ph="..." />
+                    <marker date="1555662317701" expanded="true" signature="937:1990" ph="..." />
+                    <marker date="1555662317701" expanded="true" signature="2001:2006" ph="..." />
+                    <marker date="1555662317701" expanded="true" signature="2001:2385" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -104,12 +105,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>print</find>
-      <find>patch.priority</find>
-      <find>di</find>
-      <find>differences</find>
-      <find>max</find>
-      <find>int</find>
       <find>sys</find>
       <find>up</find>
       <find>get_half_patch_from_patch</find>
@@ -134,7 +129,16 @@
       <find>compute_label_cost</find>
       <find>unpickl</find>
       <find>potential_matrix_up</find>
+      <find>THRESHOLD_UNCERTAINTY</find>
+      <find>MAX_NB_LABELS</find>
+      <find>MAX_ITERATION_NR</find>
+      <find>stride</find>
+      <find>gap</find>
+      <find>patch_si</find>
     </findStrings>
+    <replaceStrings>
+      <replace>stride</replace>
+    </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -145,15 +149,15 @@
         <option value="$PROJECT_DIR$/label_prunning.py" />
         <option value="$PROJECT_DIR$/label_pruning.py" />
         <option value="$PROJECT_DIR$/efficient_energy_optimization.py" />
-        <option value="$PROJECT_DIR$/temp.py" />
-        <option value="$PROJECT_DIR$/patch_diff.py" />
         <option value="$PROJECT_DIR$/data_structures.py" />
+        <option value="$PROJECT_DIR$/patch_diff.py" />
         <option value="$PROJECT_DIR$/eeo.py" />
+        <option value="$PROJECT_DIR$/temp.py" />
         <option value="$PROJECT_DIR$/main.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="1919" />
     <option name="width" value="2562" />
     <option name="height" value="1441" />
@@ -196,6 +200,48 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.main">
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Inpainting" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="temp" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Inpainting" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/temp.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Python.main" />
       <item itemvalue="Python.temp" />
@@ -230,7 +276,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1919" y="0" width="2562" height="1441" extended-state="7" />
+    <frame x="1919" y="0" width="2562" height="1441" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.09735908" />
@@ -243,7 +289,7 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32901752" />
-      <window_info anchor="bottom" id="Version Control" order="7" weight="0.32977912" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.25361767" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.32952815" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5001971" side_tool="true" weight="0.39954337" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.2916984" />
@@ -252,17 +298,27 @@
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
     </layout>
   </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>431</line>
+          <line>430</line>
           <option name="timeStamp" value="128" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>436</line>
+          <line>435</line>
           <option name="timeStamp" value="129" />
         </line-breakpoint>
       </breakpoints>
@@ -316,32 +372,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/label_pruning.py" />
-    <entry file="file://$PROJECT_DIR$/efficient_energy_optimization.py" />
+    <entry file="file://$PROJECT_DIR$/label_pruning.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="190">
+          <caret line="10" selection-start-line="7" selection-end-line="10" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+            <marker date="1537888288164" expanded="true" signature="366:367" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/efficient_energy_optimization.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1002">
+          <caret line="146" column="40" selection-start-line="146" selection-start-column="40" selection-end-line="146" selection-end-column="40" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$USER_HOME$/anaconda3/envs/tensorflow/lib/python3.6/site-packages/imageio/core/util.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="338">
           <caret line="103" selection-start-line="103" selection-end-line="103" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/patch_diff.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="266">
-          <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/temp.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="95">
-          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
-          <folding>
-            <element signature="e#0#76#0" expanded="true" />
-            <marker date="1555675257160" expanded="true" signature="931:1984" ph="..." />
-            <marker date="1555675257160" expanded="true" signature="1995:2000" ph="..." />
-            <marker date="1555675257160" expanded="true" signature="1995:2379" ph="..." />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -352,33 +407,61 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data_structures.py">
+    <entry file="file://$PROJECT_DIR$/temp.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="88" column="48" lean-forward="true" selection-start-line="88" selection-start-column="48" selection-end-line="88" selection-end-column="48" />
+        <state relative-caret-position="95">
+          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
           <folding>
-            <marker date="1555677832628" expanded="true" signature="23:24" ph="..." />
-            <marker date="1555677832628" expanded="true" signature="23:25" ph="..." />
+            <element signature="e#0#76#0" expanded="true" />
+            <marker date="1555662317701" expanded="true" signature="937:1990" ph="..." />
+            <marker date="1555662317701" expanded="true" signature="2001:2006" ph="..." />
+            <marker date="1555662317701" expanded="true" signature="2001:2385" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/eeo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="807">
-          <caret line="522" column="16" lean-forward="true" selection-start-line="522" selection-start-column="16" selection-end-line="522" selection-end-column="16" />
+        <state relative-caret-position="104">
+          <caret line="501" column="21" selection-start-line="501" selection-start-column="21" selection-end-line="501" selection-end-column="21" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
+            <marker date="1555663039694" expanded="true" signature="552:553" ph="..." />
+            <marker date="1555663039694" expanded="true" signature="4017:4018" ph="..." />
+            <marker date="1555663039694" expanded="true" signature="4017:4324" ph="..." />
+            <marker date="1555663039694" expanded="true" signature="4017:6016" ph="..." />
+            <marker date="1555663039694" expanded="true" signature="6111:6112" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/patch_diff.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="266">
+          <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data_structures.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="437">
+          <caret line="89" column="48" lean-forward="true" selection-start-line="89" selection-start-column="48" selection-end-line="89" selection-end-column="48" />
+          <folding>
+            <marker date="1555663015469" expanded="true" signature="23:24" ph="..." />
+            <marker date="1555663015469" expanded="true" signature="23:25" ph="..." />
+            <marker date="1555663015469" expanded="true" signature="401:402" ph="..." />
+            <marker date="1555663015469" expanded="true" signature="401:406" ph="..." />
+            <marker date="1555663015469" expanded="true" signature="4009:4014" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="551">
-          <caret line="29" lean-forward="true" selection-start-line="29" selection-end-line="29" />
+        <state relative-caret-position="2280">
+          <caret line="120" column="24" selection-start-line="120" selection-start-column="16" selection-end-line="120" selection-end-column="24" />
           <folding>
-            <element signature="e#0#51#0" expanded="true" />
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>

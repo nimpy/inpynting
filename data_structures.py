@@ -1,9 +1,10 @@
 class Image2BInpainted:
 
-    #TODO maybe discard patch_size and gap
-    def __init__(self, rgb, mask, inpainted=None, order_image=None):
+    def __init__(self, rgb, mask, patch_size=16, stride=8, inpainted=None, order_image=None):
         self.rgb = rgb
         self.mask = mask
+        self.patch_size = patch_size
+        self.stride = stride
         self.height = self.rgb.shape[0]
         self.width = self.rgb.shape[1]
         self.inpainted = inpainted
@@ -66,49 +67,49 @@ class Patch:
         self.pruned_labels = [label for (label, diff) in sorted_differences]
 
 
-    def get_up_neighbor_position(self, image, patch_size, gap):
+    def get_up_neighbor_position(self, image):
 
-        if self.x_coord < gap:
+        if self.x_coord < image.stride:
             return None
 
-        neighbor_x_coord = self.x_coord - gap
+        neighbor_x_coord = self.x_coord - image.stride
         neighbor_y_coord = self.y_coord
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, patch_size, gap)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, image.patch_size, image.stride)
 
-    def get_down_neighbor_position(self, image, patch_size, gap):
+    def get_down_neighbor_position(self, image):
 
-        if self.x_coord > image.height - (patch_size + gap):
+        if self.x_coord > image.height - (image.patch_size + image.stride):
             return None
 
-        neighbor_x_coord = self.x_coord + gap
+        neighbor_x_coord = self.x_coord + image.stride
         neighbor_y_coord = self.y_coord
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, patch_size, gap)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, image.patch_size, image.stride)
 
-    def get_left_neighbor_position(self, image, patch_size, gap):
+    def get_left_neighbor_position(self, image):
 
-        if self.y_coord < gap:
+        if self.y_coord < image.stride:
             return None
 
         neighbor_x_coord = self.x_coord
-        neighbor_y_coord = self.y_coord - gap
+        neighbor_y_coord = self.y_coord - image.stride
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, patch_size, gap)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, image.patch_size, image.stride)
 
-    def get_right_neighbor_position(self, image, patch_size, gap):
+    def get_right_neighbor_position(self, image):
 
-        if self.y_coord > image.width - (patch_size + gap):
+        if self.y_coord > image.width - (image.patch_size + image.stride):
             return None
 
         neighbor_x_coord = self.x_coord
-        neighbor_y_coord = self.y_coord + gap
+        neighbor_y_coord = self.y_coord + image.stride
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, patch_size, gap)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, image.patch_size, image.stride)
 
 
-def coordinates_to_position(x, y, image_width, patch_size, gap):
-    return (y // gap) * len(range(0, image_width - patch_size + 1, gap)) + (x // gap)
+def coordinates_to_position(x, y, image_width, patch_size, stride):
+    return (y // stride) * len(range(0, image_width - patch_size + 1, stride)) + (x // stride)
 
 
 UP = 1
@@ -121,14 +122,14 @@ def opposite_side(side):
     return -side
 
 
-def get_half_patch_from_patch(patch, gap, side):
+def get_half_patch_from_patch(patch, stride, side):
     patch_size = patch.shape[0]
     if side == UP:
-        half_patch = patch[0: gap, :, :]
+        half_patch = patch[0: stride, :, :]
     elif side == DOWN:
-        half_patch = patch[gap: patch_size, :, :]
+        half_patch = patch[stride: patch_size, :, :]
     elif side == LEFT:
-        half_patch = patch[:, 0: gap, :]
+        half_patch = patch[:, 0: stride, :]
     else:
-        half_patch = patch[:, gap: patch_size, :]
+        half_patch = patch[:, stride: patch_size, :]
     return half_patch
