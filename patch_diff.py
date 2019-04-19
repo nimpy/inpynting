@@ -11,15 +11,15 @@ def patch_diff(img1, img2):
 
 # TODO take into account the mask for comparing
 # TODO use codes instead of the pixel values
-def non_masked_patch_diff(image, patch_size, x, y, x_compare, y_compare):
+def non_masked_patch_diff(image, x, y, x_compare, y_compare):
 
-    patch_rgb = image.rgb[x: x + patch_size, y: y + patch_size, :]
-    patch_compare_rgb = image.rgb[x_compare: x_compare + patch_size, y_compare: y_compare + patch_size, :]
+    patch_rgb = image.rgb[x: x + image.patch_size, y: y + image.patch_size, :]
+    patch_compare_rgb = image.rgb[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size, :]
 
     # compare just the masked part, which will be on the first patch
     # TODO is this a good way to do this? maybe :D
-    mask = image.mask[x: x + patch_size, y: y + patch_size]
-    mask_3ch = np.repeat(mask, 3, axis=1).reshape((patch_size, patch_size, 3))
+    mask = image.mask[x: x + image.patch_size, y: y + image.patch_size]
+    mask_3ch = np.repeat(mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
     patch_rgb = patch_rgb * (1 - mask_3ch)
     patch_compare_rgb = patch_compare_rgb * (1 - mask_3ch)
 

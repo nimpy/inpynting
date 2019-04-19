@@ -2,9 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d366a607-62fe-42c9-a88a-1d4fa1f5480f" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data_structures.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_structures.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/eeo.py" beforeDir="false" afterPath="$PROJECT_DIR$/eeo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/patch_diff.py" beforeDir="false" afterPath="$PROJECT_DIR$/patch_diff.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temp.py" beforeDir="false" afterPath="$PROJECT_DIR$/temp.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -13,16 +16,16 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.4257642">
+    <splitter split-orientation="horizontal" split-proportion="0.41528383">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/main.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="589">
-                  <caret line="52" column="41" lean-forward="true" selection-start-line="52" selection-start-column="41" selection-end-line="52" selection-end-column="41" />
+                <state relative-caret-position="2280">
+                  <caret line="120" column="24" selection-start-line="120" selection-start-column="16" selection-end-line="120" selection-end-column="24" />
                   <folding>
-                    <element signature="e#0#51#0" expanded="true" />
+                    <element signature="e#0#18#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -31,14 +34,14 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/data_structures.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="209">
-                  <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
+                <state relative-caret-position="437">
+                  <caret line="89" column="48" lean-forward="true" selection-start-line="89" selection-start-column="48" selection-end-line="89" selection-end-column="48" />
                   <folding>
-                    <marker date="1555576645788" expanded="true" signature="23:24" ph="..." />
-                    <marker date="1555576645788" expanded="true" signature="23:68" ph="..." />
-                    <marker date="1555576645788" expanded="true" signature="353:354" ph="..." />
-                    <marker date="1555576645788" expanded="true" signature="353:358" ph="..." />
-                    <marker date="1555576645788" expanded="true" signature="3882:3887" ph="..." />
+                    <marker date="1555663015469" expanded="true" signature="23:24" ph="..." />
+                    <marker date="1555663015469" expanded="true" signature="23:25" ph="..." />
+                    <marker date="1555663015469" expanded="true" signature="401:402" ph="..." />
+                    <marker date="1555663015469" expanded="true" signature="401:406" ph="..." />
+                    <marker date="1555663015469" expanded="true" signature="4009:4014" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -47,8 +50,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/patch_diff.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="513">
-                  <caret line="27" column="7" selection-start-line="27" selection-start-column="7" selection-end-line="27" selection-end-column="7" />
+                <state relative-caret-position="266">
+                  <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
                 </state>
               </provider>
             </entry>
@@ -60,15 +63,15 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/eeo.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="855">
-                  <caret line="518" column="35" selection-start-line="518" selection-start-column="35" selection-end-line="518" selection-end-column="35" />
+                <state relative-caret-position="104">
+                  <caret line="501" column="21" selection-start-line="501" selection-start-column="21" selection-end-line="501" selection-end-column="21" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
-                    <marker date="1555576645804" expanded="true" signature="602:603" ph="..." />
-                    <marker date="1555576645804" expanded="true" signature="4069:4070" ph="..." />
-                    <marker date="1555576645804" expanded="true" signature="4069:4376" ph="..." />
-                    <marker date="1555576645804" expanded="true" signature="4069:6165" ph="..." />
-                    <marker date="1555576645804" expanded="true" signature="6280:6281" ph="..." />
+                    <marker date="1555663039694" expanded="true" signature="552:553" ph="..." />
+                    <marker date="1555663039694" expanded="true" signature="4017:4018" ph="..." />
+                    <marker date="1555663039694" expanded="true" signature="4017:4324" ph="..." />
+                    <marker date="1555663039694" expanded="true" signature="4017:6016" ph="..." />
+                    <marker date="1555663039694" expanded="true" signature="6111:6112" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -77,13 +80,13 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/temp.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="356">
-                  <caret line="61" column="19" lean-forward="true" selection-start-line="61" selection-start-column="19" selection-end-line="61" selection-end-column="19" />
+                <state relative-caret-position="95">
+                  <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
                   <folding>
                     <element signature="e#0#76#0" expanded="true" />
-                    <marker date="1554888835596" expanded="true" signature="931:1984" ph="..." />
-                    <marker date="1554888835596" expanded="true" signature="1995:2000" ph="..." />
-                    <marker date="1554888835596" expanded="true" signature="1995:2379" ph="..." />
+                    <marker date="1555662317701" expanded="true" signature="937:1990" ph="..." />
+                    <marker date="1555662317701" expanded="true" signature="2001:2006" ph="..." />
+                    <marker date="1555662317701" expanded="true" signature="2001:2385" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -102,12 +105,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>print</find>
-      <find>patch.priority</find>
-      <find>di</find>
-      <find>differences</find>
-      <find>max</find>
-      <find>int</find>
       <find>sys</find>
       <find>up</find>
       <find>get_half_patch_from_patch</find>
@@ -132,7 +129,16 @@
       <find>compute_label_cost</find>
       <find>unpickl</find>
       <find>potential_matrix_up</find>
+      <find>THRESHOLD_UNCERTAINTY</find>
+      <find>MAX_NB_LABELS</find>
+      <find>MAX_ITERATION_NR</find>
+      <find>stride</find>
+      <find>gap</find>
+      <find>patch_si</find>
     </findStrings>
+    <replaceStrings>
+      <replace>stride</replace>
+    </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -143,15 +149,15 @@
         <option value="$PROJECT_DIR$/label_prunning.py" />
         <option value="$PROJECT_DIR$/label_pruning.py" />
         <option value="$PROJECT_DIR$/efficient_energy_optimization.py" />
-        <option value="$PROJECT_DIR$/temp.py" />
-        <option value="$PROJECT_DIR$/patch_diff.py" />
         <option value="$PROJECT_DIR$/data_structures.py" />
+        <option value="$PROJECT_DIR$/patch_diff.py" />
         <option value="$PROJECT_DIR$/eeo.py" />
+        <option value="$PROJECT_DIR$/temp.py" />
         <option value="$PROJECT_DIR$/main.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="1919" />
     <option name="width" value="2562" />
     <option name="height" value="1441" />
@@ -278,12 +284,12 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32901752" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.23838538" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.25285605" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49980292" weight="0.21934502" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32901752" />
-      <window_info anchor="bottom" id="Version Control" order="7" weight="0.32977912" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.25361767" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.32952815" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5001971" side_tool="true" weight="0.39954337" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.2916984" />
@@ -292,17 +298,27 @@
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
     </layout>
   </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>431</line>
+          <line>430</line>
           <option name="timeStamp" value="128" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>436</line>
+          <line>435</line>
           <option name="timeStamp" value="129" />
         </line-breakpoint>
       </breakpoints>
@@ -384,26 +400,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/patch_diff.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="513">
-          <caret line="27" column="7" selection-start-line="27" selection-start-column="7" selection-end-line="27" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/temp.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="356">
-          <caret line="61" column="19" lean-forward="true" selection-start-line="61" selection-start-column="19" selection-end-line="61" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#76#0" expanded="true" />
-            <marker date="1554888835596" expanded="true" signature="931:1984" ph="..." />
-            <marker date="1554888835596" expanded="true" signature="1995:2000" ph="..." />
-            <marker date="1554888835596" expanded="true" signature="1995:2379" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/anaconda3/envs/tensorflow/lib/python3.6/site-packages/matplotlib/image.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="323">
@@ -411,41 +407,61 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data_structures.py">
+    <entry file="file://$PROJECT_DIR$/temp.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="209">
-          <caret line="11" lean-forward="true" selection-start-line="11" selection-end-line="11" />
+        <state relative-caret-position="95">
+          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
           <folding>
-            <marker date="1555576645788" expanded="true" signature="23:24" ph="..." />
-            <marker date="1555576645788" expanded="true" signature="23:68" ph="..." />
-            <marker date="1555576645788" expanded="true" signature="353:354" ph="..." />
-            <marker date="1555576645788" expanded="true" signature="353:358" ph="..." />
-            <marker date="1555576645788" expanded="true" signature="3882:3887" ph="..." />
+            <element signature="e#0#76#0" expanded="true" />
+            <marker date="1555662317701" expanded="true" signature="937:1990" ph="..." />
+            <marker date="1555662317701" expanded="true" signature="2001:2006" ph="..." />
+            <marker date="1555662317701" expanded="true" signature="2001:2385" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/eeo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="855">
-          <caret line="518" column="35" selection-start-line="518" selection-start-column="35" selection-end-line="518" selection-end-column="35" />
+        <state relative-caret-position="104">
+          <caret line="501" column="21" selection-start-line="501" selection-start-column="21" selection-end-line="501" selection-end-column="21" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <marker date="1555576645804" expanded="true" signature="602:603" ph="..." />
-            <marker date="1555576645804" expanded="true" signature="4069:4070" ph="..." />
-            <marker date="1555576645804" expanded="true" signature="4069:4376" ph="..." />
-            <marker date="1555576645804" expanded="true" signature="4069:6165" ph="..." />
-            <marker date="1555576645804" expanded="true" signature="6280:6281" ph="..." />
+            <marker date="1555663039694" expanded="true" signature="552:553" ph="..." />
+            <marker date="1555663039694" expanded="true" signature="4017:4018" ph="..." />
+            <marker date="1555663039694" expanded="true" signature="4017:4324" ph="..." />
+            <marker date="1555663039694" expanded="true" signature="4017:6016" ph="..." />
+            <marker date="1555663039694" expanded="true" signature="6111:6112" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/patch_diff.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="266">
+          <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data_structures.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="437">
+          <caret line="89" column="48" lean-forward="true" selection-start-line="89" selection-start-column="48" selection-end-line="89" selection-end-column="48" />
+          <folding>
+            <marker date="1555663015469" expanded="true" signature="23:24" ph="..." />
+            <marker date="1555663015469" expanded="true" signature="23:25" ph="..." />
+            <marker date="1555663015469" expanded="true" signature="401:402" ph="..." />
+            <marker date="1555663015469" expanded="true" signature="401:406" ph="..." />
+            <marker date="1555663015469" expanded="true" signature="4009:4014" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="589">
-          <caret line="52" column="41" lean-forward="true" selection-start-line="52" selection-start-column="41" selection-end-line="52" selection-end-column="41" />
+        <state relative-caret-position="2280">
+          <caret line="120" column="24" selection-start-line="120" selection-start-column="16" selection-end-line="120" selection-end-column="24" />
           <folding>
-            <element signature="e#0#51#0" expanded="true" />
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
