@@ -500,6 +500,26 @@ def generate_blend_mask(patch_size):
     return blend_mask
 
 
+def generate_order_image(image, patch_size):
+    global patches
+    global nodes_count
+    global nodes_order
+
+    order_image = np.multiply(image.rgb,
+                                  np.repeat(1 - image.mask, 3, axis=1).reshape((image.height, image.width, 3)))
+    nr_nodes = len(nodes_order)
+    for i in range(nr_nodes):
+        patch = patches[nodes_order[i]]
+        pixel_value = math.floor(i * 255 / nr_nodes)
+        for j in range(3):
+            order_image[patch.x_coord: patch.x_coord + patch_size, patch.y_coord: patch.y_coord + patch_size, j] = pixel_value
+
+    order_image = order_image.astype(np.uint8)
+
+    image.order_image = order_image
+
+
+
 def pickle_global_vars(file_version):
     global patches
     global nodes_count
