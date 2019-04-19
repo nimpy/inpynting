@@ -5,9 +5,9 @@ import imageio
 import os
 import datetime
 
-import efficient_energy_optimization
+# import efficient_energy_optimization
 import eeo
-from label_pruning import label_pruning
+# from label_pruning import label_pruning
 # import random
 # import sys
 
@@ -17,7 +17,7 @@ patch_size = 0
 gap = 0
 output_filename = None
 
-THRESHOLD_UNCERTAINTY = 155360 #100000 #155360 #255360 #6755360 # TODO to be adjusted
+THRESHOLD_UNCERTAINTY = 155360  #6755360 #155360 #100000 #155360 #255360 #6755360 # TODO to be adjusted
 MAX_NB_LABELS = 10
 MAX_ITERATION_NR = 10
 
@@ -92,39 +92,39 @@ def main():
 
     # already done and pickled - start
 
-    # print()
-    # print("... Initialization ...")
-    # eeo.initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY)
-    #
-    # eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
-    #
-    # print()
-    # print("... Label pruning ...")
-    # eeo.label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS)
-    #
-    # eeo.pickle_global_vars(image_inpainted_name + eeo.label_pruning.__name__)
-    #
-    # print()
-    # print("... Computing pairwise potential matrix ...")
-    # eeo.compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS)
-    #
-    # eeo.pickle_global_vars(image_inpainted_name + eeo.compute_pairwise_potential_matrix.__name__)
-    #
-    # print()
-    # print("... Computing label cost ...")
-    # eeo.compute_label_cost(image, patch_size, MAX_NB_LABELS)
-    #
-    # eeo.pickle_global_vars(image_inpainted_name + eeo.compute_label_cost.__name__)
-    #
-    # print()
-    # print("... Neighborhood consensus message passing ...")
-    # eeo.neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS, MAX_ITERATION_NR)
-    #
-    # eeo.pickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
+    print()
+    print("... Initialization ...")
+    eeo.initialization(image, patch_size, gap, THRESHOLD_UNCERTAINTY)
+
+    eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
+
+    print()
+    print("... Label pruning ...")
+    eeo.label_pruning(image, patch_size, gap, THRESHOLD_UNCERTAINTY, MAX_NB_LABELS)
+
+    eeo.pickle_global_vars(image_inpainted_name + eeo.label_pruning.__name__)
+
+    print()
+    print("... Computing pairwise potential matrix ...")
+    eeo.compute_pairwise_potential_matrix(image, patch_size, gap, MAX_NB_LABELS)
+
+    eeo.pickle_global_vars(image_inpainted_name + eeo.compute_pairwise_potential_matrix.__name__)
+
+    print()
+    print("... Computing label cost ...")
+    eeo.compute_label_cost(image, patch_size, MAX_NB_LABELS)
+
+    eeo.pickle_global_vars(image_inpainted_name + eeo.compute_label_cost.__name__)
+
+    print()
+    print("... Neighborhood consensus message passing ...")
+    eeo.neighborhood_consensus_message_passing(image, patch_size, gap, MAX_NB_LABELS, MAX_ITERATION_NR)
+
+    eeo.pickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
 
     # already done and pickled - end
 
-    eeo.unpickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
+    # eeo.unpickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
 
     print()
     print("... Generating inpainted image ...")
