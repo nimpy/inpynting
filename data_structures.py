@@ -1,6 +1,6 @@
 class Image2BInpainted:
 
-    def __init__(self, rgb, mask, patch_size=16, stride=8, inpainted=None, order_image=None):
+    def __init__(self, rgb, mask, patch_size, stride, inpainted=None, order_image=None):
         self.rgb = rgb
         self.mask = mask
         self.patch_size = patch_size
