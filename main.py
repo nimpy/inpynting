@@ -117,15 +117,15 @@ def main():
 
     # TODO thresh_uncertainty should maybe be related to the patch size relative to the image size
     # inputs
-    patch_size = 8
+    patch_size = 16
     stride = patch_size // 2
-    thresh_uncertainty = 6755360 #155360  # 100000 #155360 #255360 #6755360 # TODO to be adjusted
+    thresh_uncertainty = 155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360 # TODO to be adjusted
     max_nr_labels = 10
     max_nr_iterations = 10
     
-    folder_path = '/home/niaki/Code/inpynting_images/Lenna'
-    image_filename = 'Lenna.png'
-    mask_filename = 'Mask512.jpg'
+    # folder_path = '/home/niaki/Code/inpynting_images/Lenna'
+    # image_filename = 'Lenna.png'
+    # mask_filename = 'Mask512.jpg'
     # mask_filename = 'Mask512_3.png'
 
     # folder_path = '/home/niaki/Code/inpynting_images/Greenland'
@@ -136,9 +136,9 @@ def main():
     # image_filename = 'building64.jpg'
     # mask_filename = 'girl64_mask.png'
 
-    # folder_path = '/home/niaki/Code/inpynting_images/building'
-    # image_filename = 'building128.jpeg'
-    # mask_filename = 'mask128.jpg'
+    folder_path = '/home/niaki/Code/inpynting_images/building'
+    image_filename = 'building128.jpeg'
+    mask_filename = 'mask128.jpg'
 
     
     

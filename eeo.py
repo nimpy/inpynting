@@ -3,6 +3,7 @@ import sys
 import pickle
 import math
 from scipy import signal
+import matplotlib.pyplot as plt
 
 from data_structures import Patch
 from data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
@@ -454,13 +455,11 @@ def generate_inpainted_image(image):
         patch_rgb_new = image.inpainted[patchs_mask_patch.x_coord: patchs_mask_patch.x_coord + image.patch_size,
                         patchs_mask_patch.y_coord: patchs_mask_patch.y_coord + image.patch_size, :]
 
-
         image.inpainted[patch.x_coord: patch.x_coord + image.patch_size,
             patch.y_coord: patch.y_coord + image.patch_size, :] = np.multiply(patch_rgb, blend_mask_rgb) + \
                                                              np.multiply(patch_rgb_new, 1 - blend_mask_rgb)
 
         target_region[patch.x_coord: patch.x_coord + image.patch_size, patch.y_coord: patch.y_coord + image.patch_size] = 0
-
 
     image.inpainted = image.inpainted.astype(np.uint8)
 
@@ -512,7 +511,9 @@ def generate_order_image(image):
         pixel_value = math.floor(i * 255 / nr_nodes)
         for j in range(3):
             order_image[patch.x_coord: patch.x_coord + image.patch_size, patch.y_coord: patch.y_coord + image.patch_size, j] = pixel_value
-
+            # order_image[patch.x_coord: patch.x_coord + 2, patch.y_coord: patch.y_coord + 2, j] = pixel_value
+        plt.imshow(order_image.astype(np.uint8), cmap='gray')
+        plt.show()
     order_image = order_image.astype(np.uint8)
 
     image.order_image = order_image
