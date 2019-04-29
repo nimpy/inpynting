@@ -251,20 +251,8 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
     for patch in patches:
         if patch.overlap_target_region:
 
-            #TODO temporary debug code
-            if patch.patch_id == 110:
-                print("gotcha!!")
-
-
             # get the neighbors if they exist and have overlap with the target region (i.e. if they're nodes)
             patch_neighbor_up, _, patch_neighbor_left, _ = get_patch_neighbor_nodes(patch, image)
-
-
-            #TODO temporary debug code
-            patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right = get_patch_neighbor_nodes(patch, image)
-            if (patch_neighbor_up is not None and patch_neighbor_up.patch_id == 109) or (patch_neighbor_down is not None and patch_neighbor_down.patch_id == 109) or (patch_neighbor_left is not None and patch_neighbor_left.patch_id == 109) or (patch_neighbor_right is not None and patch_neighbor_right.patch_id == 109):
-                print("gotcha!")
-
 
             # TODO make this a method
             if patch_neighbor_up is not None:
