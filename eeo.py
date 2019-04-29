@@ -51,6 +51,7 @@ def initialization(image, thresh_uncertainty):
     for patch in patches:
 
         if patch.overlap_target_region:
+            sys.stdout.write("\rInitialising node " + str(nodes_count + 1))
 
             if patch.overlap_source_region:
 
@@ -95,7 +96,7 @@ def initialization(image, thresh_uncertainty):
             # if nodes_count == 7:
             #     break
 
-    print("Total number of patches: ", len(patches))
+    print("\nTotal number of patches: ", len(patches))
     print("Number of patches to be inpainted: ", nodes_count)
 
 
@@ -250,8 +251,20 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
     for patch in patches:
         if patch.overlap_target_region:
 
+            #TODO temporary debug code
+            if patch.patch_id == 110:
+                print("gotcha!!")
+
+
             # get the neighbors if they exist and have overlap with the target region (i.e. if they're nodes)
             patch_neighbor_up, _, patch_neighbor_left, _ = get_patch_neighbor_nodes(patch, image)
+
+
+            #TODO temporary debug code
+            patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right = get_patch_neighbor_nodes(patch, image)
+            if (patch_neighbor_up is not None and patch_neighbor_up.patch_id == 109) or (patch_neighbor_down is not None and patch_neighbor_down.patch_id == 109) or (patch_neighbor_left is not None and patch_neighbor_left.patch_id == 109) or (patch_neighbor_right is not None and patch_neighbor_right.patch_id == 109):
+                print("gotcha!")
+
 
             # TODO make this a method
             if patch_neighbor_up is not None:
@@ -355,7 +368,6 @@ def compute_label_cost(image, max_nr_labels):
             #patch.mask = patch.pruned_labels[patch.local_likelihood.index(max(patch.local_likelihood))]
             #TODO patch.mask always seems to be zero, why?
             patch.mask = patch.local_likelihood.index(max(patch.local_likelihood))
-            print(patch.mask)
 
 
 #TODO maybe rename local_likelihood to likelihood?
@@ -447,8 +459,6 @@ def generate_inpainted_image(image):
 
         patchs_mask_patch = patches[patch.pruned_labels[patch.mask]]
 
-        print(patch_id, patchs_mask_patch.patch_id)
-
         patch_rgb = image.inpainted[patch.x_coord: patch.x_coord + image.patch_size,
                     patch.y_coord: patch.y_coord + image.patch_size, :]
 
@@ -460,6 +470,9 @@ def generate_inpainted_image(image):
                                                              np.multiply(patch_rgb_new, 1 - blend_mask_rgb)
 
         target_region[patch.x_coord: patch.x_coord + image.patch_size, patch.y_coord: patch.y_coord + image.patch_size] = 0
+
+        # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
+        # plt.show()
 
     image.inpainted = image.inpainted.astype(np.uint8)
 
@@ -511,11 +524,8 @@ def generate_order_image(image):
         pixel_value = math.floor(i * 255 / nr_nodes)
         for j in range(3):
             order_image[patch.x_coord: patch.x_coord + image.patch_size, patch.y_coord: patch.y_coord + image.patch_size, j] = pixel_value
-            # order_image[patch.x_coord: patch.x_coord + 2, patch.y_coord: patch.y_coord + 2, j] = pixel_value
-        plt.imshow(order_image.astype(np.uint8), cmap='gray')
-        plt.show()
-    order_image = order_image.astype(np.uint8)
 
+    order_image = order_image.astype(np.uint8)
     image.order_image = order_image
 
 

@@ -75,7 +75,7 @@ class Patch:
         neighbor_x_coord = self.x_coord - image.stride
         neighbor_y_coord = self.y_coord
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, image.patch_size, image.stride)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size, image.stride)
 
     def get_down_neighbor_position(self, image):
 
@@ -85,7 +85,7 @@ class Patch:
         neighbor_x_coord = self.x_coord + image.stride
         neighbor_y_coord = self.y_coord
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, image.patch_size, image.stride)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size, image.stride)
 
     def get_left_neighbor_position(self, image):
 
@@ -95,7 +95,7 @@ class Patch:
         neighbor_x_coord = self.x_coord
         neighbor_y_coord = self.y_coord - image.stride
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, image.patch_size, image.stride)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size, image.stride)
 
     def get_right_neighbor_position(self, image):
 
@@ -105,11 +105,11 @@ class Patch:
         neighbor_x_coord = self.x_coord
         neighbor_y_coord = self.y_coord + image.stride
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.width, image.patch_size, image.stride)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size, image.stride)
 
 
-def coordinates_to_position(x, y, image_width, patch_size, stride):
-    return (y // stride) * len(range(0, image_width - patch_size + 1, stride)) + (x // stride)
+def coordinates_to_position(x, y, image_height, patch_size, stride):
+    return (y // stride) * len(range(0, image_height - patch_size + 1, stride)) + (x // stride)
 
 
 UP = 1
