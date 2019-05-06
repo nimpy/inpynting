@@ -4,6 +4,7 @@ import pickle
 import math
 from scipy import signal
 import matplotlib.pyplot as plt
+import imageio
 
 from data_structures import Patch
 from data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
@@ -387,7 +388,7 @@ def neighborhood_consensus_message_passing(image, max_nr_labels, max_nr_iteratio
 
             patch.beliefs_new = patch.beliefs.copy()
 
-    # TODO implement convergence check (what's the criteria?) and then change this for loop to a while loop
+    # TODO implement convergence check (what's the criteria?) and then change this for-loop to a while-loop
 
     for i in range(max_nr_iterations):
 
@@ -422,7 +423,6 @@ def neighborhood_consensus_message_passing(image, max_nr_labels, max_nr_iteratio
                 patch.beliefs = patch.beliefs_new
 
 
-#TODO rename
 def generate_inpainted_image(image):
 
     global patches
@@ -461,6 +461,8 @@ def generate_inpainted_image(image):
 
         # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
         # plt.show()
+        # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.jpg', image.inpainted)
+
 
     image.inpainted = image.inpainted.astype(np.uint8)
 
@@ -523,7 +525,10 @@ def pickle_global_vars(file_version):
     global nodes_order
 
     pickle_patches_file_path = '/home/niaki/Code/inpynting_images/pickles/eeo_global_vars_' + file_version + '.pickle'
-    pickle.dump((patches, nodes_count, nodes_order), open(pickle_patches_file_path, "wb"))
+    try:
+        pickle.dump((patches, nodes_count, nodes_order), open(pickle_patches_file_path, "wb"))
+    except Exception as e:
+        print("Problem while trying to pickle: ", str(e))
 
 
 def unpickle_global_vars(file_version):
@@ -532,4 +537,8 @@ def unpickle_global_vars(file_version):
     global nodes_order
 
     pickle_patches_file_path = '/home/niaki/Code/inpynting_images/pickles/eeo_global_vars_' + file_version + '.pickle'
-    patches, nodes_count, nodes_order = pickle.load(open(pickle_patches_file_path, "rb"))
+    try:
+        patches, nodes_count, nodes_order = pickle.load(open(pickle_patches_file_path, "rb"))
+    except Exception as e:
+        print("Problem while trying to unpickle: ", str(e))
+

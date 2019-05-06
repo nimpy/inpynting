@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d366a607-62fe-42c9-a88a-1d4fa1f5480f" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/eeo.py" beforeDir="false" afterPath="$PROJECT_DIR$/eeo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/patch_diff.py" beforeDir="false" afterPath="$PROJECT_DIR$/patch_diff.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -11,14 +14,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.35240173">
+    <splitter split-orientation="horizontal" split-proportion="0.5585153">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/main.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="2432">
-                  <caret line="128" column="22" selection-start-line="128" selection-start-column="22" selection-end-line="128" selection-end-column="22" />
+                <state relative-caret-position="584">
+                  <caret line="138" column="20" selection-start-line="138" selection-start-column="20" selection-end-line="138" selection-end-column="20" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -42,8 +45,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/patch_diff.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="266">
-                  <caret line="14" selection-start-line="14" selection-end-line="14" />
+                <state relative-caret-position="494">
+                  <caret line="26" column="63" lean-forward="true" selection-start-line="26" selection-start-column="63" selection-end-line="26" selection-end-column="63" />
                 </state>
               </provider>
             </entry>
@@ -55,8 +58,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/eeo.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="367">
-                  <caret line="260" lean-forward="true" selection-start-line="260" selection-end-line="260" />
+                <state relative-caret-position="578">
+                  <caret line="464" lean-forward="true" selection-start-line="464" selection-end-line="464" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -91,10 +94,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>will it</find>
-      <find>to this? (TO</find>
-      <find>prune</find>
-      <find>255</find>
       <find>todo</find>
       <find>thresh</find>
       <find>squared_error_1channel</find>
@@ -107,7 +106,6 @@
       <find>1046</find>
       <find>857</find>
       <find>compute_label_cost</find>
-      <find>unpickl</find>
       <find>potential_matrix_up</find>
       <find>THRESHOLD_UNCERTAINTY</find>
       <find>MAX_NB_LABELS</find>
@@ -119,8 +117,13 @@
       <find>stride</find>
       <find>problem!!</find>
       <find>potential_matrix_right</find>
-      <find>coordinates_to_position</find>
       <find>debug</find>
+      <find>patch_diff</find>
+      <find>coordinates_to_position</find>
+      <find>patch_diff(</find>
+      <find>unpickl</find>
+      <find>highest</find>
+      <find>imageio</find>
     </findStrings>
     <replaceStrings>
       <replace>stride</replace>
@@ -135,15 +138,15 @@
         <option value="$PROJECT_DIR$/label_prunning.py" />
         <option value="$PROJECT_DIR$/label_pruning.py" />
         <option value="$PROJECT_DIR$/efficient_energy_optimization.py" />
-        <option value="$PROJECT_DIR$/patch_diff.py" />
         <option value="$PROJECT_DIR$/temp.py" />
-        <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/data_structures.py" />
+        <option value="$PROJECT_DIR$/patch_diff.py" />
         <option value="$PROJECT_DIR$/eeo.py" />
+        <option value="$PROJECT_DIR$/main.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="1919" />
     <option name="width" value="2562" />
     <option name="height" value="1441" />
@@ -270,7 +273,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32901752" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.2703732" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.24523991" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49980292" weight="0.29017517" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -298,23 +301,18 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>190</line>
-          <option name="timeStamp" value="139" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>408</line>
+          <line>409</line>
           <option name="timeStamp" value="141" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/main.py</url>
-          <line>49</line>
+          <line>45</line>
           <option name="timeStamp" value="148" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>202</line>
+          <line>203</line>
           <option name="timeStamp" value="149" />
         </line-breakpoint>
       </breakpoints>
@@ -391,10 +389,15 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/patch_diff.py">
+    <entry file="file://$PROJECT_DIR$/temp.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="266">
-          <caret line="14" selection-start-line="14" selection-end-line="14" />
+        <state relative-caret-position="291">
+          <caret line="22" column="10" selection-start-line="22" selection-start-column="10" selection-end-line="22" selection-end-column="10" />
+          <folding>
+            <marker date="1555678462093" expanded="true" signature="937:1990" ph="..." />
+            <marker date="1555678462093" expanded="true" signature="2001:2006" ph="..." />
+            <marker date="1555678462093" expanded="true" signature="2001:2385" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -409,32 +412,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
+    <entry file="file://$PROJECT_DIR$/patch_diff.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2432">
-          <caret line="128" column="22" selection-start-line="128" selection-start-column="22" selection-end-line="128" selection-end-column="22" />
+        <state relative-caret-position="494">
+          <caret line="26" column="63" lean-forward="true" selection-start-line="26" selection-start-column="63" selection-end-line="26" selection-end-column="63" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/anaconda3/envs/tensorflow/lib/python3.6/site-packages/imageio/__init__.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eeo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="578">
+          <caret line="464" lean-forward="true" selection-start-line="464" selection-end-line="464" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/temp.py">
+    <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="291">
-          <caret line="22" column="10" selection-start-line="22" selection-start-column="10" selection-end-line="22" selection-end-column="10" />
-          <folding>
-            <marker date="1555678462093" expanded="true" signature="937:1990" ph="..." />
-            <marker date="1555678462093" expanded="true" signature="2001:2006" ph="..." />
-            <marker date="1555678462093" expanded="true" signature="2001:2385" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/eeo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="367">
-          <caret line="260" lean-forward="true" selection-start-line="260" selection-end-line="260" />
+        <state relative-caret-position="584">
+          <caret line="138" column="20" selection-start-line="138" selection-start-column="20" selection-end-line="138" selection-end-column="20" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

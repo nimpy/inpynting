@@ -10,9 +10,6 @@ from data_structures import Image2BInpainted
 import eeo
 
 
-
-
-
 def loading_data(folder_path, image_filename, mask_filename, patch_size, stride):
 
     image_inpainted_name, _ = os.path.splitext(image_filename)
@@ -37,7 +34,6 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride)
             for k in range(image_rgb.shape[2]):
                 if mask[i,j] == 1:
                     image_rgb[i, j, k] = 0
-
 
     image = Image2BInpainted(image_rgb, mask, patch_size=patch_size, stride=stride)
 
@@ -117,9 +113,9 @@ def main():
 
     # TODO thresh_uncertainty should maybe be related to the patch size relative to the image size
     # inputs
-    patch_size = 10
+    patch_size = 8
     stride = patch_size // 2 #TODO fix problem when stride isn't exactly half of patch size!
-    thresh_uncertainty = 150000 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360 # TODO to be adjusted
+    thresh_uncertainty = 15000 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360 # TODO to be adjusted
     max_nr_labels = 10
     max_nr_iterations = 10
     
@@ -140,29 +136,28 @@ def main():
     # image_filename = 'building128.jpeg'
     # mask_filename = 'mask128.jpg'
 
-    jian_number = '10'
-    folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number #+ '_square'
+    jian_number = '8'
+    folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
     image_filename = 'Jian' + jian_number + '_degra.png'
     mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
 
     
     inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations)
 
-
     #####
 
-    folder_path_origin = '/home/niaki/Code/inpynting_images'
-    folder_path_subfolders = ['Lenna', 'Greenland']#, 'Waterfall']
-    image_filenames = ['Lenna.png', 'Greenland.jpg']#, 'Waterfall.jpg']
-
-    mask_filenames = ['Mask512_1.jpg', 'Mask512_2.png', 'Mask512_3.png']
-
-    patch_size_values = [10, 16, 20]
-    # stride_values = [4, 6, 8, 10]
-    thresh_uncertainty_values = [150000, 3450000, 6750000, 13500000]
-    max_nr_labels_values = [10]
-    max_nr_iterations_values = [10]
-
+    # folder_path_origin = '/home/niaki/Code/inpynting_images'
+    # folder_path_subfolders = ['Lenna', 'Greenland']  # , 'Waterfall']
+    # image_filenames = ['Lenna.png', 'Greenland.jpg']  # , 'Waterfall.jpg']
+    #
+    # mask_filenames = ['Mask512_1.jpg', 'Mask512_2.png', 'Mask512_3.png']
+    #
+    # patch_size_values = [10, 16, 20]
+    # # stride_values = [4, 6, 8, 10]
+    # thresh_uncertainty_values = [150000, 3450000, 6750000, 13500000]
+    # max_nr_labels_values = [10]
+    # max_nr_iterations_values = [10]
+    #
     # counter = 0
     # for i, folder_path_subfolder in enumerate(folder_path_subfolders):
     #     folder_path = folder_path_origin + '/' + folder_path_subfolder
@@ -195,6 +190,53 @@ def main():
     #
     #                         print(counter)
     #                         counter += 1
+    #
+    # print(counter)
+
+
+
+    #####
+
+    # folder_path_origin = '/home/niaki/Code/inpynting_images/Tijana'
+    # image_filename_versions = ['1', '3', '8', '9', '10']
+    #
+    # patch_size_values = [6]
+    # thresh_uncertainty_values = [70000, 150000, 6750000]
+    # max_nr_labels_values = [10]
+    # max_nr_iterations_values = [10]
+    #
+    # counter = 0
+    # for i, image_filename_version in enumerate(image_filename_versions):
+    #     folder_path = folder_path_origin + '/Jian' + image_filename_version
+    #     image_filename = 'Jian' + image_filename_version + '_degra.png'
+    #     mask_filename = 'Jian' + image_filename_version + 'Mask_inverted.png'
+    #     for patch_size in patch_size_values:
+    #         stride = patch_size // 2
+    #         for thresh_uncertainty in thresh_uncertainty_values:
+    #             for max_nr_labels in max_nr_labels_values:
+    #                 for max_nr_iterations in max_nr_iterations_values:
+    #                     print('*****************************************************')
+    #                     print(folder_path)
+    #                     print(image_filename)
+    #                     print(mask_filename)
+    #                     print(patch_size)
+    #                     print(stride)
+    #                     print(thresh_uncertainty)
+    #                     print(max_nr_labels)
+    #                     print(max_nr_iterations)
+    #                     print(counter)
+    #                     try:
+    #                         eeo.patches = []
+    #                         eeo.nodes_count = 0
+    #                         eeo.nodes_order = []
+    #                         inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride,
+    #                                   thresh_uncertainty, max_nr_labels, max_nr_iterations)
+    #                     except Exception as e:
+    #                         print("Problem!!", str(e))
+    #
+    #                     print(counter)
+    #                     print()
+    #                     counter += 1
     #
     # print(counter)
 

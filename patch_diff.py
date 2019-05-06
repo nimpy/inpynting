@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def patch_diff(img1, img2):
     """Computing the sum of squared differences (SSD) between two images."""
     if img1.shape != img2.shape:
