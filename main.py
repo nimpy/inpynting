@@ -5,12 +5,13 @@ import os
 import datetime
 # import random
 # import sys
+import ae_descriptor
 
 from data_structures import Image2BInpainted
 import eeo
 
 
-def loading_data(folder_path, image_filename, mask_filename, patch_size, stride):
+def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors):
 
     image_inpainted_name, _ = os.path.splitext(image_filename)
     image_inpainted_name = image_inpainted_name + '_'
@@ -37,13 +38,21 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride)
 
     image = Image2BInpainted(image_rgb, mask, patch_size=patch_size, stride=stride)
 
+    if use_descriptors:
+        # compute the intermediate representation, from which descriptors for a single patch can be easily computed
+        encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, patch_size)
+        ir = ae_descriptor.compute_IR(image.rgb, encoder_ir)
+        image.ir = ir
+
     return image, image_inpainted_name
 
 
-def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations):
+def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors):
 
-    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride)
+    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(patch_size) + "_" + str(stride) + "_" + str(thresh_uncertainty) + "_" + str(max_nr_labels) + "_" + str(max_nr_iterations)
+    if use_descriptors:
+        image_inpainted_version += '_descr'
 
     # plt.imshow(image.rgb, interpolation='nearest')
     # plt.show()
@@ -113,11 +122,12 @@ def main():
 
     # TODO thresh_uncertainty should maybe be related to the patch size relative to the image size
     # inputs
-    patch_size = 8
+    patch_size = 16
     stride = patch_size // 2 #TODO fix problem when stride isn't exactly half of patch size!
-    thresh_uncertainty = 15000 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360 # TODO to be adjusted
+    thresh_uncertainty = 26755360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360 # TODO to be adjusted
     max_nr_labels = 10
     max_nr_iterations = 10
+    use_descriptors = True
     
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'
@@ -136,13 +146,13 @@ def main():
     # image_filename = 'building128.jpeg'
     # mask_filename = 'mask128.jpg'
 
-    jian_number = '8'
-    folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
-    image_filename = 'Jian' + jian_number + '_degra.png'
-    mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
+    # jian_number = '8'
+    # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
+    # image_filename = 'Jian' + jian_number + '_degra.png'
+    # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
 
     
-    inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations)
+    inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors)
 
     #####
 

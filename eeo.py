@@ -8,7 +8,7 @@ import imageio
 
 from data_structures import Patch
 from data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
-from patch_diff import patch_diff, non_masked_patch_diff
+from patch_diff import patch_diff, non_masked_patch_diff, half_patch_diff
 
 
 patches = []  # the indices in this list patches match the patch_id
@@ -167,23 +167,25 @@ def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, thresh_
             patch_neighbors_label_x_coord = patches[patch_neighbors_label_id].x_coord
             patch_neighbors_label_y_coord = patches[patch_neighbors_label_id].y_coord
 
-            patch_neighbors_label_rgb = image.rgb[
-                                        patch_neighbors_label_x_coord: patch_neighbors_label_x_coord + image.patch_size,
-                                        patch_neighbors_label_y_coord: patch_neighbors_label_y_coord + image.patch_size, :]
+            # patch_neighbors_label_rgb = image.rgb[
+            #                             patch_neighbors_label_x_coord: patch_neighbors_label_x_coord + image.patch_size,
+            #                             patch_neighbors_label_y_coord: patch_neighbors_label_y_coord + image.patch_size, :]
 
-            patch_neighbors_label_rgb_half = get_half_patch_from_patch(patch_neighbors_label_rgb, image.stride, opposite_side(side))
+            # patch_neighbors_label_rgb_half = get_half_patch_from_patch(patch_neighbors_label_rgb, image.stride, opposite_side(side))
 
             for patchs_label_id in patch.pruned_labels:
 
                 patchs_label_x_coord = patches[patchs_label_id].x_coord
                 patchs_label_y_coord = patches[patchs_label_id].y_coord
 
-                patchs_label_rgb = image.rgb[patchs_label_x_coord: patchs_label_x_coord + image.patch_size,
-                                   patchs_label_y_coord: patchs_label_y_coord + image.patch_size, :]
+                # patchs_label_rgb = image.rgb[patchs_label_x_coord: patchs_label_x_coord + image.patch_size,
+                #                    patchs_label_y_coord: patchs_label_y_coord + image.patch_size, :]
 
-                patchs_label_rgb_half = get_half_patch_from_patch(patchs_label_rgb, image.stride, side)
+                # patchs_label_rgb_half = get_half_patch_from_patch(patchs_label_rgb, image.stride, side)
 
-                difference = patch_diff(patch_neighbors_label_rgb_half, patchs_label_rgb_half)
+                # difference = patch_diff(patch_neighbors_label_rgb_half, patchs_label_rgb_half)
+
+                difference = half_patch_diff(image, patchs_label_x_coord, patchs_label_y_coord, patch_neighbors_label_x_coord, patch_neighbors_label_y_coord, side)
 
                 if difference < min_additional_difference:
                     min_additional_difference = difference
@@ -265,22 +267,23 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
                     patchs_label_x_coord = patches[patchs_label_id].x_coord
                     patchs_label_y_coord = patches[patchs_label_id].y_coord
 
-                    patchs_label_rgb = image.rgb[patchs_label_x_coord: patchs_label_x_coord + image.patch_size,
-                                       patchs_label_y_coord: patchs_label_y_coord + image.patch_size, :]
+                    # patchs_label_rgb = image.rgb[patchs_label_x_coord: patchs_label_x_coord + image.patch_size,
+                    #                    patchs_label_y_coord: patchs_label_y_coord + image.patch_size, :]
 
-                    patchs_label_rgb_up = get_half_patch_from_patch(patchs_label_rgb, image.stride, UP)
+                    # patchs_label_rgb_up = get_half_patch_from_patch(patchs_label_rgb, image.stride, UP)
 
                     for j, patchs_neighbors_label_id in enumerate(patch_neighbor_up.pruned_labels):
 
                         patchs_neighbors_label_x_coord = patches[patchs_neighbors_label_id].x_coord
                         patchs_neighbors_label_y_coord = patches[patchs_neighbors_label_id].y_coord
 
-                        patchs_neighbors_label_rgb = image.rgb[patchs_neighbors_label_x_coord: patchs_neighbors_label_x_coord + image.patch_size,
-                                                     patchs_neighbors_label_y_coord: patchs_neighbors_label_y_coord + image.patch_size, :]
+                        # patchs_neighbors_label_rgb = image.rgb[patchs_neighbors_label_x_coord: patchs_neighbors_label_x_coord + image.patch_size,
+                        #                              patchs_neighbors_label_y_coord: patchs_neighbors_label_y_coord + image.patch_size, :]
 
-                        patchs_neighbors_label_rgb_down = get_half_patch_from_patch(patchs_neighbors_label_rgb, image.stride, DOWN)
+                        # patchs_neighbors_label_rgb_down = get_half_patch_from_patch(patchs_neighbors_label_rgb, image.stride, DOWN)
 
-                        potential_matrix[i, j] = patch_diff(patchs_label_rgb_up, patchs_neighbors_label_rgb_down)
+                        # potential_matrix[i, j] = patch_diff(patchs_label_rgb_up, patchs_neighbors_label_rgb_down)
+                        potential_matrix[i, j] = half_patch_diff(image, patchs_label_x_coord, patchs_label_y_coord, patchs_neighbors_label_x_coord, patchs_neighbors_label_y_coord, UP)
 
                 patch.potential_matrix_up = potential_matrix
                 patch_neighbor_up.potential_matrix_down = potential_matrix
@@ -296,25 +299,28 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
                     patchs_label_x_coord = patches[patchs_label_id].x_coord
                     patchs_label_y_coord = patches[patchs_label_id].y_coord
 
-                    patchs_label_rgb = image.rgb[patchs_label_x_coord: patchs_label_x_coord + image.patch_size,
-                                       patchs_label_y_coord: patchs_label_y_coord + image.patch_size, :]
+                    # patchs_label_rgb = image.rgb[patchs_label_x_coord: patchs_label_x_coord + image.patch_size,
+                    #                    patchs_label_y_coord: patchs_label_y_coord + image.patch_size, :]
 
-                    patchs_label_rgb_left = get_half_patch_from_patch(patchs_label_rgb, image.stride, LEFT)
+                    # patchs_label_rgb_left = get_half_patch_from_patch(patchs_label_rgb, image.stride, LEFT)
 
                     for j, patchs_neighbors_label_id in enumerate(patch_neighbor_left.pruned_labels):
 
                         patchs_neighbors_label_x_coord = patches[patchs_neighbors_label_id].x_coord
                         patchs_neighbors_label_y_coord = patches[patchs_neighbors_label_id].y_coord
 
-                        patchs_neighbors_label_rgb = image.rgb[
-                                                     patchs_neighbors_label_x_coord: patchs_neighbors_label_x_coord + image.patch_size,
-                                                     patchs_neighbors_label_y_coord: patchs_neighbors_label_y_coord + image.patch_size,
-                                                     :]
+                        # patchs_neighbors_label_rgb = image.rgb[
+                        #                              patchs_neighbors_label_x_coord: patchs_neighbors_label_x_coord + image.patch_size,
+                        #                              patchs_neighbors_label_y_coord: patchs_neighbors_label_y_coord + image.patch_size,
+                        #                              :]
 
-                        patchs_neighbors_label_rgb_right = get_half_patch_from_patch(patchs_neighbors_label_rgb, image.stride,
-                                                                                    RIGHT)
+                        # patchs_neighbors_label_rgb_right = get_half_patch_from_patch(patchs_neighbors_label_rgb, image.stride,
+                        #                                                             RIGHT)
 
-                        potential_matrix[i, j] = patch_diff(patchs_label_rgb_left, patchs_neighbors_label_rgb_right)
+                        # potential_matrix[i, j] = patch_diff(patchs_label_rgb_left, patchs_neighbors_label_rgb_right)
+                        potential_matrix[i, j] = half_patch_diff(image, patchs_label_x_coord, patchs_label_y_coord,
+                                                                 patchs_neighbors_label_x_coord,
+                                                                 patchs_neighbors_label_y_coord, LEFT)
 
                 patch.potential_matrix_left = potential_matrix
                 patch_neighbor_left.potential_matrix_right = potential_matrix
