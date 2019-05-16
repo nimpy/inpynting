@@ -61,6 +61,7 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
     print("Number of pixels to be inpainted: " + str(np.count_nonzero(image.mask)))
 
+
     # already done and pickled - start
 
     print()
@@ -95,11 +96,12 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
     # already done and pickled - end
 
+
     # eeo.unpickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
 
     print()
     print("... Generating inpainted image ...")
-    eeo.generate_inpainted_image(image)
+    eeo.generate_inpainted_image_blended(image)
 
     print()
     print("... Generating order image ...")
@@ -120,14 +122,15 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
 def main():
 
-    # TODO thresh_uncertainty should maybe be related to the patch size relative to the image size
+    # TODO thresh_uncertainty should maybe be related to the patch size relative to the image size,
+    #  also taking into account whether the descripotrs are used
     # inputs
     patch_size = 16
     stride = patch_size // 2 #TODO fix problem when stride isn't exactly half of patch size!
-    thresh_uncertainty = 26755360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360 # TODO to be adjusted
+    thresh_uncertainty = 155360 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
     max_nr_labels = 10
     max_nr_iterations = 10
-    use_descriptors = True
+    use_descriptors = False
     
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'

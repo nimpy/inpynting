@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import imageio
 
 from data_structures import Patch
-from data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
-from patch_diff import patch_diff, non_masked_patch_diff, half_patch_diff
+from data_structures import UP, DOWN, LEFT, RIGHT
+from patch_diff import non_masked_patch_diff, half_patch_diff
 
 
 patches = []  # the indices in this list patches match the patch_id
@@ -83,11 +83,7 @@ def initialization(image, thresh_uncertainty):
 
                         patch.labels.append(patch_compare.patch_id)
 
-                        #TODO set differences to zeros
-
                 patch_uncertainty = len(patch.labels)
-
-                # TODO something mentioned in the other file (find_label_pos)
 
             # the higher priority the higher priority :D
             patch.priority = len(patch.labels) / max(patch_uncertainty, 1)
@@ -365,7 +361,6 @@ def compute_label_cost(image, max_nr_labels):
             patch.mask = patch.local_likelihood.index(max(patch.local_likelihood))
 
 
-#TODO maybe rename local_likelihood to likelihood?
 #TODO also calculate InitMask after local_likelihood
 
 
@@ -404,7 +399,6 @@ def neighborhood_consensus_message_passing(image, max_nr_labels, max_nr_iteratio
                 patch_neighbor_up, patch_neighbor_down, patch_neighbor_left, patch_neighbor_right = get_patch_neighbor_nodes(
                     patch, image)
 
-                #TODO figure out how to do the matrix multiplication cleaner, without the reshaping
                 #TODO big problem! they are overriding each other!!
                 if patch_neighbor_up is not None:
                     patch.messages = np.matmul(patch.potential_matrix_up, patch_neighbor_up.beliefs.reshape((max_nr_labels, 1)))
@@ -447,6 +441,110 @@ def generate_inpainted_image(image):
     blend_mask_rgb = np.repeat(blend_mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
 
     for i in range(len(nodes_order)):
+    # for i in range(len(nodes_order) - 1, -1, -1):
+
+        patch_id = nodes_order[i]
+        patch = patches[patch_id]
+
+        patchs_mask_patch = patches[patch.pruned_labels[patch.mask]]
+
+        patch_rgb = image.inpainted[patch.x_coord: patch.x_coord + image.patch_size, patch.y_coord: patch.y_coord + image.patch_size, :]
+
+        patch_rgb_new = image.inpainted[patchs_mask_patch.x_coord: patchs_mask_patch.x_coord + image.patch_size, patchs_mask_patch.y_coord: patchs_mask_patch.y_coord + image.patch_size, :]
+
+        image.inpainted[patch.x_coord: patch.x_coord + image.patch_size, patch.y_coord: patch.y_coord + image.patch_size, :] =\
+            np.multiply(patch_rgb, blend_mask_rgb) + np.multiply(patch_rgb_new, 1 - blend_mask_rgb)
+
+        target_region[patch.x_coord: patch.x_coord + image.patch_size, patch.y_coord: patch.y_coord + image.patch_size] = 0
+
+        # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
+        # plt.show()
+        # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.jpg', image.inpainted)
+
+    image.inpainted = image.inpainted.astype(np.uint8)
+
+    # TODO
+    # In the Tijana's code, this line makes a difference because the mask is not looked as a binary thing,
+    # but as a scale (for some reason). Here, it's binary, and hence this line doesn't do anything.
+    # image.inpainted = np.multiply(image.inpainted, np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
+
+
+def generate_inpainted_image_inverse_order(image):
+
+        global patches
+        global nodes_count
+        global nodes_order
+
+        target_region = image.mask
+
+        image.inpainted = np.multiply(image.rgb,
+                                      np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
+
+        filter_size = 4  # should be > 1
+        smooth_filter = generate_smooth_filter(filter_size)
+        blend_mask = generate_blend_mask(image.patch_size)
+        blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
+        blend_mask_rgb = np.repeat(blend_mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
+
+        # for i in range(len(nodes_order)):
+        for i in range(len(nodes_order) - 1, -1, -1):
+            patch_id = nodes_order[i]
+            patch = patches[patch_id]
+
+            patchs_mask_patch = patches[patch.pruned_labels[patch.mask]]
+
+            patch_rgb = image.inpainted[patch.x_coord: patch.x_coord + image.patch_size,
+                        patch.y_coord: patch.y_coord + image.patch_size, :]
+
+            patch_rgb_new = image.inpainted[patchs_mask_patch.x_coord: patchs_mask_patch.x_coord + image.patch_size,
+                            patchs_mask_patch.y_coord: patchs_mask_patch.y_coord + image.patch_size, :]
+
+            image.inpainted[patch.x_coord: patch.x_coord + image.patch_size,
+            patch.y_coord: patch.y_coord + image.patch_size, :] = np.multiply(patch_rgb, blend_mask_rgb) + \
+                                                                  np.multiply(patch_rgb_new, 1 - blend_mask_rgb)
+
+            target_region[patch.x_coord: patch.x_coord + image.patch_size,
+            patch.y_coord: patch.y_coord + image.patch_size] = 0
+
+            # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
+            # plt.show()
+            # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.jpg', image.inpainted)
+
+        image.inpainted = image.inpainted.astype(np.uint8)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def generate_inpainted_image_blended(image):
+
+    global patches
+    global nodes_count
+    global nodes_order
+
+    target_region = image.mask
+
+    image.inpainted = np.multiply(image.rgb,
+                                  np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
+
+    filter_size = 2  # should be > 1
+    smooth_filter = generate_smooth_filter(filter_size)
+    blend_mask = generate_blend_mask_diamond(image.patch_size)  # here it's "diamond" blend mask
+    blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
+    blend_mask_rgb = np.repeat(blend_mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
+
+    for i in range(len(nodes_order)):
 
         patch_id = nodes_order[i]
         patch = patches[patch_id]
@@ -460,8 +558,8 @@ def generate_inpainted_image(image):
                         patchs_mask_patch.y_coord: patchs_mask_patch.y_coord + image.patch_size, :]
 
         image.inpainted[patch.x_coord: patch.x_coord + image.patch_size,
-            patch.y_coord: patch.y_coord + image.patch_size, :] = np.multiply(patch_rgb, blend_mask_rgb) + \
-                                                             np.multiply(patch_rgb_new, 1 - blend_mask_rgb)
+            patch.y_coord: patch.y_coord + image.patch_size, :] = np.multiply(patch_rgb, 1 - blend_mask_rgb) + \
+                                                             np.multiply(patch_rgb_new, blend_mask_rgb)
 
         target_region[patch.x_coord: patch.x_coord + image.patch_size, patch.y_coord: patch.y_coord + image.patch_size] = 0
 
@@ -469,13 +567,18 @@ def generate_inpainted_image(image):
         # plt.show()
         # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.jpg', image.inpainted)
 
-
     image.inpainted = image.inpainted.astype(np.uint8)
 
-    # TODO
-    # In the Tijana's code, this line makes a difference because the mask is not looked as a binary thing,
-    # but as a scale (for some reason). Here, it's binary, and hence this line doesn't do anything.
-    # image.inpainted = np.multiply(image.inpainted, np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -494,6 +597,33 @@ def generate_smooth_filter(kernel_size):
     kernel_2D = np.matmul(kernel_1D, kernel_1D.transpose())
 
     return kernel_2D
+
+
+def generate_blend_mask_diamond(patch_size):
+
+    patch_size_half = patch_size // 2
+
+    blend_mask_quarter1 = np.ones((patch_size_half, patch_size_half))
+    for i in range(patch_size_half):
+        for j in range(patch_size_half):
+            if (i + j) < patch_size_half:
+                blend_mask_quarter1[i, j] = 0
+    blend_mask_quarter4 = 1 - blend_mask_quarter1
+
+    blend_mask_quarter2 = np.ones((patch_size_half, patch_size_half))
+    for i in range(patch_size_half):
+        for j in range(patch_size_half):
+            if i < j:
+                blend_mask_quarter2[i, j] = 0
+    blend_mask_quarter3 = 1 - blend_mask_quarter2
+
+    blend_mask = np.zeros((patch_size, patch_size))
+    blend_mask[: patch_size_half, : patch_size_half] = blend_mask_quarter1
+    blend_mask[: patch_size_half, patch_size_half:] = blend_mask_quarter2
+    blend_mask[patch_size_half:, : patch_size_half] = blend_mask_quarter3
+    blend_mask[patch_size_half:, patch_size_half:] = blend_mask_quarter4
+
+    return blend_mask
 
 
 #TODO this is just a hacky way to implement something similar to what is needed

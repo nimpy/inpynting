@@ -76,7 +76,6 @@ def non_masked_patch_diff(image, x, y, x_compare, y_compare):
         return np.sum((np.array(patch_rgb, dtype=np.float32) - np.array(patch_compare_rgb, dtype=np.float32)) ** 2)
 
 
-# TODO
 def half_patch_diff(image, x1, y1, x2, y2, side):
     if image.ir is not None:
         patch1_ir = image.ir[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
@@ -100,8 +99,7 @@ def half_patch_diff(image, x1, y1, x2, y2, side):
         return np.sum((np.array(patch1_rgb_half, dtype=np.float32) - np.array(patch2_rgb_half, dtype=np.float32)) ** 2)
 
 
-def max_pool(patch_ir):
-    pool_size = 8
+def max_pool(patch_ir, pool_size=8):
 
     height, width, nr_channels = patch_ir.shape
 
@@ -110,3 +108,5 @@ def max_pool(patch_ir):
     patch_descr = patch_ir_reshaped.max(axis=1).max(axis=2)
 
     return patch_descr
+
+
