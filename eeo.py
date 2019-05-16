@@ -349,15 +349,16 @@ def compute_label_cost(image, max_nr_labels):
                                           patches[patchs_label_id].x_coord, patches[patchs_label_id].y_coord)
 
 
-            #TODO maybe this constant needs adjusting?
+            # TODO (done) maybe this constant needs adjusting? Probably not: it's used only for calculating
+            #  patch.beliefs_new, which are normalised anyway (and used only in NCMP method).
             patch.local_likelihood = [math.exp(-cost * (1/100000)) for cost in patch.label_cost]
             # print("patch", patch.patch_id, "label cost", patch.label_cost)
             # print("patch", patch.patch_id, "local likelihood", patch.local_likelihood)
 
-            #TODO (for the moment it's just the index in [0..max_nr_labels)
-            # but maybe should be the label of the patch with the highest local likelihood
+            # TODO (done) for the moment it's just the index in [0..max_nr_labels, but maybe should be the label of
+            #  the patch with the highest local likelihood? I don't think so, otherwise it wouldn't probably work :D
             #patch.mask = patch.pruned_labels[patch.local_likelihood.index(max(patch.local_likelihood))]
-            #TODO patch.mask always seems to be zero, why?
+            # TODO (done) patch.mask always seems to be zero, why? Actually, this is not the case (anymore?).
             patch.mask = patch.local_likelihood.index(max(patch.local_likelihood))
 
 
