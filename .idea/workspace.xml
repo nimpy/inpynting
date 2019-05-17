@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="d366a607-62fe-42c9-a88a-1d4fa1f5480f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/eeo.py" beforeDir="false" afterPath="$PROJECT_DIR$/eeo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -12,7 +11,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.38253275">
+    <splitter split-orientation="horizontal" split-proportion="0.22445415">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="true">
@@ -68,8 +67,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/eeo.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="444">
-                  <caret line="358" column="116" selection-start-line="358" selection-start-column="116" selection-end-line="358" selection-end-column="116" />
+                <state relative-caret-position="307">
+                  <caret line="463" column="83" selection-start-line="463" selection-start-column="83" selection-end-line="463" selection-end-column="83" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -132,8 +131,8 @@
       <find>image.mask</find>
       <find>beliefs_new</find>
       <find>beliefs</find>
-      <find>todo</find>
       <find>local_likelihood</find>
+      <find>todo</find>
     </findStrings>
     <replaceStrings>
       <replace>stride</replace>
@@ -156,7 +155,7 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="1919" />
     <option name="width" value="2562" />
     <option name="height" value="1441" />
@@ -297,8 +296,8 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32901752" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.22848439" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49980292" visible="true" weight="0.3549124" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.22848439" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49980292" weight="0.3549124" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32901752" />
@@ -331,17 +330,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>432</line>
+          <line>426</line>
           <option name="timeStamp" value="151" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>541</line>
+          <line>536</line>
           <option name="timeStamp" value="152" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>423</line>
+          <line>417</line>
           <option name="timeStamp" value="157" />
         </line-breakpoint>
       </breakpoints>
@@ -480,8 +479,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/eeo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="444">
-          <caret line="358" column="116" selection-start-line="358" selection-start-column="116" selection-end-line="358" selection-end-column="116" />
+        <state relative-caret-position="307">
+          <caret line="463" column="83" selection-start-line="463" selection-start-column="83" selection-end-line="463" selection-end-column="83" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

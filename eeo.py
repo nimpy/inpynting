@@ -459,8 +459,9 @@ def generate_inpainted_image(image):
     image.inpainted = image.inpainted.astype(np.uint8)
 
     # TODO
-    # In the Tijana's code, this line makes a difference because the mask is not looked as a binary thing,
-    # but as a scale (for some reason). Here, it's binary, and hence this line doesn't do anything.
+    #  In the Tijana's code, this line (that should be in the for-loop!) makes a difference because the mask is not looked
+    #  as a binary thing, but as a scale (for some reason). Here, it's binary, and hence this line doesn't do anything.
+    #  It doesn't seem to make a difference when I comment it in the original code.
     # image.inpainted = np.multiply(image.inpainted, np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
 
 
