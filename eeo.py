@@ -15,6 +15,10 @@ patches = []  # the indices in this list patches match the patch_id
 nodes_count = 0
 nodes_order = []
 
+temps_NOT = np.zeros((103, 4000))
+temps_NOT_last_index = 0
+temps_FULLY = np.zeros((99, 4000))
+temps_FULLY_last_index = 0
 
 # -- 1st phase --
 # initialization
@@ -52,7 +56,7 @@ def initialization(image, thresh_uncertainty):
     for patch in patches:
 
         if patch.overlap_target_region:
-            sys.stdout.write("\rInitialising node " + str(nodes_count + 1))
+            # sys.stdout.write("\rInitialising node " + str(nodes_count + 1))
 
             if patch.overlap_source_region:
 
@@ -66,11 +70,11 @@ def initialization(image, thresh_uncertainty):
 
                         patch.labels.append(patch_compare.patch_id)
 
-                temp = [value - min(list(patch.differences.values())) for value in list(patch.differences.values())]
+                temp_min_diff = min(list(patch.differences.values()))
+                temp = [value - temp_min_diff for value in list(patch.differences.values())]
                 #TODO change thresh_uncertainty such that only patches which are completely in the target region
                 #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
                 patch_uncertainty = len([val for (i, val) in enumerate(temp) if val < thresh_uncertainty])
-                del temp
 
             # if the patch is completely in the target region
             else:
@@ -88,6 +92,8 @@ def initialization(image, thresh_uncertainty):
             # the higher priority the higher priority :D
             patch.priority = len(patch.labels) / max(patch_uncertainty, 1)
 
+            print(patch.patch_id, patch_uncertainty, patch.priority)
+
             nodes_count +=1
 
             # if nodes_count == 7:
@@ -102,12 +108,11 @@ def initialization(image, thresh_uncertainty):
 # (reducing the number of labels at each node to a relatively small number)
 
 def label_pruning(image, thresh_uncertainty, max_nr_labels):
-
     global patches
     global nodes_count
     global nodes_order
 
-    # make a copy of the differences which we can edit and use in this method, and afterwards disregard
+    # make a copy of the differences which we can edit and use in this method, and afterwards discard
     for patch in patches:
         if patch.overlap_target_region:
             patch.additional_differences = patch.differences.copy()
@@ -115,11 +120,12 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
 
     # for all the patches that have an overlap with the target region (aka nodes)
     for i in range(nodes_count):
+
         # print()
         # print("Uncomitted nodes' IDs and priorities:")
         # for patch in patches:
-        #     if patch.overlap_target_region and not patch.committed:
-        #         print(patch.patch_id, patch.priority)
+        #     if patch.overlap_target_region:
+                # print("{:.2f}".format(patch.priority), end=" ")
         # print()
 
         # find the node with the highest priority that hasn't yet been visited
@@ -149,11 +155,12 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
 
 
 def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, thresh_uncertainty):
+    global temps_NOT_last_index
+    global temps_FULLY_last_index
+
+    # thresh_uncertainty = thresh_uncertainty // 5
 
     if patch_neighbor is not None and not patch_neighbor.committed:
-
-        if not patch_neighbor.overlap_target_region:
-            print("Will it ever come to this? (1) (TODO delete if unnecessary)")
 
         min_additional_difference = sys.maxsize
         additional_differences = {}
@@ -166,7 +173,6 @@ def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, thresh_
             # patch_neighbors_label_rgb = image.rgb[
             #                             patch_neighbors_label_x_coord: patch_neighbors_label_x_coord + image.patch_size,
             #                             patch_neighbors_label_y_coord: patch_neighbors_label_y_coord + image.patch_size, :]
-
             # patch_neighbors_label_rgb_half = get_half_patch_from_patch(patch_neighbors_label_rgb, image.stride, opposite_side(side))
 
             for patchs_label_id in patch.pruned_labels:
@@ -176,9 +182,7 @@ def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, thresh_
 
                 # patchs_label_rgb = image.rgb[patchs_label_x_coord: patchs_label_x_coord + image.patch_size,
                 #                    patchs_label_y_coord: patchs_label_y_coord + image.patch_size, :]
-
                 # patchs_label_rgb_half = get_half_patch_from_patch(patchs_label_rgb, image.stride, side)
-
                 # difference = patch_diff(patch_neighbors_label_rgb_half, patchs_label_rgb_half)
 
                 difference = half_patch_diff(image, patchs_label_x_coord, patchs_label_y_coord, patch_neighbors_label_x_coord, patch_neighbors_label_y_coord, side)
@@ -196,14 +200,34 @@ def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, thresh_
                 patch_neighbor.additional_differences[key] = additional_differences[key]
                 print("Will it ever come to this? (2) (TODO delete if unnecessary)")
 
-        # TODO why isn't this calculated in the same way as above?
-        temp = [value - min(patch_neighbor.additional_differences.values()) for value in
+        temp_min_diff = min(patch_neighbor.additional_differences.values())
+        temp = [value - temp_min_diff for value in
                 list(patch_neighbor.additional_differences.values())]
         patch_neighbor_uncertainty = [value < thresh_uncertainty for (i, value) in enumerate(temp)].count(True)
-        del temp
 
         patch_neighbor.priority = len(patch_neighbor.additional_differences) / patch_neighbor_uncertainty #len(patch_neighbor.differences)?
 
+        # print('### patch neighbour:', 'NOT completely under mask,' if patch_neighbor.overlap_source_region else 'FULLY under mask,', 'uncert', patch_neighbor_uncertainty, ', priority', patch_neighbor.priority)
+        # print('NOT' if patch_neighbor.overlap_source_region else 'FULLY', end=',', file=open("/home/niaki/Downloads/temps.txt", "a"))
+        # print(*temp, sep = ",", file=open("/home/niaki/Downloads/temps.txt", "a"))
+
+        if patch_neighbor.overlap_source_region:
+            # print(*temp, sep=",", file=open("/home/niaki/Downloads/temps_NOT.txt", "a"))
+            temp1 = np.zeros(4000)
+            temp1[: len(temp)] = np.array(temp)
+
+            temps_NOT[temps_NOT_last_index, :] = temp1
+            temps_NOT_last_index += 1
+        else:
+            # print(*temp, sep=",", file=open("/home/niaki/Downloads/temps_FULLY.txt", "a"))
+            temp1 = np.zeros(4000)
+            temp1[: len(temp)] = np.array(temp)
+
+            temp = np.array(temp)
+            temps_FULLY[temps_FULLY_last_index, :] = temp1
+            temps_FULLY_last_index +=1
+
+        pass
 
 def get_patch_neighbor_nodes(patch, image):
 
@@ -242,6 +266,9 @@ def get_patch_neighbor_nodes(patch, image):
 
 
 def compute_pairwise_potential_matrix(image, max_nr_labels):
+
+    pickle.dump((temps_NOT, temps_FULLY), open('/home/niaki/Downloads/temps.pickle', "wb"))
+
 
     global patches
     global nodes_count
@@ -369,7 +396,6 @@ def compute_label_cost(image, max_nr_labels):
 def neighborhood_consensus_message_passing(image, max_nr_labels, max_nr_iterations):
 
     global patches
-    global nodes_count
 
     # initialisation of the nodes' beliefs and messages
     for patch in patches:
@@ -457,12 +483,6 @@ def generate_inpainted_image(image):
         # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.jpg', image.inpainted)
 
     image.inpainted = image.inpainted.astype(np.uint8)
-
-    # TODO
-    #  In the Tijana's code, this line (that should be in the for-loop!) makes a difference because the mask is not looked
-    #  as a binary thing, but as a scale (for some reason). Here, it's binary, and hence this line doesn't do anything.
-    #  It doesn't seem to make a difference when I comment it in the original code.
-    # image.inpainted = np.multiply(image.inpainted, np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
 
 
 def generate_inpainted_image_inverse_order(image):
@@ -674,3 +694,28 @@ def unpickle_global_vars(file_version):
     except Exception as e:
         print("Problem while trying to unpickle: ", str(e))
 
+
+def visualise_nodes_priorities(image):
+    global patches
+
+    priority_image = np.multiply(image.rgb,
+                              np.repeat(1 - image.mask, 3, axis=1).reshape((image.height, image.width, 3)))
+
+    max_priority = 0
+    for patch in patches:
+        if patch.overlap_target_region:
+
+            if patch.priority > max_priority:
+                max_priority = patch.priority
+
+    for patch in patches:
+        if patch.overlap_target_region:
+
+            pixel_value = math.floor(patch.priority * 255 / max_priority)
+            for j in range(3):
+                priority_image[patch.x_coord: patch.x_coord + image.patch_size,
+                patch.y_coord: patch.y_coord + image.patch_size, j] = pixel_value
+
+    priority_image = priority_image.astype(np.uint8)
+
+    return priority_image
