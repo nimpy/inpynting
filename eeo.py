@@ -15,10 +15,6 @@ patches = []  # the indices in this list patches match the patch_id
 nodes_count = 0
 nodes_order = []
 
-temps_NOT = np.zeros((103, 4000))
-temps_NOT_last_index = 0
-temps_FULLY = np.zeros((99, 4000))
-temps_FULLY_last_index = 0
 
 # -- 1st phase --
 # initialization
@@ -56,7 +52,7 @@ def initialization(image, thresh_uncertainty):
     for patch in patches:
 
         if patch.overlap_target_region:
-            # sys.stdout.write("\rInitialising node " + str(nodes_count + 1))
+            sys.stdout.write("\rInitialising node " + str(nodes_count + 1))
 
             if patch.overlap_source_region:
 
@@ -92,8 +88,6 @@ def initialization(image, thresh_uncertainty):
             # the higher priority the higher priority :D
             patch.priority = len(patch.labels) / max(patch_uncertainty, 1)
 
-            print(patch.patch_id, patch_uncertainty, patch.priority)
-
             nodes_count +=1
 
             # if nodes_count == 7:
@@ -120,13 +114,6 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
 
     # for all the patches that have an overlap with the target region (aka nodes)
     for i in range(nodes_count):
-
-        # print()
-        # print("Uncomitted nodes' IDs and priorities:")
-        # for patch in patches:
-        #     if patch.overlap_target_region:
-                # print("{:.2f}".format(patch.priority), end=" ")
-        # print()
 
         # find the node with the highest priority that hasn't yet been visited
         highest_priority = -1
@@ -157,8 +144,6 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
 def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, thresh_uncertainty):
     global temps_NOT_last_index
     global temps_FULLY_last_index
-
-    # thresh_uncertainty = thresh_uncertainty // 5
 
     if patch_neighbor is not None and not patch_neighbor.committed:
 
@@ -207,27 +192,6 @@ def update_patchs_neighbors_priority(patch, patch_neighbor, side, image, thresh_
 
         patch_neighbor.priority = len(patch_neighbor.additional_differences) / patch_neighbor_uncertainty #len(patch_neighbor.differences)?
 
-        # print('### patch neighbour:', 'NOT completely under mask,' if patch_neighbor.overlap_source_region else 'FULLY under mask,', 'uncert', patch_neighbor_uncertainty, ', priority', patch_neighbor.priority)
-        # print('NOT' if patch_neighbor.overlap_source_region else 'FULLY', end=',', file=open("/home/niaki/Downloads/temps.txt", "a"))
-        # print(*temp, sep = ",", file=open("/home/niaki/Downloads/temps.txt", "a"))
-
-        if patch_neighbor.overlap_source_region:
-            # print(*temp, sep=",", file=open("/home/niaki/Downloads/temps_NOT.txt", "a"))
-            temp1 = np.zeros(4000)
-            temp1[: len(temp)] = np.array(temp)
-
-            temps_NOT[temps_NOT_last_index, :] = temp1
-            temps_NOT_last_index += 1
-        else:
-            # print(*temp, sep=",", file=open("/home/niaki/Downloads/temps_FULLY.txt", "a"))
-            temp1 = np.zeros(4000)
-            temp1[: len(temp)] = np.array(temp)
-
-            temp = np.array(temp)
-            temps_FULLY[temps_FULLY_last_index, :] = temp1
-            temps_FULLY_last_index +=1
-
-        pass
 
 def get_patch_neighbor_nodes(patch, image):
 
@@ -266,8 +230,6 @@ def get_patch_neighbor_nodes(patch, image):
 
 
 def compute_pairwise_potential_matrix(image, max_nr_labels):
-
-    pickle.dump((temps_NOT, temps_FULLY), open('/home/niaki/Downloads/temps.pickle', "wb"))
 
 
     global patches

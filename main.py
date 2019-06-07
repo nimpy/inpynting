@@ -66,10 +66,9 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
     print()
     print("... Initialization ...")
-    #eeo.initialization(image, thresh_uncertainty)
+    eeo.initialization(image, thresh_uncertainty)
 
-    #eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
-    eeo.unpickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
+    eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
 
     print()
     print("... Label pruning ...")
