@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d366a607-62fe-42c9-a88a-1d4fa1f5480f" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_structures.py" beforeDir="false" afterPath="$PROJECT_DIR$/data_structures.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/eeo.py" beforeDir="false" afterPath="$PROJECT_DIR$/eeo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/temp.py" beforeDir="false" afterPath="$PROJECT_DIR$/temp.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -12,14 +14,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.40177777">
+    <splitter split-orientation="horizontal" split-proportion="0.42666668">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/main.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="270">
-                  <caret line="71" selection-start-line="71" selection-end-line="71" />
+                <state relative-caret-position="114">
+                  <caret line="129" column="31" selection-start-line="129" selection-start-column="31" selection-end-line="129" selection-end-column="31" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -36,14 +38,14 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/data_structures.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1210">
-                  <caret line="34" column="32" selection-start-line="34" selection-start-column="32" selection-end-line="34" selection-end-column="32" />
+                <state relative-caret-position="893">
+                  <caret line="113" column="27" selection-start-line="113" selection-start-column="4" selection-end-line="113" selection-end-column="27" />
                   <folding>
-                    <marker date="1557158899015" expanded="true" signature="23:24" ph="..." />
-                    <marker date="1557158899015" expanded="true" signature="23:25" ph="..." />
+                    <marker date="1559915968861" expanded="true" signature="23:24" ph="..." />
+                    <marker date="1559915968861" expanded="true" signature="23:25" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -68,8 +70,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/eeo.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="832">
-                  <caret line="54" column="22" selection-start-line="54" selection-start-column="12" selection-end-line="54" selection-end-column="22" />
+                <state relative-caret-position="630">
+                  <caret line="428" column="52" lean-forward="true" selection-start-line="428" selection-start-column="52" selection-end-line="428" selection-end-column="52" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -83,9 +85,9 @@
                 <state relative-caret-position="342">
                   <caret line="22" column="10" selection-start-line="22" selection-start-column="10" selection-end-line="22" selection-end-column="10" />
                   <folding>
-                    <marker date="1555678462093" expanded="true" signature="937:1990" ph="..." />
-                    <marker date="1555678462093" expanded="true" signature="2001:2006" ph="..." />
-                    <marker date="1555678462093" expanded="true" signature="2001:2385" ph="..." />
+                    <marker date="1559911953838" expanded="true" signature="934:1984" ph="..." />
+                    <marker date="1559911953838" expanded="true" signature="1995:2000" ph="..." />
+                    <marker date="1559911953838" expanded="true" signature="1995:2379" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -104,22 +106,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>patch_diff(</find>
-      <find>max_nr_iterations</find>
-      <find>patch_diff</find>
-      <find>half_patch_diff</find>
-      <find>non_masked_patch_diff</find>
-      <find>TODO</find>
-      <find>image.mask</find>
-      <find>local_likelihood</find>
-      <find>todo</find>
-      <find>nodes_count</find>
-      <find>beliefs_new</find>
-      <find>beliefs</find>
-      <find>messages</find>
-      <find>temp</find>
-      <find>/ 5</find>
-      <find>patch neigh uncert</find>
       <find>: FULLY under mask</find>
       <find>Highest priority patch</find>
       <find>temps_FULLY_last_index</find>
@@ -134,6 +120,22 @@
       <find>print</find>
       <find>sys.stdout</find>
       <find>inpaint_image</find>
+      <find>overlap_source_region</find>
+      <find>overlap_target_region</find>
+      <find>coordinates_to_position</find>
+      <find>patch</find>
+      <find>patch_id</find>
+      <find>temps_NOT_last_index</find>
+      <find>nodes_</find>
+      <find>for patch in nodes</find>
+      <find>neighbor</find>
+      <find>potential_matrix</find>
+      <find>nodes[</find>
+      <find>in nodes</find>
+      <find>visualise_nodes_priorities</find>
+      <find>overlap_target</find>
+      <find>.overlap_target</find>
+      <find>position_to_coordinates</find>
     </findStrings>
     <replaceStrings>
       <replace>stride</replace>
@@ -149,14 +151,14 @@
         <option value="$PROJECT_DIR$/label_pruning.py" />
         <option value="$PROJECT_DIR$/efficient_energy_optimization.py" />
         <option value="$PROJECT_DIR$/temp.py" />
-        <option value="$PROJECT_DIR$/data_structures.py" />
         <option value="$PROJECT_DIR$/patch_diff.py" />
-        <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/data_structures.py" />
         <option value="$PROJECT_DIR$/eeo.py" />
+        <option value="$PROJECT_DIR$/main.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="1919" />
     <option name="width" value="2562" />
     <option name="height" value="1441" />
@@ -303,7 +305,7 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32901752" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3061691" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.27798933" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49980292" weight="0.20715918" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -337,17 +339,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>518</line>
+          <line>497</line>
           <option name="timeStamp" value="152" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>103</line>
+          <line>104</line>
           <option name="timeStamp" value="168" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>188</line>
+          <line>184</line>
           <option name="timeStamp" value="176" />
         </line-breakpoint>
       </breakpoints>
@@ -449,9 +451,9 @@
         <state relative-caret-position="342">
           <caret line="22" column="10" selection-start-line="22" selection-start-column="10" selection-end-line="22" selection-end-column="10" />
           <folding>
-            <marker date="1555678462093" expanded="true" signature="937:1990" ph="..." />
-            <marker date="1555678462093" expanded="true" signature="2001:2006" ph="..." />
-            <marker date="1555678462093" expanded="true" signature="2001:2385" ph="..." />
+            <marker date="1559911953838" expanded="true" signature="934:1984" ph="..." />
+            <marker date="1559911953838" expanded="true" signature="1995:2000" ph="..." />
+            <marker date="1559911953838" expanded="true" signature="1995:2379" ph="..." />
           </folding>
         </state>
       </provider>
@@ -462,26 +464,6 @@
           <caret line="92" column="37" lean-forward="true" selection-start-line="92" selection-start-column="4" selection-end-line="92" selection-end-column="37" />
           <folding>
             <element signature="e#0#75#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="71" selection-start-line="71" selection-end-line="71" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/eeo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="832">
-          <caret line="54" column="22" selection-start-line="54" selection-start-column="12" selection-end-line="54" selection-end-column="22" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -505,11 +487,31 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/data_structures.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1210">
-          <caret line="34" column="32" selection-start-line="34" selection-start-column="32" selection-end-line="34" selection-end-column="32" />
+        <state relative-caret-position="893">
+          <caret line="113" column="27" selection-start-line="113" selection-start-column="4" selection-end-line="113" selection-end-column="27" />
           <folding>
-            <marker date="1557158899015" expanded="true" signature="23:24" ph="..." />
-            <marker date="1557158899015" expanded="true" signature="23:25" ph="..." />
+            <marker date="1559915968861" expanded="true" signature="23:24" ph="..." />
+            <marker date="1559915968861" expanded="true" signature="23:25" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/eeo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="630">
+          <caret line="428" column="52" lean-forward="true" selection-start-line="428" selection-start-column="52" selection-end-line="428" selection-end-column="52" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="114">
+          <caret line="129" column="31" selection-start-line="129" selection-start-column="31" selection-end-line="129" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>

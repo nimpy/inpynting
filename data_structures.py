@@ -12,22 +12,20 @@ class Image2BInpainted:
         self.order_image = order_image
 
 
-class Patch:
+# a patch to be inpainted
+class Node:
 
-    def __init__(self, patch_id, overlap_source_region, overlap_target_region, x_coord, y_coord,
+    def __init__(self, node_id, overlap_source_region, x_coord, y_coord,
                  priority=0, labels=None, pruned_labels=None, differences=None, committed=False, additional_differences=None,
                  potential_matrix_up=None, potential_matrix_down=None, potential_matrix_left=None, potential_matrix_right=None,
                  label_cost=None, local_likelihood=None, mask=None,
                  messages=None, beliefs=None, beliefs_new=None):
 
-        # properties of all patches
-        self.patch_id = patch_id
+        self.node_id = node_id
         self.overlap_source_region = overlap_source_region
-        self.overlap_target_region = overlap_target_region
         self.x_coord = x_coord
         self.y_coord = y_coord
 
-        # properties of patches having an intersection with the target region (i.e. patches to be inpainted)
         self.priority = priority
         if labels is None:
             self.labels = []
@@ -76,7 +74,7 @@ class Patch:
         neighbor_x_coord = self.x_coord - image.stride
         neighbor_y_coord = self.y_coord
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size, image.stride)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size)
 
     def get_down_neighbor_position(self, image):
 
@@ -86,7 +84,7 @@ class Patch:
         neighbor_x_coord = self.x_coord + image.stride
         neighbor_y_coord = self.y_coord
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size, image.stride)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size)
 
     def get_left_neighbor_position(self, image):
 
@@ -96,7 +94,7 @@ class Patch:
         neighbor_x_coord = self.x_coord
         neighbor_y_coord = self.y_coord - image.stride
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size, image.stride)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size)
 
     def get_right_neighbor_position(self, image):
 
@@ -106,11 +104,17 @@ class Patch:
         neighbor_x_coord = self.x_coord
         neighbor_y_coord = self.y_coord + image.stride
 
-        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size, image.stride)
+        return coordinates_to_position(neighbor_x_coord, neighbor_y_coord, image.height, image.patch_size)
 
 
-def coordinates_to_position(x, y, image_height, patch_size, stride):
-    return (y // stride) * len(range(0, image_height - patch_size + 1, stride)) + (x // stride)
+def coordinates_to_position(x, y, image_height, patch_size):
+    return y * len(range(0, image_height - patch_size + 1)) + x
+
+
+def position_to_coordinates(position, image_height, patch_size):
+    x = position % (image_height - patch_size + 1)
+    y = position // (image_height - patch_size + 1)
+    return x, y
 
 
 UP = 1
