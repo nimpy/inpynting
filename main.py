@@ -132,9 +132,9 @@ def main():
     max_nr_iterations = 10
     use_descriptors = False
     
-    folder_path = '/home/niaki/Code/inpynting_images/Lenna'
-    image_filename = 'Lenna.png'
-    mask_filename = 'Mask512.jpg'
+    # folder_path = '/home/niaki/Code/inpynting_images/Lenna'
+    # image_filename = 'Lenna.png'
+    # mask_filename = 'Mask512.jpg'
     # mask_filename = 'Mask512_3.png'
 
     # folder_path = '/home/niaki/Code/inpynting_images/Greenland'
@@ -147,9 +147,9 @@ def main():
 
     folder_path = '/home/niaki/Code/inpynting_images/building'
     image_filename = 'building128.jpeg'
-    mask_filename = 'mask128_ULcorner.jpg' # 'mask128.jpg' 'mask128_ULcorner.jpg'
+    mask_filename = 'mask128.jpg' # 'mask128.jpg' 'mask128_ULcorner.jpg'
 
-    # jian_number = '8'
+    # jian_number = '10'
     # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
     # image_filename = 'Jian' + jian_number + '_degra.png'
     # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'

@@ -50,7 +50,7 @@ def initialization(image, thresh_uncertainty):
 
     for i, node in enumerate(nodes.values()):
 
-        # sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
+        sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
 
         if node.overlap_source_region:
 
@@ -60,15 +60,9 @@ def initialization(image, thresh_uncertainty):
 
                     patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
 
-                    patch_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
-                    patch_mask_overlap_nonzero_elements = np.count_nonzero(patch_mask_overlap)
-                    if patch_mask_overlap_nonzero_elements == 0:
-
-                    # TODO change this, because there will be patches that aren't nodes (because not on the stride grid)
-                    #   but are within the target region that will satisfy this condition and get compared
-                    #   (also change in the other part place in this method)
-                    # if patch_compare_position not in nodes.keys():
-
+                    patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
+                    patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+                    if patch_compare_mask_overlap_nonzero_elements == 0:
                         patch_difference = non_masked_patch_diff(image, node.x_coord, node.y_coord, x_compare, y_compare)
                         node.differences[patch_compare_position] = patch_difference
                         node.labels.append(patch_compare_position)
@@ -88,12 +82,9 @@ def initialization(image, thresh_uncertainty):
 
                     patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
 
-                    patch_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
-                    patch_mask_overlap_nonzero_elements = np.count_nonzero(patch_mask_overlap)
-                    if patch_mask_overlap_nonzero_elements == 0:
-
-                    # if patch_compare_position not in nodes.keys():
-
+                    patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
+                    patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+                    if patch_compare_mask_overlap_nonzero_elements == 0:
                         node.differences[patch_compare_position] = 0
                         node.labels.append(patch_compare_position)
 
