@@ -127,7 +127,7 @@ def main():
     # inputs
     patch_size = 16
     stride = patch_size // 2 #TODO fix problem when stride isn't exactly half of patch size!
-    thresh_uncertainty = 155360 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
+    thresh_uncertainty = 6755360 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
     max_nr_labels = 10
     max_nr_iterations = 10
     use_descriptors = False
@@ -145,9 +145,9 @@ def main():
     # image_filename = 'building64.jpg'
     # mask_filename = 'girl64_mask.png'
 
-    # folder_path = '/home/niaki/Code/inpynting_images/building'
-    # image_filename = 'building128.jpeg'
-    # mask_filename = 'mask128.jpg'
+    folder_path = '/home/niaki/Code/inpynting_images/building'
+    image_filename = 'building128.jpeg'
+    mask_filename = 'mask128.jpg'
 
     # jian_number = '8'
     # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'

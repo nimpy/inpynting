@@ -55,8 +55,8 @@ def initialization(image, thresh_uncertainty):
         if node.overlap_source_region:
 
             # compare the node patch to all patches that are completely in the source region
-            for y_compare in range(0, image.width - image.patch_size + 1, image.stride):
-                for x_compare in range(0, image.height - image.patch_size + 1, image.stride):
+            for y_compare in range(0, image.width - image.patch_size + 1):
+                for x_compare in range(0, image.height - image.patch_size + 1):
 
                     patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
 
@@ -76,8 +76,8 @@ def initialization(image, thresh_uncertainty):
         else:
 
             # make all patches that are completely in the source region be the label of the patch
-            for y_compare in range(0, image.width - image.patch_size + 1, image.stride):
-                for x_compare in range(0, image.height - image.patch_size + 1, image.stride):
+            for y_compare in range(0, image.width - image.patch_size + 1):
+                for x_compare in range(0, image.height - image.patch_size + 1):
 
                     patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
 
