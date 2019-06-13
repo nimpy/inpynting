@@ -13,14 +13,14 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.32222223">
+    <splitter split-orientation="horizontal" split-proportion="0.25955555">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/main.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="658">
-                  <caret line="152" column="21" selection-start-line="152" selection-start-column="21" selection-end-line="152" selection-end-column="21" />
+                <state relative-caret-position="382">
+                  <caret line="149" column="37" selection-start-line="149" selection-start-column="37" selection-end-line="149" selection-end-column="37" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -37,11 +37,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/data_structures.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="133">
-                  <caret line="110" selection-start-line="110" selection-end-line="110" />
+                <state relative-caret-position="261">
+                  <caret line="104" column="54" selection-start-line="104" selection-start-column="48" selection-end-line="104" selection-end-column="54" />
                   <folding>
                     <marker date="1559915968861" expanded="true" signature="23:24" ph="..." />
                     <marker date="1559915968861" expanded="true" signature="23:25" ph="..." />
@@ -53,8 +53,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/patch_diff.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="412">
-                  <caret line="96" column="74" selection-start-line="96" selection-start-column="70" selection-end-line="96" selection-end-column="74" />
+                <state relative-caret-position="1330">
+                  <caret line="70" lean-forward="true" selection-start-line="70" selection-end-line="70" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -69,8 +69,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/eeo.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="329">
-                  <caret line="114" selection-start-line="114" selection-end-line="114" />
+                <state relative-caret-position="494">
+                  <caret line="68" column="76" selection-start-line="68" selection-start-column="76" selection-end-line="68" selection-end-column="76" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
                   </folding>
@@ -105,16 +105,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>temps_FULLY_last_index</find>
-      <find>open</find>
-      <find>size</find>
-      <find>thresh</find>
-      <find>min</find>
-      <find>min(</find>
-      <find>min_diff</find>
-      <find>//</find>
-      <find>pickle</find>
-      <find>print</find>
       <find>sys.stdout</find>
       <find>inpaint_image</find>
       <find>overlap_source_region</find>
@@ -133,8 +123,18 @@
       <find>overlap_target</find>
       <find>.overlap_target</find>
       <find>position_to_coordinates</find>
+      <find>ones</find>
+      <find>zeros</find>
+      <find>plt</find>
+      <find>order</find>
+      <find>orderin</find>
+      <find>mask</find>
       <find>stri</find>
       <find>stride</find>
+      <find>mask.</find>
+      <find>1855</find>
+      <find>image.r</find>
+      <find>mask.j</find>
     </findStrings>
     <replaceStrings>
       <replace>stride</replace>
@@ -152,12 +152,12 @@
         <option value="$PROJECT_DIR$/temp.py" />
         <option value="$PROJECT_DIR$/patch_diff.py" />
         <option value="$PROJECT_DIR$/data_structures.py" />
-        <option value="$PROJECT_DIR$/eeo.py" />
         <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/eeo.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="1835" />
     <option name="y" value="6" />
     <option name="width" value="1920" />
@@ -305,8 +305,8 @@
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32901752" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.30388424" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49980292" visible="true" weight="0.31378523" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.17364813" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49980292" weight="0.31987813" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32901752" />
@@ -339,28 +339,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>497</line>
+          <line>507</line>
           <option name="timeStamp" value="152" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>96</line>
-          <option name="timeStamp" value="177" />
+          <line>403</line>
+          <option name="timeStamp" value="200" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>27</line>
-          <option name="timeStamp" value="179" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>226</line>
-          <option name="timeStamp" value="193" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/eeo.py</url>
-          <line>110</line>
-          <option name="timeStamp" value="194" />
+          <line>50</line>
+          <option name="timeStamp" value="202" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -490,10 +480,21 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/data_structures.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="261">
+          <caret line="104" column="54" selection-start-line="104" selection-start-column="48" selection-end-line="104" selection-end-column="54" />
+          <folding>
+            <marker date="1559915968861" expanded="true" signature="23:24" ph="..." />
+            <marker date="1559915968861" expanded="true" signature="23:25" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/patch_diff.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="412">
-          <caret line="96" column="74" selection-start-line="96" selection-start-column="70" selection-end-line="96" selection-end-column="74" />
+        <state relative-caret-position="1330">
+          <caret line="70" lean-forward="true" selection-start-line="70" selection-end-line="70" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -502,29 +503,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="658">
-          <caret line="152" column="21" selection-start-line="152" selection-start-column="21" selection-end-line="152" selection-end-column="21" />
+        <state relative-caret-position="382">
+          <caret line="149" column="37" selection-start-line="149" selection-start-column="37" selection-end-line="149" selection-end-column="37" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data_structures.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="133">
-          <caret line="110" selection-start-line="110" selection-end-line="110" />
-          <folding>
-            <marker date="1559915968861" expanded="true" signature="23:24" ph="..." />
-            <marker date="1559915968861" expanded="true" signature="23:25" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/eeo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="329">
-          <caret line="114" selection-start-line="114" selection-end-line="114" />
+        <state relative-caret-position="494">
+          <caret line="68" column="76" selection-start-line="68" selection-start-column="76" selection-end-line="68" selection-end-column="76" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>

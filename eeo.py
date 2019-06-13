@@ -50,7 +50,7 @@ def initialization(image, thresh_uncertainty):
 
     for i, node in enumerate(nodes.values()):
 
-        sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
+        # sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
 
         if node.overlap_source_region:
 
@@ -60,7 +60,14 @@ def initialization(image, thresh_uncertainty):
 
                     patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
 
-                    if patch_compare_position not in nodes.keys():
+                    patch_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
+                    patch_mask_overlap_nonzero_elements = np.count_nonzero(patch_mask_overlap)
+                    if patch_mask_overlap_nonzero_elements == 0:
+
+                    # TODO change this, because there will be patches that aren't nodes (because not on the stride grid)
+                    #   but are within the target region that will satisfy this condition and get compared
+                    #   (also change in the other part place in this method)
+                    # if patch_compare_position not in nodes.keys():
 
                         patch_difference = non_masked_patch_diff(image, node.x_coord, node.y_coord, x_compare, y_compare)
                         node.differences[patch_compare_position] = patch_difference
@@ -81,7 +88,11 @@ def initialization(image, thresh_uncertainty):
 
                     patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
 
-                    if patch_compare_position not in nodes.keys():
+                    patch_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
+                    patch_mask_overlap_nonzero_elements = np.count_nonzero(patch_mask_overlap)
+                    if patch_mask_overlap_nonzero_elements == 0:
+
+                    # if patch_compare_position not in nodes.keys():
 
                         node.differences[patch_compare_position] = 0
                         node.labels.append(patch_compare_position)
@@ -407,7 +418,6 @@ def generate_inpainted_image(image):
         node_id = nodes_order[i]
         node = nodes[node_id]
 
-        # node_mask_patch = nodes[node.pruned_labels[node.mask]]
         node_mask_patch_x_coord, node_mask_patch_y_coord =  position_to_coordinates(node.pruned_labels[node.mask], image.height, image.patch_size)
 
         node_rgb = image.inpainted[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
@@ -421,7 +431,7 @@ def generate_inpainted_image(image):
 
         # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
         # plt.show()
-        # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.jpg', image.inpainted)
+        # imageio.imwrite('/home/niaki/Code/inpynting_images/building/ordering2/building_' + str(i).zfill(4) + '.jpg', image.inpainted)
 
     image.inpainted = image.inpainted.astype(np.uint8)
 

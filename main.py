@@ -29,7 +29,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
         for j in range(mask.shape[1]):
             mask[i,j] = round(mask[i,j])
 
-    # on the image: set everything that's under the mask to white
+    # on the image: set everything that's under the mask to black
     for i in range(image_rgb.shape[0]):
         for j in range(image_rgb.shape[1]):
             for k in range(image_rgb.shape[2]):
@@ -147,7 +147,7 @@ def main():
 
     folder_path = '/home/niaki/Code/inpynting_images/building'
     image_filename = 'building128.jpeg'
-    mask_filename = 'mask128.jpg'
+    mask_filename = 'mask128_ULcorner.jpg' # 'mask128.jpg' 'mask128_ULcorner.jpg'
 
     # jian_number = '8'
     # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
