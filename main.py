@@ -5,7 +5,7 @@ import os
 import datetime
 # import random
 # import sys
-import ae_descriptor
+# import ae_descriptor
 
 from data_structures import Image2BInpainted
 import eeo
@@ -24,10 +24,15 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
     mask = imageio.imread(folder_path + '/' + mask_filename)
     mask = mask[:, :, 0]
-    mask = mask / 255
+
     for i in range(mask.shape[0]):
         for j in range(mask.shape[1]):
-            mask[i,j] = round(mask[i,j])
+            if mask[i,j] < 128:
+                mask[i, j] = 0
+            else:
+                mask[i, j] = 1
+
+    mask = np.array(mask, dtype=np.uint32)
 
     # on the image: set everything that's under the mask to black
     for i in range(image_rgb.shape[0]):
@@ -66,9 +71,9 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
     print()
     print("... Initialization ...")
-    eeo.initialization(image, thresh_uncertainty)
+    eeo.initialization_rgb(image, thresh_uncertainty)
 
-    eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
+    eeo.pickle_global_vars(image_inpainted_name + eeo.initialization_slow.__name__)
 
     print()
     print("... Label pruning ...")
@@ -132,9 +137,9 @@ def main():
     max_nr_iterations = 10
     use_descriptors = False
     
-    # folder_path = '/home/niaki/Code/inpynting_images/Lenna'
-    # image_filename = 'Lenna.png'
-    # mask_filename = 'Mask512.jpg'
+    folder_path = '/home/niaki/Code/inpynting_images/Lenna'
+    image_filename = 'Lenna.png'
+    mask_filename = 'Mask512.jpg'
     # mask_filename = 'Mask512_3.png'
 
     # folder_path = '/home/niaki/Code/inpynting_images/Greenland'

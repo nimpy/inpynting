@@ -8,6 +8,7 @@ import imageio
 
 from data_structures import Node, coordinates_to_position, position_to_coordinates
 from data_structures import UP, DOWN, LEFT, RIGHT
+from data_structures import get_half_patch_from_patch, opposite_side
 from patch_diff import non_masked_patch_diff, half_patch_diff
 
 
@@ -19,7 +20,7 @@ nodes_order = []
 # -- 1st phase --
 # initialization
 # (assigning priorities to MRF nodes to be used for determining the visiting order in the 2nd phase)
-def initialization(image, thresh_uncertainty):
+def initialization_slow(image, thresh_uncertainty):
 
     global nodes
     global nodes_count
@@ -58,12 +59,12 @@ def initialization(image, thresh_uncertainty):
             for y_compare in range(0, image.width - image.patch_size + 1):
                 for x_compare in range(0, image.height - image.patch_size + 1):
 
-                    patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
-
                     patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
                     patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+
                     if patch_compare_mask_overlap_nonzero_elements == 0:
                         patch_difference = non_masked_patch_diff(image, node.x_coord, node.y_coord, x_compare, y_compare)
+                        patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
                         node.differences[patch_compare_position] = patch_difference
                         node.labels.append(patch_compare_position)
 
@@ -80,11 +81,11 @@ def initialization(image, thresh_uncertainty):
             for y_compare in range(0, image.width - image.patch_size + 1):
                 for x_compare in range(0, image.height - image.patch_size + 1):
 
-                    patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
-
                     patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
                     patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+
                     if patch_compare_mask_overlap_nonzero_elements == 0:
+                        patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
                         node.differences[patch_compare_position] = 0
                         node.labels.append(patch_compare_position)
 
@@ -98,6 +99,103 @@ def initialization(image, thresh_uncertainty):
 
     print("\nTotal number of patches: ", len(nodes))
     print("Number of patches to be inpainted: ", nodes_count)
+
+
+
+
+def initialization_rgb(image, thresh_uncertainty):
+
+    global nodes
+    global nodes_count
+
+    # for all the patches in an image with stride $stride
+    for y in range(0, image.width - image.patch_size + 1, image.stride):
+        for x in range(0, image.height - image.patch_size + 1, image.stride):
+
+            patch_mask_overlap = image.mask[x: x + image.patch_size, y: y + image.patch_size]
+            patch_mask_overlap_nonzero_elements = np.count_nonzero(patch_mask_overlap)
+
+            # determine with which regions is the patch overlapping
+            if patch_mask_overlap_nonzero_elements == 0:
+                patch_overlap_source_region = True
+                patch_overlap_target_region = False
+            elif patch_mask_overlap_nonzero_elements == image.patch_size**2:
+                patch_overlap_source_region = False
+                patch_overlap_target_region = True
+            else:
+                patch_overlap_source_region = True
+                patch_overlap_target_region = True
+
+            if patch_overlap_target_region:
+                patch_position = coordinates_to_position(x, y, image.height, image.patch_size)
+                node = Node(patch_position, patch_overlap_source_region, x, y)
+                nodes[patch_position] = node
+                nodes_count += 1
+
+    for i, node in enumerate(nodes.values()):
+
+        sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
+
+        if node.overlap_source_region:
+
+            node_rgb = image.rgb[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
+            mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+            mask_3ch = np.repeat(mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
+            node_rgb = node_rgb * (1 - mask_3ch)
+
+            # compare the node patch to all patches that are completely in the source region
+            for y_compare in range(0, image.width - image.patch_size + 1):
+                for x_compare in range(0, image.height - image.patch_size + 1):
+
+                    patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
+                    patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+
+                    if patch_compare_mask_overlap_nonzero_elements == 0:
+                        patch_compare_rgb = image.rgb[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size, :]
+                        patch_compare_rgb = patch_compare_rgb * (1 - mask_3ch)
+
+                        # patch_difference = non_masked_patch_diff(image, node.x_coord, node.y_coord, x_compare, y_compare)
+                        # temp_patch_difference = node_rgb - patch_compare_rgb
+                        patch_difference = np.sum((node_rgb - patch_compare_rgb) ** 2, dtype=np.uint32)
+
+                        patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
+                        node.differences[patch_compare_position] = patch_difference
+                        node.labels.append(patch_compare_position)
+
+            temp_min_diff = min(list(node.differences.values()))
+            temp = [value - temp_min_diff for value in list(node.differences.values())]
+            #TODO change thresh_uncertainty such that only patches which are completely in the target region
+            #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
+            node_uncertainty = len([val for (i, val) in enumerate(temp) if val < thresh_uncertainty])
+
+        # if the patch is completely in the target region
+        else:
+
+            # make all patches that are completely in the source region be the label of the patch
+            for y_compare in range(0, image.width - image.patch_size + 1):
+                for x_compare in range(0, image.height - image.patch_size + 1):
+
+                    patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
+                    patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+
+                    if patch_compare_mask_overlap_nonzero_elements == 0:
+                        patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
+                        node.differences[patch_compare_position] = 0
+                        node.labels.append(patch_compare_position)
+
+            node_uncertainty = len(node.labels)
+
+        # the higher priority the higher priority :D
+        node.priority = len(node.labels) / max(node_uncertainty, 1)
+
+        # if nodes_count == 7:
+        #     break
+
+    print("\nTotal number of patches: ", len(nodes))
+    print("Number of patches to be inpainted: ", nodes_count)
+
+
+
 
 
 # -- 2nd phase --
@@ -136,13 +234,13 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
         node_neighbor_up, node_neighbor_down, node_neighbor_left, node_neighbor_right = get_neighbor_nodes(
             node, image)
 
-        update_neighbors_priority(node, node_neighbor_up, UP, image, thresh_uncertainty)
-        update_neighbors_priority(node, node_neighbor_down, DOWN, image, thresh_uncertainty)
-        update_neighbors_priority(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
-        update_neighbors_priority(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
+        update_neighbors_priority_rgb(node, node_neighbor_up, UP, image, thresh_uncertainty)
+        update_neighbors_priority_rgb(node, node_neighbor_down, DOWN, image, thresh_uncertainty)
+        update_neighbors_priority_rgb(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
+        update_neighbors_priority_rgb(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
 
 
-def update_neighbors_priority(node, neighbor, side, image, thresh_uncertainty):
+def update_neighbors_priority_slow(node, neighbor, side, image, thresh_uncertainty):
 
     # if neighbor is a node that hasn't been committed yet
     if neighbor is not None and not neighbor.committed:
@@ -189,6 +287,58 @@ def update_neighbors_priority(node, neighbor, side, image, thresh_uncertainty):
         neighbor_uncertainty = [value < thresh_uncertainty for (i, value) in enumerate(temp)].count(True)
 
         neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
+
+
+
+def update_neighbors_priority_rgb(node, neighbor, side, image, thresh_uncertainty):
+
+    # if neighbor is a node that hasn't been committed yet
+    if neighbor is not None and not neighbor.committed:
+
+        min_additional_difference = sys.maxsize
+        additional_differences = {}
+
+        for neighbors_label_id in neighbor.labels:
+
+            neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
+
+            # patch_neighbors_label_rgb = image.rgb[
+            #                             neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
+            #                             neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size, :]
+            # patch_neighbors_label_rgb_half = get_half_patch_from_patch(patch_neighbors_label_rgb, image.stride, opposite_side(side))
+
+            for node_label_id in node.pruned_labels:
+
+                node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+
+                # patchs_label_rgb = image.rgb[node_label_x_coord: node_label_x_coord + image.patch_size,
+                #                    node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                # patchs_label_rgb_half = get_half_patch_from_patch(patchs_label_rgb, image.stride, side)
+                # difference = np.sum((patch_neighbors_label_rgb_half - patchs_label_rgb_half) ** 2, dtype=np.uint32)
+
+                difference = half_patch_diff(image, node_label_x_coord, node_label_y_coord, neighbors_label_x_coord, neighbors_label_y_coord, side)
+
+                if difference < min_additional_difference:
+                    min_additional_difference = difference
+
+            additional_differences[neighbors_label_id] = min_additional_difference
+            min_additional_difference = sys.maxsize
+
+        for key in additional_differences.keys():
+            if key in neighbor.additional_differences:
+                neighbor.additional_differences[key] += additional_differences[key]
+            else:
+                neighbor.additional_differences[key] = additional_differences[key]
+                print("Will it ever come to this? (2) (TODO delete if unnecessary)")
+
+        temp_min_diff = min(neighbor.additional_differences.values())
+        temp = [value - temp_min_diff for value in
+                list(neighbor.additional_differences.values())]
+        neighbor_uncertainty = [value < thresh_uncertainty for (i, value) in enumerate(temp)].count(True)
+
+        neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
+
+
 
 
 def get_neighbor_nodes(node, image):
