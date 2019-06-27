@@ -155,8 +155,7 @@ def initialization_rgb(image, thresh_uncertainty):
                         patch_compare_rgb = patch_compare_rgb * (1 - mask_3ch)
 
                         # patch_difference = non_masked_patch_diff(image, node.x_coord, node.y_coord, x_compare, y_compare)
-                        # temp_patch_difference = node_rgb - patch_compare_rgb
-                        patch_difference = np.sum((node_rgb - patch_compare_rgb) ** 2, dtype=np.uint32)
+                        patch_difference = np.sum(np.subtract(node_rgb, patch_compare_rgb, dtype=np.int32) ** 2)
 
                         patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
                         node.differences[patch_compare_position] = patch_difference
@@ -302,21 +301,21 @@ def update_neighbors_priority_rgb(node, neighbor, side, image, thresh_uncertaint
 
             neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
 
-            # patch_neighbors_label_rgb = image.rgb[
-            #                             neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
-            #                             neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size, :]
-            # patch_neighbors_label_rgb_half = get_half_patch_from_patch(patch_neighbors_label_rgb, image.stride, opposite_side(side))
+            patch_neighbors_label_rgb = image.rgb[neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
+                                        neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size, :]
+            patch_neighbors_label_rgb_half = get_half_patch_from_patch(patch_neighbors_label_rgb, image.stride, opposite_side(side))
 
             for node_label_id in node.pruned_labels:
 
                 node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
 
-                # patchs_label_rgb = image.rgb[node_label_x_coord: node_label_x_coord + image.patch_size,
-                #                    node_label_y_coord: node_label_y_coord + image.patch_size, :]
-                # patchs_label_rgb_half = get_half_patch_from_patch(patchs_label_rgb, image.stride, side)
-                # difference = np.sum((patch_neighbors_label_rgb_half - patchs_label_rgb_half) ** 2, dtype=np.uint32)
+                patchs_label_rgb = image.rgb[node_label_x_coord: node_label_x_coord + image.patch_size,
+                                   node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                patchs_label_rgb_half = get_half_patch_from_patch(patchs_label_rgb, image.stride, side)
 
-                difference = half_patch_diff(image, node_label_x_coord, node_label_y_coord, neighbors_label_x_coord, neighbors_label_y_coord, side)
+                difference = np.sum(np.subtract(patch_neighbors_label_rgb_half, patchs_label_rgb_half, dtype=np.int32) ** 2)
+
+                # difference = half_patch_diff(image, node_label_x_coord, node_label_y_coord, neighbors_label_x_coord, neighbors_label_y_coord, side)
 
                 if difference < min_additional_difference:
                     min_additional_difference = difference
