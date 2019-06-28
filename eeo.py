@@ -49,6 +49,9 @@ def initialization_slow(image, thresh_uncertainty):
                 nodes[patch_position] = node
                 nodes_count += 1
 
+
+
+
     for i, node in enumerate(nodes.values()):
 
         sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
@@ -132,6 +135,8 @@ def initialization_rgb(image, thresh_uncertainty):
                 nodes[patch_position] = node
                 nodes_count += 1
 
+    labels_diametar = 50
+
     for i, node in enumerate(nodes.values()):
 
         sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
@@ -144,8 +149,13 @@ def initialization_rgb(image, thresh_uncertainty):
             node_rgb = node_rgb * (1 - mask_3ch)
 
             # compare the node patch to all patches that are completely in the source region
-            for y_compare in range(0, image.width - image.patch_size + 1):
-                for x_compare in range(0, image.height - image.patch_size + 1):
+            for y_compare in range(max(node.y_coord - labels_diametar, 0),
+                                   min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
+                for x_compare in range(max(node.x_coord - labels_diametar, 0),
+                                       min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+
+            # for y_compare in range(0, image.width - image.patch_size + 1):
+            #     for x_compare in range(0, image.height - image.patch_size + 1):
 
                     patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
                     patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
@@ -171,8 +181,12 @@ def initialization_rgb(image, thresh_uncertainty):
         else:
 
             # make all patches that are completely in the source region be the label of the patch
-            for y_compare in range(0, image.width - image.patch_size + 1):
-                for x_compare in range(0, image.height - image.patch_size + 1):
+            for y_compare in range(max(node.y_coord - labels_diametar, 0),
+                                   min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
+                for x_compare in range(max(node.x_coord - labels_diametar, 0),
+                                       min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+            # for y_compare in range(0, image.width - image.patch_size + 1):
+            #     for x_compare in range(0, image.height - image.patch_size + 1):
 
                     patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
                     patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
