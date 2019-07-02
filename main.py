@@ -67,17 +67,31 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
     # already done and pickled - start
 
-    print()
-    print("... Initialization ...")
-    eeo.initialization_rgb(image, thresh_uncertainty)
+    if use_descriptors:
+        print()
+        print("... Initialization ...")
+        eeo.initialization_ir(image, thresh_uncertainty)
 
-    eeo.pickle_global_vars(image_inpainted_name + eeo.initialization_slow.__name__)
+        eeo.pickle_global_vars(image_inpainted_name + eeo.initialization_ir.__name__)
 
-    print()
-    print("... Label pruning ...")
-    eeo.label_pruning(image, thresh_uncertainty, max_nr_labels)
+        print()
+        print("... Label pruning ...")
+        eeo.label_pruning_ir(image, thresh_uncertainty, max_nr_labels)
 
-    eeo.pickle_global_vars(image_inpainted_name + eeo.label_pruning.__name__)
+        eeo.pickle_global_vars(image_inpainted_name + eeo.label_pruning_ir.__name__)
+
+    else:
+        print()
+        print("... Initialization ...")
+        eeo.initialization_rgb(image, thresh_uncertainty)
+
+        eeo.pickle_global_vars(image_inpainted_name + eeo.initialization_rgb.__name__)
+
+        print()
+        print("... Label pruning ...")
+        eeo.label_pruning_rgb(image, thresh_uncertainty, max_nr_labels)
+
+        eeo.pickle_global_vars(image_inpainted_name + eeo.label_pruning_rgb.__name__)
 
     print()
     print("... Computing pairwise potential matrix ...")
@@ -128,7 +142,7 @@ def main():
     # TODO thresh_uncertainty should maybe be related to the patch size relative to the image size,
     #  also taking into account whether the descripotrs are used
     # inputs
-    patch_size = 16
+    patch_size = 10
     stride = patch_size // 2 #TODO fix problem when stride isn't exactly half of patch size!
     thresh_uncertainty = 6755360 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
     max_nr_labels = 10
@@ -152,10 +166,10 @@ def main():
     # image_filename = 'building128.jpeg'
     # mask_filename = 'mask128.jpg' # 'mask128.jpg' 'mask128_ULcorner.jpg'
 
-    # jian_number = '10'
-    # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
-    # image_filename = 'Jian' + jian_number + '_degra.png'
-    # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
+    jian_number = '3'
+    folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
+    image_filename = 'Jian' + jian_number + '_degra.png'
+    mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
 
     
     inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors)
