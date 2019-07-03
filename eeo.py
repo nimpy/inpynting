@@ -271,7 +271,7 @@ def initialization_ir(image, thresh_uncertainty):
                         patch_compare_descr = max_pool(patch_compare_ir)
 
                         # patch_difference = non_masked_patch_diff(image, node.x_coord, node.y_coord, x_compare, y_compare)
-                        patch_difference = np.sum(np.subtract(node_descr, patch_compare_descr, dtype=np.int32) ** 2)
+                        patch_difference = np.sum(np.subtract(node_descr, patch_compare_descr, dtype=np.float32) ** 2)
 
                         patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
                         node.differences[patch_compare_position] = patch_difference
@@ -518,7 +518,7 @@ def update_neighbors_priority_ir(node, neighbor, side, image, thresh_uncertainty
                                    node_label_y_coord: node_label_y_coord + image.patch_size, :]
                 patchs_label_ir_half = get_half_patch_from_patch(patchs_label_ir, image.stride, side)
 
-                difference = np.sum(np.subtract(patch_neighbors_label_ir_half, patchs_label_ir_half, dtype=np.int32) ** 2)
+                difference = np.sum(np.subtract(patch_neighbors_label_ir_half, patchs_label_ir_half, dtype=np.float32) ** 2)
 
                 # difference = half_patch_diff(image, node_label_x_coord, node_label_y_coord, neighbors_label_x_coord, neighbors_label_y_coord, side)
 
