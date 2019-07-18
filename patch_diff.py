@@ -28,21 +28,21 @@ def patch_diff(img1, img2):
 #     return np.sum((np.array(patch1_descr, dtype=np.float32) - np.array(patch2_descr, dtype=np.float32)) ** 2)
 
 
-def patch_diff1(image, x1, y1, x2, y2):
-    if image.ir is not None:
-        patch1_ir = image.ir[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
-        patch2_ir = image.ir[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
-
-        patch1_descr = max_pool(patch1_ir)
-        patch2_descr = max_pool(patch2_ir)
-
-        return np.sum((np.array(patch1_descr, dtype=np.float32) - np.array(patch2_descr, dtype=np.float32)) ** 2)
-
-    else:
-        patch1_rgb = image.rgb[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
-        patch2_rgb = image.rgb[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
-
-        return np.sum((np.array(patch1_rgb, dtype=np.float32) - np.array(patch2_rgb, dtype=np.float32)) ** 2)
+# def patch_diff1(image, x1, y1, x2, y2):
+#     if image.ir is not None:
+#         patch1_ir = image.ir[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
+#         patch2_ir = image.ir[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
+#
+#         patch1_descr = max_pool(patch1_ir)
+#         patch2_descr = max_pool(patch2_ir)
+#
+#         return np.sum((np.array(patch1_descr, dtype=np.float32) - np.array(patch2_descr, dtype=np.float32)) ** 2)
+#
+#     else:
+#         patch1_rgb = image.rgb[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
+#         patch2_rgb = image.rgb[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
+#
+#         return np.sum((np.array(patch1_rgb, dtype=np.float32) - np.array(patch2_rgb, dtype=np.float32)) ** 2)
 
 
 def non_masked_patch_diff(image, x, y, x_compare, y_compare):
@@ -110,3 +110,46 @@ def max_pool(patch_ir, pool_size=8):
     return patch_descr
 
 
+def max_pool_pad_full_process(patch_ir, pool_size=8):
+
+    height, width, nr_channels = patch_ir.shape
+
+    padding_height_total = pool_size - (height % pool_size)
+    padding_width_total = pool_size - (width % pool_size)
+
+    padding_height_left = padding_height_total // 2
+    padding_height_right = padding_height_total - padding_height_left
+
+    padding_width_left = padding_width_total // 2
+    padding_width_right = padding_width_total - padding_width_left
+
+    patch_ir = np.pad(patch_ir, ((padding_height_left, padding_height_right), (padding_width_left, padding_width_right),
+                                 (0, 0)), mode='constant')
+
+    height += padding_height_total
+    width += padding_width_total
+
+    patch_ir_reshaped = patch_ir.reshape(height // pool_size, pool_size,
+                           width // pool_size, pool_size, nr_channels)
+
+    patch_descr = patch_ir_reshaped.max(axis=1).max(axis=2)
+
+    return patch_descr
+
+
+def max_pool_pad(patch_ir, padding_height_left, padding_height_right, padding_width_left, padding_width_right, pool_size=8):
+
+    height, width, nr_channels = patch_ir.shape
+
+    patch_ir = np.pad(patch_ir, ((padding_height_left, padding_height_right), (padding_width_left, padding_width_right),
+                                 (0, 0)), mode='constant')
+
+    height += padding_height_left + padding_height_right
+    width += padding_width_left + padding_width_right
+
+    patch_ir_reshaped = patch_ir.reshape(height // pool_size, pool_size,
+                                         width // pool_size, pool_size, nr_channels)
+
+    patch_descr = patch_ir_reshaped.max(axis=1).max(axis=2)
+
+    return patch_descr
