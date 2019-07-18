@@ -174,6 +174,8 @@ def main():
     
     inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors)
 
+
+
     #####
 
     # folder_path_origin = '/home/niaki/Code/inpynting_images'
