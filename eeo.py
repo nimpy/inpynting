@@ -9,9 +9,10 @@ import imageio
 from data_structures import Node, coordinates_to_position, position_to_coordinates
 from data_structures import UP, DOWN, LEFT, RIGHT
 from data_structures import get_half_patch_from_patch, opposite_side
-from patch_diff import non_masked_patch_diff, half_patch_diff
-from patch_diff import max_pool
+# from patch_diff import non_masked_patch_diff, half_patch_diff # TODO should work without these
+from patch_diff import max_pool, max_pool_padding
 
+POOL_SIZE = 8
 
 nodes = {}  # the indices in this list patches match the node_id
 nodes_count = 0
@@ -105,111 +106,8 @@ def initialization_slow(image, thresh_uncertainty):
     print("Number of patches to be inpainted: ", nodes_count)
 
 
-
-
-def initialization_rgb(image, thresh_uncertainty):
-
-    global nodes
-    global nodes_count
-
-    # for all the patches in an image with stride $stride
-    for y in range(0, image.width - image.patch_size + 1, image.stride):
-        for x in range(0, image.height - image.patch_size + 1, image.stride):
-
-            patch_mask_overlap = image.mask[x: x + image.patch_size, y: y + image.patch_size]
-            patch_mask_overlap_nonzero_elements = np.count_nonzero(patch_mask_overlap)
-
-            # determine with which regions is the patch overlapping
-            if patch_mask_overlap_nonzero_elements == 0:
-                patch_overlap_source_region = True
-                patch_overlap_target_region = False
-            elif patch_mask_overlap_nonzero_elements == image.patch_size**2:
-                patch_overlap_source_region = False
-                patch_overlap_target_region = True
-            else:
-                patch_overlap_source_region = True
-                patch_overlap_target_region = True
-
-            if patch_overlap_target_region:
-                patch_position = coordinates_to_position(x, y, image.height, image.patch_size)
-                node = Node(patch_position, patch_overlap_source_region, x, y)
-                nodes[patch_position] = node
-                nodes_count += 1
-
-    labels_diametar = 100
-
-    for i, node in enumerate(nodes.values()):
-
-        sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
-
-        if node.overlap_source_region:
-
-            node_rgb = image.rgb[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
-            mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
-            mask_3ch = np.repeat(mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
-            node_rgb = node_rgb * (1 - mask_3ch)
-
-            # compare the node patch to all patches that are completely in the source region
-            for y_compare in range(max(node.y_coord - labels_diametar, 0),
-                                   min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-                for x_compare in range(max(node.x_coord - labels_diametar, 0),
-                                       min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
-
-            # for y_compare in range(0, image.width - image.patch_size + 1):
-            #     for x_compare in range(0, image.height - image.patch_size + 1):
-
-                    patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
-                    patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
-
-                    if patch_compare_mask_overlap_nonzero_elements == 0:
-                        patch_compare_rgb = image.rgb[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size, :]
-                        patch_compare_rgb = patch_compare_rgb * (1 - mask_3ch)
-
-                        # patch_difference = non_masked_patch_diff(image, node.x_coord, node.y_coord, x_compare, y_compare)
-                        patch_difference = np.sum(np.subtract(node_rgb, patch_compare_rgb, dtype=np.int32) ** 2)
-
-                        patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
-                        node.differences[patch_compare_position] = patch_difference
-                        node.labels.append(patch_compare_position)
-
-            temp_min_diff = min(list(node.differences.values()))
-            temp = [value - temp_min_diff for value in list(node.differences.values())]
-            #TODO change thresh_uncertainty such that only patches which are completely in the target region
-            #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
-            node_uncertainty = len([val for (i, val) in enumerate(temp) if val < thresh_uncertainty])
-
-        # if the patch is completely in the target region
-        else:
-
-            # make all patches that are completely in the source region be the label of the patch
-            for y_compare in range(max(node.y_coord - labels_diametar, 0),
-                                   min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-                for x_compare in range(max(node.x_coord - labels_diametar, 0),
-                                       min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
-            # for y_compare in range(0, image.width - image.patch_size + 1):
-            #     for x_compare in range(0, image.height - image.patch_size + 1):
-
-                    patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
-                    patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
-
-                    if patch_compare_mask_overlap_nonzero_elements == 0:
-                        patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
-                        node.differences[patch_compare_position] = 0
-                        node.labels.append(patch_compare_position)
-
-            node_uncertainty = len(node.labels)
-
-        # the higher priority the higher priority :D
-        node.priority = len(node.labels) / max(node_uncertainty, 1)
-
-        # if nodes_count == 7:
-        #     break
-
-    print("\nTotal number of patches: ", len(nodes))
-    print("Number of patches to be inpainted: ", nodes_count)
-
-
-def initialization_ir(image, thresh_uncertainty):
+# using the rgb values of the patches for comparison, as opposed to their descriptors
+def initialization(image, thresh_uncertainty):
 
     global nodes
     global nodes_count
@@ -239,88 +137,238 @@ def initialization_ir(image, thresh_uncertainty):
                 nodes_count += 1
 
     labels_diametar = 100
-    nr_channels = image.ir.shape[2]
 
-    for i, node in enumerate(nodes.values()):
+    # using the rgb values of the patches for comparison, as opposed to their descriptors
+    if image.ir is None:
 
-        sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
+        for i, node in enumerate(nodes.values()):
 
-        if node.overlap_source_region:
+            sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
 
-            node_ir = image.ir[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
-            mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
-            mask_more_ch = np.repeat(mask, nr_channels, axis=1).reshape((image.patch_size, image.patch_size, nr_channels))
-            node_ir = node_ir * (1 - mask_more_ch)
-            node_descr = max_pool(node_ir)
+            if node.overlap_source_region:
 
-            # compare the node patch to all patches that are completely in the source region
-            for y_compare in range(max(node.y_coord - labels_diametar, 0),
-                                   min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-                for x_compare in range(max(node.x_coord - labels_diametar, 0),
-                                       min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+                node_rgb = image.rgb[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
+                mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+                mask_3ch = np.repeat(mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
+                node_rgb = node_rgb * (1 - mask_3ch)
 
-            # for y_compare in range(0, image.width - image.patch_size + 1):
-            #     for x_compare in range(0, image.height - image.patch_size + 1):
+                # compare the node patch to all patches that are completely in the source region
+                for y_compare in range(max(node.y_coord - labels_diametar, 0),
+                                       min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
+                    for x_compare in range(max(node.x_coord - labels_diametar, 0),
+                                           min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
 
-                    patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
-                    patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+                        patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
+                        patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
 
-                    if patch_compare_mask_overlap_nonzero_elements == 0:
-                        patch_compare_ir = image.ir[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size, :]
-                        patch_compare_ir = patch_compare_ir * (1 - mask_more_ch)
-                        patch_compare_descr = max_pool(patch_compare_ir)
+                        if patch_compare_mask_overlap_nonzero_elements == 0:
+                            patch_compare_rgb = image.rgb[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size, :]
+                            patch_compare_rgb = patch_compare_rgb * (1 - mask_3ch)
 
-                        # patch_difference = non_masked_patch_diff(image, node.x_coord, node.y_coord, x_compare, y_compare)
-                        patch_difference = np.sum(np.subtract(node_descr, patch_compare_descr, dtype=np.float32) ** 2)
+                            patch_difference = np.sum(np.subtract(node_rgb, patch_compare_rgb, dtype=np.int32) ** 2)
 
-                        patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
-                        node.differences[patch_compare_position] = patch_difference
-                        node.labels.append(patch_compare_position)
+                            patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
+                            node.differences[patch_compare_position] = patch_difference
+                            node.labels.append(patch_compare_position)
 
-            temp_min_diff = min(list(node.differences.values()))
-            temp = [value - temp_min_diff for value in list(node.differences.values())]
-            #TODO change thresh_uncertainty such that only patches which are completely in the target region
-            #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
-            node_uncertainty = len([val for (i, val) in enumerate(temp) if val < thresh_uncertainty])
+                temp_min_diff = min(list(node.differences.values()))
+                temp = [value - temp_min_diff for value in list(node.differences.values())]
+                #TODO change thresh_uncertainty such that only patches which are completely in the target region
+                #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
+                node_uncertainty = len([val for (i, val) in enumerate(temp) if val < thresh_uncertainty])
 
-        # if the patch is completely in the target region
-        else:
+            # if the patch is completely in the target region
+            else:
 
-            # make all patches that are completely in the source region be the label of the patch
-            for y_compare in range(max(node.y_coord - labels_diametar, 0),
-                                   min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-                for x_compare in range(max(node.x_coord - labels_diametar, 0),
-                                       min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
-            # for y_compare in range(0, image.width - image.patch_size + 1):
-            #     for x_compare in range(0, image.height - image.patch_size + 1):
+                # make all patches that are completely in the source region be the label of the patch
+                for y_compare in range(max(node.y_coord - labels_diametar, 0),
+                                       min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
+                    for x_compare in range(max(node.x_coord - labels_diametar, 0),
+                                           min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
 
-                    patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
-                    patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+                        patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
+                        patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
 
-                    if patch_compare_mask_overlap_nonzero_elements == 0:
-                        patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
-                        node.differences[patch_compare_position] = 0
-                        node.labels.append(patch_compare_position)
+                        if patch_compare_mask_overlap_nonzero_elements == 0:
+                            patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
+                            node.differences[patch_compare_position] = 0
+                            node.labels.append(patch_compare_position)
 
-            node_uncertainty = len(node.labels)
+                node_uncertainty = len(node.labels)
 
-        # the higher priority the higher priority :D
-        node.priority = len(node.labels) / max(node_uncertainty, 1)
+            # the higher priority the higher priority :D
+            node.priority = len(node.labels) / max(node_uncertainty, 1)
 
-        # if nodes_count == 7:
-        #     break
+    # using the descriptors, when patch_size is divisible by pooling size, so no need for padding
+    elif image.patch_size % POOL_SIZE == 0:
+
+        nr_channels = image.ir.shape[2]
+
+        for i, node in enumerate(nodes.values()):
+
+            sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
+
+            if node.overlap_source_region:
+
+                node_ir = image.ir[node.x_coord: node.x_coord + image.patch_size,
+                          node.y_coord: node.y_coord + image.patch_size, :]
+                mask = image.mask[node.x_coord: node.x_coord + image.patch_size,
+                       node.y_coord: node.y_coord + image.patch_size]
+                mask_more_ch = np.repeat(mask, nr_channels, axis=1).reshape(
+                    (image.patch_size, image.patch_size, nr_channels))
+                node_ir = node_ir * (1 - mask_more_ch)
+                node_descr = max_pool(node_ir)
+
+                # compare the node patch to all patches that are completely in the source region
+                for y_compare in range(max(node.y_coord - labels_diametar, 0),
+                                       min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
+                    for x_compare in range(max(node.x_coord - labels_diametar, 0),
+                                           min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+
+                        patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
+                                                     y_compare: y_compare + image.patch_size]
+                        patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+
+                        if patch_compare_mask_overlap_nonzero_elements == 0:
+                            patch_compare_ir = image.ir[x_compare: x_compare + image.patch_size,
+                                               y_compare: y_compare + image.patch_size, :]
+                            patch_compare_ir = patch_compare_ir * (1 - mask_more_ch)
+                            patch_compare_descr = max_pool(patch_compare_ir)
+
+                            patch_difference = np.sum(
+                                np.subtract(node_descr, patch_compare_descr, dtype=np.float32) ** 2)
+
+                            patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height,
+                                                                             image.patch_size)
+                            node.differences[patch_compare_position] = patch_difference
+                            node.labels.append(patch_compare_position)
+
+                temp_min_diff = min(list(node.differences.values()))
+                temp = [value - temp_min_diff for value in list(node.differences.values())]
+                # TODO change thresh_uncertainty such that only patches which are completely in the target region
+                #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
+                node_uncertainty = len([val for (i, val) in enumerate(temp) if val < thresh_uncertainty])
+
+            # if the patch is completely in the target region
+            else:
+
+                # make all patches that are completely in the source region be the label of the patch
+                for y_compare in range(max(node.y_coord - labels_diametar, 0),
+                                       min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
+                    for x_compare in range(max(node.x_coord - labels_diametar, 0),
+                                           min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+
+                        patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
+                                                     y_compare: y_compare + image.patch_size]
+                        patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+
+                        if patch_compare_mask_overlap_nonzero_elements == 0:
+                            patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height,
+                                                                             image.patch_size)
+                            node.differences[patch_compare_position] = 0
+                            node.labels.append(patch_compare_position)
+
+                node_uncertainty = len(node.labels)
+
+            # the higher priority the higher priority :D
+            node.priority = len(node.labels) / max(node_uncertainty, 1)
+
+    # using the descriptors, when patch_size is not divisible by pooling size, so padding is needed
+    else:
+
+        nr_channels = image.ir.shape[2]
+
+        # calculating padding parameters for the max pooling
+        padding_height_total = POOL_SIZE - (image.patch_size % POOL_SIZE)
+        padding_width_total = POOL_SIZE - (image.patch_size % POOL_SIZE)
+        padding_height_left = padding_height_total // 2
+        padding_height_right = padding_height_total - padding_height_left
+        padding_width_left = padding_width_total // 2
+        padding_width_right = padding_width_total - padding_width_left
+
+        for i, node in enumerate(nodes.values()):
+
+            sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
+
+            if node.overlap_source_region:
+
+                node_ir = image.ir[node.x_coord: node.x_coord + image.patch_size,
+                          node.y_coord: node.y_coord + image.patch_size, :]
+                mask = image.mask[node.x_coord: node.x_coord + image.patch_size,
+                       node.y_coord: node.y_coord + image.patch_size]
+                mask_more_ch = np.repeat(mask, nr_channels, axis=1).reshape(
+                    (image.patch_size, image.patch_size, nr_channels))
+                node_ir = node_ir * (1 - mask_more_ch)
+                node_descr = max_pool_padding(node_ir, padding_height_left, padding_height_right, padding_width_left,
+                                              padding_width_right)
+
+                # compare the node patch to all patches that are completely in the source region
+                for y_compare in range(max(node.y_coord - labels_diametar, 0),
+                                       min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
+                    for x_compare in range(max(node.x_coord - labels_diametar, 0),
+                                           min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+
+                        patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
+                                                     y_compare: y_compare + image.patch_size]
+                        patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+
+                        if patch_compare_mask_overlap_nonzero_elements == 0:
+                            patch_compare_ir = image.ir[x_compare: x_compare + image.patch_size,
+                                               y_compare: y_compare + image.patch_size, :]
+                            patch_compare_ir = patch_compare_ir * (1 - mask_more_ch)
+                            patch_compare_descr = max_pool_padding(patch_compare_ir, padding_height_left,
+                                                                   padding_height_right, padding_width_left,
+                                                                   padding_width_right)
+
+                            patch_difference = np.sum(
+                                np.subtract(node_descr, patch_compare_descr, dtype=np.float32) ** 2)
+
+                            patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height,
+                                                                             image.patch_size)
+                            node.differences[patch_compare_position] = patch_difference
+                            node.labels.append(patch_compare_position)
+
+                temp_min_diff = min(list(node.differences.values()))
+                temp = [value - temp_min_diff for value in list(node.differences.values())]
+                # TODO change thresh_uncertainty such that only patches which are completely in the target region
+                #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
+                node_uncertainty = len([val for (i, val) in enumerate(temp) if val < thresh_uncertainty])
+
+            # if the patch is completely in the target region
+            else:
+
+                # make all patches that are completely in the source region be the label of the patch
+                for y_compare in range(max(node.y_coord - labels_diametar, 0),
+                                       min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
+                    for x_compare in range(max(node.x_coord - labels_diametar, 0),
+                                           min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+
+                        patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
+                                                     y_compare: y_compare + image.patch_size]
+                        patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+
+                        if patch_compare_mask_overlap_nonzero_elements == 0:
+                            patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height,
+                                                                             image.patch_size)
+                            node.differences[patch_compare_position] = 0
+                            node.labels.append(patch_compare_position)
+
+                node_uncertainty = len(node.labels)
+
+            # the higher priority the higher priority :D
+            node.priority = len(node.labels) / max(node_uncertainty, 1)
 
     print("\nTotal number of patches: ", len(nodes))
     print("Number of patches to be inpainted: ", nodes_count)
-
-
 
 
 # -- 2nd phase --
 # label pruning
 # (reducing the number of labels at each node to a relatively small number)
 
-def label_pruning_rgb(image, thresh_uncertainty, max_nr_labels):
+# TODO merge back to one method maybe? make the third one
+
+def label_pruning(image, thresh_uncertainty, max_nr_labels):
     global nodes
     global nodes_count
     global nodes_order
@@ -352,48 +400,21 @@ def label_pruning_rgb(image, thresh_uncertainty, max_nr_labels):
         node_neighbor_up, node_neighbor_down, node_neighbor_left, node_neighbor_right = get_neighbor_nodes(
             node, image)
 
-        update_neighbors_priority_rgb(node, node_neighbor_up, UP, image, thresh_uncertainty)
-        update_neighbors_priority_rgb(node, node_neighbor_down, DOWN, image, thresh_uncertainty)
-        update_neighbors_priority_rgb(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
-        update_neighbors_priority_rgb(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
-
-
-def label_pruning_ir(image, thresh_uncertainty, max_nr_labels):
-    global nodes
-    global nodes_count
-    global nodes_order
-
-    # make a copy of the differences which we can edit and use in this method, and afterwards discard
-    for node in nodes.values():
-        node.additional_differences = node.differences.copy()
-
-    # for all the patches that have an overlap with the target region (aka nodes)
-    for i in range(nodes_count):
-
-        # find the node with the highest priority that hasn't yet been visited
-        highest_priority = -1
-        node_highest_priority_id = -1
-        for node in nodes.values():
-            if not node.committed and node.priority > highest_priority:
-                highest_priority = node.priority
-                node_highest_priority_id = node.node_id
-
-        node = nodes[node_highest_priority_id]
-        node.committed = True
-
-        node.prune_labels(max_nr_labels)
-
-        print('Highest priority node {0:3d}/{1:3d}: {2:d}'.format(i + 1, nodes_count, node_highest_priority_id))
-        nodes_order.append(node_highest_priority_id)
-
-        # get the neighbors if they exist and have overlap with the target region
-        node_neighbor_up, node_neighbor_down, node_neighbor_left, node_neighbor_right = get_neighbor_nodes(
-            node, image)
-
-        update_neighbors_priority_ir(node, node_neighbor_up, UP, image, thresh_uncertainty)
-        update_neighbors_priority_ir(node, node_neighbor_down, DOWN, image, thresh_uncertainty)
-        update_neighbors_priority_ir(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
-        update_neighbors_priority_ir(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
+        if image.ir is None:
+            update_neighbors_priority_rgb(node, node_neighbor_up, UP, image, thresh_uncertainty)
+            update_neighbors_priority_rgb(node, node_neighbor_down, DOWN, image, thresh_uncertainty)
+            update_neighbors_priority_rgb(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
+            update_neighbors_priority_rgb(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
+        elif (image.patch_size // 2) % POOL_SIZE == 0:  # div by 2 is because we will be comparing half patches
+            update_neighbors_priority_ir(node, node_neighbor_up, UP, image, thresh_uncertainty)
+            update_neighbors_priority_ir(node, node_neighbor_down, DOWN, image, thresh_uncertainty)
+            update_neighbors_priority_ir(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
+            update_neighbors_priority_ir(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
+        else:
+            update_neighbors_priority_ir_padded_mp(node, node_neighbor_up, UP, image, thresh_uncertainty)
+            update_neighbors_priority_ir_padded_mp(node, node_neighbor_down, DOWN, image, thresh_uncertainty)
+            update_neighbors_priority_ir_padded_mp(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
+            update_neighbors_priority_ir_padded_mp(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
 
 
 def update_neighbors_priority_slow(node, neighbor, side, image, thresh_uncertainty):
@@ -445,6 +466,7 @@ def update_neighbors_priority_slow(node, neighbor, side, image, thresh_uncertain
         neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
 
 
+# using the rgb values of the patches for comparison, as opposed to their descriptors
 def update_neighbors_priority_rgb(node, neighbor, side, image, thresh_uncertainty):
 
     # if neighbor is a node that hasn't been committed yet
@@ -471,8 +493,6 @@ def update_neighbors_priority_rgb(node, neighbor, side, image, thresh_uncertaint
 
                 difference = np.sum(np.subtract(patch_neighbors_label_rgb_half, patchs_label_rgb_half, dtype=np.int32) ** 2)
 
-                # difference = half_patch_diff(image, node_label_x_coord, node_label_y_coord, neighbors_label_x_coord, neighbors_label_y_coord, side)
-
                 if difference < min_additional_difference:
                     min_additional_difference = difference
 
@@ -494,6 +514,7 @@ def update_neighbors_priority_rgb(node, neighbor, side, image, thresh_uncertaint
         neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
 
 
+# using the descriptors, when patch_size is divisible by pooling size, so no need for padding
 def update_neighbors_priority_ir(node, neighbor, side, image, thresh_uncertainty):
 
     # if neighbor is a node that hasn't been committed yet
@@ -508,7 +529,8 @@ def update_neighbors_priority_ir(node, neighbor, side, image, thresh_uncertainty
 
             patch_neighbors_label_ir = image.ir[neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
                                         neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size, :]
-            patch_neighbors_label_ir_half = get_half_patch_from_patch(patch_neighbors_label_ir, image.stride, opposite_side(side))
+            patch_neighbors_label_half_ir = get_half_patch_from_patch(patch_neighbors_label_ir, image.stride, opposite_side(side))
+            patch_neighbors_label_half_descr = max_pool(patch_neighbors_label_half_ir)
 
             for node_label_id in node.pruned_labels:
 
@@ -516,11 +538,10 @@ def update_neighbors_priority_ir(node, neighbor, side, image, thresh_uncertainty
 
                 patchs_label_ir = image.ir[node_label_x_coord: node_label_x_coord + image.patch_size,
                                    node_label_y_coord: node_label_y_coord + image.patch_size, :]
-                patchs_label_ir_half = get_half_patch_from_patch(patchs_label_ir, image.stride, side)
+                patchs_label_half_ir = get_half_patch_from_patch(patchs_label_ir, image.stride, side)
+                patchs_label_half_descr = max_pool(patchs_label_half_ir)
 
-                difference = np.sum(np.subtract(patch_neighbors_label_ir_half, patchs_label_ir_half, dtype=np.float32) ** 2)
-
-                # difference = half_patch_diff(image, node_label_x_coord, node_label_y_coord, neighbors_label_x_coord, neighbors_label_y_coord, side)
+                difference = np.sum(np.subtract(patch_neighbors_label_half_descr, patchs_label_half_descr, dtype=np.float32) ** 2)
 
                 if difference < min_additional_difference:
                     min_additional_difference = difference
@@ -541,6 +562,80 @@ def update_neighbors_priority_ir(node, neighbor, side, image, thresh_uncertainty
         neighbor_uncertainty = [value < thresh_uncertainty for (i, value) in enumerate(temp)].count(True)
 
         neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
+
+
+# using the descriptors, when patch_size is not divisible by pooling size, so padding is needed
+def update_neighbors_priority_ir_padded_mp(node, neighbor, side, image, thresh_uncertainty):
+
+    # calculating padding parameters for the max pooling, for the case: left/right
+    padding_height_total_lr = POOL_SIZE - (image.patch_size % POOL_SIZE)
+    padding_width_total_lr = POOL_SIZE - ((image.patch_size // 2) % POOL_SIZE)
+    padding_height_left_lr = padding_height_total_lr // 2
+    padding_height_right_lr = padding_height_total_lr - padding_height_left_lr
+    padding_width_left_lr = padding_width_total_lr // 2
+    padding_width_right_lr = padding_width_total_lr - padding_width_left_lr
+    # calculating padding parameters for the max pooling, for the case: up/down
+    padding_height_total_ud = POOL_SIZE - ((image.patch_size // 2) % POOL_SIZE)
+    padding_width_total_ud = POOL_SIZE - (image.patch_size % POOL_SIZE)
+    padding_height_left_ud = padding_height_total_ud // 2
+    padding_height_right_ud = padding_height_total_ud - padding_height_left_ud
+    padding_width_left_ud = padding_width_total_ud // 2
+    padding_width_right_ud = padding_width_total_ud - padding_width_left_ud
+
+    # if neighbor is a node that hasn't been committed yet
+    if neighbor is not None and not neighbor.committed:
+
+        min_additional_difference = sys.maxsize
+        additional_differences = {}
+
+        for neighbors_label_id in neighbor.labels:
+
+            neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
+
+            patch_neighbors_label_ir = image.ir[neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
+                                        neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size, :]
+            patch_neighbors_label_half_ir = get_half_patch_from_patch(patch_neighbors_label_ir, image.stride, opposite_side(side))
+            if side == LEFT or side == RIGHT:
+                patch_neighbors_label_half_descr = max_pool_padding(patch_neighbors_label_half_ir, padding_height_left_lr, padding_height_right_lr, padding_width_left_lr, padding_width_right_lr)
+            else:  # up or down
+                patch_neighbors_label_half_descr = max_pool_padding(patch_neighbors_label_half_ir, padding_height_left_ud, padding_height_right_ud, padding_width_left_ud, padding_width_right_ud)
+
+            for node_label_id in node.pruned_labels:
+
+                node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+
+                patchs_label_ir = image.ir[node_label_x_coord: node_label_x_coord + image.patch_size,
+                                   node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                patchs_label_half_ir = get_half_patch_from_patch(patchs_label_ir, image.stride, side)
+                if side == LEFT or side == RIGHT:
+                    patchs_label_half_descr = max_pool_padding(patchs_label_half_ir, padding_height_left_lr, padding_height_right_lr, padding_width_left_lr, padding_width_right_lr)
+                else:  # up or down
+                    patchs_label_half_descr = max_pool_padding(patchs_label_half_ir, padding_height_left_ud, padding_height_right_ud, padding_width_left_ud, padding_width_right_ud)
+
+                difference = np.sum(np.subtract(patch_neighbors_label_half_descr, patchs_label_half_descr, dtype=np.float32) ** 2)
+
+                if difference < min_additional_difference:
+                    min_additional_difference = difference
+
+            additional_differences[neighbors_label_id] = min_additional_difference
+            min_additional_difference = sys.maxsize
+
+        for key in additional_differences.keys():
+            if key in neighbor.additional_differences:
+                neighbor.additional_differences[key] += additional_differences[key]
+            else:
+                neighbor.additional_differences[key] = additional_differences[key]
+                print("Will it ever come to this? (2) (TODO delete if unnecessary)")
+
+        temp_min_diff = min(neighbor.additional_differences.values())
+        temp = [value - temp_min_diff for value in
+                list(neighbor.additional_differences.values())]
+        neighbor_uncertainty = [value < thresh_uncertainty for (i, value) in enumerate(temp)].count(True)
+
+        neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
+
+
+
 
 
 def get_neighbor_nodes(node, image):
@@ -577,77 +672,208 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
     global nodes
     global nodes_count
 
-    # calculate pairwise potential matrix for all pairs of nodes (pathces that have overlap with the target region)
-    for node in nodes.values():
+    if image.ir is None:
 
-        # get the neighbors if they exist and have overlap with the target region (i.e. if they're nodes)
-        neighbor_up, _, neighbor_left, _ = get_neighbor_nodes(node, image)
+        # calculate pairwise potential matrix for all pairs of nodes (pathces that have overlap with the target region)
+        for node in nodes.values():
 
-        # TODO make this a method
-        if neighbor_up is not None:
+            # get the neighbors if they exist and have overlap with the target region (i.e. if they're nodes)
+            neighbor_up, _, neighbor_left, _ = get_neighbor_nodes(node, image)
 
-            potential_matrix = np.zeros((max_nr_labels, max_nr_labels))
+            if neighbor_up is not None:
 
-            for i, node_label_id in enumerate(node.pruned_labels):
+                potential_matrix = np.zeros((max_nr_labels, max_nr_labels))
 
-                node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+                for i, node_label_id in enumerate(node.pruned_labels):
 
-                # patchs_label_rgb = image.rgb[node_label_x_coord: node_label_x_coord + image.patch_size,
-                #                    node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                    node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
 
-                # patchs_label_rgb_up = get_half_patch_from_patch(patchs_label_rgb, image.stride, UP)
+                    patchs_label_rgb = image.rgb[node_label_x_coord: node_label_x_coord + image.patch_size,
+                                       node_label_y_coord: node_label_y_coord + image.patch_size, :]
 
-                for j, neighbors_label_id in enumerate(neighbor_up.pruned_labels):
+                    patchs_label_rgb_up = get_half_patch_from_patch(patchs_label_rgb, image.stride, UP)
 
-                    neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
+                    for j, neighbors_label_id in enumerate(neighbor_up.pruned_labels):
 
-                    # patchs_neighbors_label_rgb = image.rgb[neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
-                    #                              neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size, :]
+                        neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
 
-                    # patchs_neighbors_label_rgb_down = get_half_patch_from_patch(patchs_neighbors_label_rgb, image.stride, DOWN)
+                        patchs_neighbors_label_rgb = image.rgb[neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
+                                                     neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size, :]
 
-                    # potential_matrix[i, j] = patch_diff(patchs_label_rgb_up, patchs_neighbors_label_rgb_down)
-                    potential_matrix[i, j] = half_patch_diff(image, node_label_x_coord, node_label_y_coord, neighbors_label_x_coord, neighbors_label_y_coord, UP)
+                        patchs_neighbors_label_rgb_down = get_half_patch_from_patch(patchs_neighbors_label_rgb, image.stride, DOWN)
 
-            node.potential_matrix_up = potential_matrix
-            neighbor_up.potential_matrix_down = potential_matrix
-            # print("potential matrix UpDown")
-            # print(potential_matrix)
+                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_rgb_up, patchs_neighbors_label_rgb_down, dtype=np.int32) ** 2)
 
-        if neighbor_left is not None:
 
-            potential_matrix = np.zeros((max_nr_labels, max_nr_labels))
+                node.potential_matrix_up = potential_matrix
+                neighbor_up.potential_matrix_down = potential_matrix
 
-            for i, node_label_id in enumerate(node.pruned_labels):
+            if neighbor_left is not None:
 
-                node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+                potential_matrix = np.zeros((max_nr_labels, max_nr_labels))
 
-                # patchs_label_rgb = image.rgb[node_label_x_coord: node_label_x_coord + image.patch_size,
-                #                    node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                for i, node_label_id in enumerate(node.pruned_labels):
 
-                # patchs_label_rgb_left = get_half_patch_from_patch(patchs_label_rgb, image.stride, LEFT)
+                    node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
 
-                for j, neighbors_label_id in enumerate(neighbor_left.pruned_labels):
+                    patchs_label_rgb = image.rgb[node_label_x_coord: node_label_x_coord + image.patch_size,
+                                       node_label_y_coord: node_label_y_coord + image.patch_size, :]
 
-                    neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
+                    patchs_label_rgb_left = get_half_patch_from_patch(patchs_label_rgb, image.stride, LEFT)
 
-                    # patchs_neighbors_label_rgb = image.rgb[
-                    #                              neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
-                    #                              neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size,
-                    #                              :]
+                    for j, neighbors_label_id in enumerate(neighbor_left.pruned_labels):
 
-                    # patchs_neighbors_label_rgb_right = get_half_patch_from_patch(patchs_neighbors_label_rgb, image.stride,
-                    #                                                             RIGHT)
+                        neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
 
-                    # potential_matrix[i, j] = patch_diff(patchs_label_rgb_left, patchs_neighbors_label_rgb_right)
-                    potential_matrix[i, j] = half_patch_diff(image, node_label_x_coord, node_label_y_coord,
-                                                             neighbors_label_x_coord,
-                                                             neighbors_label_y_coord, LEFT)
+                        patchs_neighbors_label_rgb = image.rgb[
+                                                     neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
+                                                     neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size,
+                                                     :]
 
-            node.potential_matrix_left = potential_matrix
-            neighbor_left.potential_matrix_right = potential_matrix
-            # print("potential matrix LeftRight")
-            # print(potential_matrix)
+                        patchs_neighbors_label_rgb_right = get_half_patch_from_patch(patchs_neighbors_label_rgb, image.stride,
+                                                                                    RIGHT)
+
+                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_rgb_left, patchs_neighbors_label_rgb_right, dtype=np.int32) ** 2)
+
+
+                node.potential_matrix_left = potential_matrix
+                neighbor_left.potential_matrix_right = potential_matrix
+
+    elif (image.patch_size // 2) % POOL_SIZE == 0:  # div by 2 is because we will be comparing half patches
+
+        # calculate pairwise potential matrix for all pairs of nodes (pathces that have overlap with the target region)
+        for node in nodes.values():
+
+            # get the neighbors if they exist and have overlap with the target region (i.e. if they're nodes)
+            neighbor_up, _, neighbor_left, _ = get_neighbor_nodes(node, image)
+
+            if neighbor_up is not None:
+
+                potential_matrix = np.zeros((max_nr_labels, max_nr_labels))
+
+                for i, node_label_id in enumerate(node.pruned_labels):
+
+                    node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+
+                    patchs_label_ir = image.ir[node_label_x_coord: node_label_x_coord + image.patch_size,
+                                       node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                    patchs_label_up_ir = get_half_patch_from_patch(patchs_label_ir, image.stride, UP)
+                    patchs_label_up_descr = max_pool(patchs_label_up_ir)
+
+                    for j, neighbors_label_id in enumerate(neighbor_up.pruned_labels):
+                        neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
+
+                        patchs_neighbors_label_ir = image.ir[neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
+                                                     neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size, :]
+                        patchs_neighbors_label_down_ir = get_half_patch_from_patch(patchs_neighbors_label_ir, image.stride, DOWN)
+                        patchs_neighbors_label_down_descr = max_pool(patchs_neighbors_label_down_ir)
+
+                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_up_descr, patchs_neighbors_label_down_descr, dtype=np.float32) ** 2)
+
+                node.potential_matrix_up = potential_matrix
+                neighbor_up.potential_matrix_down = potential_matrix
+
+            if neighbor_left is not None:
+
+                potential_matrix = np.zeros((max_nr_labels, max_nr_labels))
+
+                for i, node_label_id in enumerate(node.pruned_labels):
+
+                    node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+
+                    patchs_label_ir = image.ir[node_label_x_coord: node_label_x_coord + image.patch_size,
+                                       node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                    patchs_label_left_ir = get_half_patch_from_patch(patchs_label_ir, image.stride, LEFT)
+                    patchs_label_left_descr = max_pool(patchs_label_left_ir)
+
+                    for j, neighbors_label_id in enumerate(neighbor_left.pruned_labels):
+                        neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
+
+                        patchs_neighbors_label_ir = image.ir[neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
+                                                     neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size, :]
+                        patchs_neighbors_label_right_ir = get_half_patch_from_patch(patchs_neighbors_label_ir, image.stride, RIGHT)
+                        patchs_neighbors_label_right_descr = max_pool(patchs_neighbors_label_right_ir)
+
+                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_left_descr, patchs_neighbors_label_right_descr, dtype=np.float32) ** 2)
+
+                node.potential_matrix_left = potential_matrix
+                neighbor_left.potential_matrix_right = potential_matrix
+
+    else:  # need to pad before max pooling
+
+        # calculating padding parameters for the max pooling, for the case: left/right
+        padding_height_total_lr = POOL_SIZE - (image.patch_size % POOL_SIZE)
+        padding_width_total_lr = POOL_SIZE - ((image.patch_size // 2) % POOL_SIZE)
+        padding_height_left_lr = padding_height_total_lr // 2
+        padding_height_right_lr = padding_height_total_lr - padding_height_left_lr
+        padding_width_left_lr = padding_width_total_lr // 2
+        padding_width_right_lr = padding_width_total_lr - padding_width_left_lr
+        # calculating padding parameters for the max pooling, for the case: up/down
+        padding_height_total_ud = POOL_SIZE - ((image.patch_size // 2) % POOL_SIZE)
+        padding_width_total_ud = POOL_SIZE - (image.patch_size % POOL_SIZE)
+        padding_height_left_ud = padding_height_total_ud // 2
+        padding_height_right_ud = padding_height_total_ud - padding_height_left_ud
+        padding_width_left_ud = padding_width_total_ud // 2
+        padding_width_right_ud = padding_width_total_ud - padding_width_left_ud
+
+        # calculate pairwise potential matrix for all pairs of nodes (pathces that have overlap with the target region)
+        for node in nodes.values():
+
+            # get the neighbors if they exist and have overlap with the target region (i.e. if they're nodes)
+            neighbor_up, _, neighbor_left, _ = get_neighbor_nodes(node, image)
+
+            if neighbor_up is not None:
+
+                potential_matrix = np.zeros((max_nr_labels, max_nr_labels))
+
+                for i, node_label_id in enumerate(node.pruned_labels):
+
+                    node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+
+                    patchs_label_ir = image.ir[node_label_x_coord: node_label_x_coord + image.patch_size,
+                                       node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                    patchs_label_up_ir = get_half_patch_from_patch(patchs_label_ir, image.stride, UP)
+                    patchs_label_up_descr = max_pool_padding(patchs_label_up_ir, padding_height_left_ud, padding_height_right_ud, padding_width_left_ud, padding_width_right_ud)
+
+                    for j, neighbors_label_id in enumerate(neighbor_up.pruned_labels):
+                        neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
+
+                        patchs_neighbors_label_ir = image.ir[neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
+                                                     neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size, :]
+                        patchs_neighbors_label_down_ir = get_half_patch_from_patch(patchs_neighbors_label_ir, image.stride, DOWN)
+                        patchs_neighbors_label_down_descr = max_pool_padding(patchs_neighbors_label_down_ir, padding_height_left_ud, padding_height_right_ud, padding_width_left_ud, padding_width_right_ud)
+
+                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_up_descr, patchs_neighbors_label_down_descr, dtype=np.float32) ** 2)
+
+                node.potential_matrix_up = potential_matrix
+                neighbor_up.potential_matrix_down = potential_matrix
+
+            if neighbor_left is not None:
+
+                potential_matrix = np.zeros((max_nr_labels, max_nr_labels))
+
+                for i, node_label_id in enumerate(node.pruned_labels):
+
+                    node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+
+                    patchs_label_ir = image.ir[node_label_x_coord: node_label_x_coord + image.patch_size,
+                                       node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                    patchs_label_left_ir = get_half_patch_from_patch(patchs_label_ir, image.stride, LEFT)
+                    patchs_label_left_descr = max_pool_padding(patchs_label_left_ir, padding_height_left_lr, padding_height_right_lr, padding_width_left_lr, padding_width_right_lr)
+
+                    for j, neighbors_label_id in enumerate(neighbor_left.pruned_labels):
+                        neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
+
+                        patchs_neighbors_label_ir = image.ir[neighbors_label_x_coord: neighbors_label_x_coord + image.patch_size,
+                                                     neighbors_label_y_coord: neighbors_label_y_coord + image.patch_size, :]
+                        patchs_neighbors_label_right_ir = get_half_patch_from_patch(patchs_neighbors_label_ir, image.stride, RIGHT)
+                        patchs_neighbors_label_right_descr = max_pool_padding(patchs_neighbors_label_right_ir, padding_height_left_lr, padding_height_right_lr, padding_width_left_lr, padding_width_right_lr)
+
+                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_left_descr, patchs_neighbors_label_right_descr, dtype=np.float32) ** 2)
+
+                node.potential_matrix_left = potential_matrix
+                neighbor_left.potential_matrix_right = potential_matrix
+
 
 
 def compute_label_cost(image, max_nr_labels):
@@ -655,31 +881,90 @@ def compute_label_cost(image, max_nr_labels):
     global nodes
     global nodes_count
 
-    for node in nodes.values():
+    if image.ir is None:
 
-        node.label_cost = [0 for _ in range(max_nr_labels)]
+        for node in nodes.values():
 
-        if node.overlap_source_region:
+            node.label_cost = [0 for _ in range(max_nr_labels)]
 
-            # patch_rgb = image.rgb[node.x_coord : node.x_coord + patch_size,
-            #             node.y_coord : node.y_coord + patch_size, :]
+            if node.overlap_source_region:
 
-            for i, node_label_id in enumerate(node.pruned_labels):
+                patch_rgb = image.rgb[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
+                mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+                mask_3ch = np.repeat(mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
+                patch_rgb = patch_rgb * (1 - mask_3ch)
 
-                # patchs_label_rgb = image.rgb[patches[node_label_id].x_coord: patches[node_label_id].x_coord + patch_size,
-                #                    patches[node_label_id].y_coord: patches[node_label_id].y_coord + patch_size, :]
+                for i, node_label_id in enumerate(node.pruned_labels):
 
-                # node.label_cost[i] = patch_diff(patch_rgb, patchs_label_rgb)
+                    node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+                    patchs_label_rgb = image.rgb[node_label_x_coord: node_label_x_coord + image.patch_size, node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                    patchs_label_rgb = patchs_label_rgb * (1 - mask_3ch)
 
-                node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
-                node.label_cost[i] = non_masked_patch_diff(image, node.x_coord, node.y_coord, node_label_x_coord, node_label_y_coord)
+                    node.label_cost[i] = np.sum(np.subtract(patch_rgb, patchs_label_rgb, dtype=np.int32) ** 2)
 
+            node.local_likelihood = [math.exp(-cost * (1/100000)) for cost in node.label_cost]
+            node.mask = node.local_likelihood.index(max(node.local_likelihood))
 
-        node.local_likelihood = [math.exp(-cost * (1/100000)) for cost in node.label_cost]
-        # print("node", node.node_id, "label cost", node.label_cost)
-        # print("node", node.node_id, "local likelihood", node.local_likelihood)
+    elif image.patch_size % POOL_SIZE == 0:
 
-        node.mask = node.local_likelihood.index(max(node.local_likelihood))
+        nr_channels = image.ir.shape[2]
+
+        for node in nodes.values():
+
+            node.label_cost = [0 for _ in range(max_nr_labels)]
+
+            if node.overlap_source_region:
+
+                patch_ir = image.ir[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
+                mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+                mask_3ch = np.repeat(mask, nr_channels, axis=1).reshape((image.patch_size, image.patch_size, nr_channels))
+                patch_ir = patch_ir * (1 - mask_3ch)
+                patch_descr = max_pool(patch_ir)
+
+                for i, node_label_id in enumerate(node.pruned_labels):
+                    node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+                    patchs_label_ir = image.ir[node_label_x_coord: node_label_x_coord + image.patch_size, node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                    patchs_label_ir = patchs_label_ir * (1 - mask_3ch)
+                    patchs_label_descr = max_pool(patchs_label_ir)
+
+                    node.label_cost[i] = np.sum(np.subtract(patch_descr, patchs_label_descr, dtype=np.float32) ** 2)
+
+            node.local_likelihood = [math.exp(-cost * (1 / 100000)) for cost in node.label_cost]
+            node.mask = node.local_likelihood.index(max(node.local_likelihood))
+
+    else:
+
+        nr_channels = image.ir.shape[2]
+        # calculating padding parameters for the max pooling
+        padding_height_total = POOL_SIZE - (image.patch_size % POOL_SIZE)
+        padding_width_total = POOL_SIZE - (image.patch_size % POOL_SIZE)
+        padding_height_left = padding_height_total // 2
+        padding_height_right = padding_height_total - padding_height_left
+        padding_width_left = padding_width_total // 2
+        padding_width_right = padding_width_total - padding_width_left
+
+        for node in nodes.values():
+
+            node.label_cost = [0 for _ in range(max_nr_labels)]
+
+            if node.overlap_source_region:
+
+                patch_ir = image.ir[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
+                mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+                mask_3ch = np.repeat(mask, nr_channels, axis=1).reshape((image.patch_size, image.patch_size, nr_channels))
+                patch_ir = patch_ir * (1 - mask_3ch)
+                patch_descr = max_pool_padding(patch_ir, padding_height_left, padding_height_right, padding_width_left, padding_width_right)
+
+                for i, node_label_id in enumerate(node.pruned_labels):
+                    node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+                    patchs_label_ir = image.ir[node_label_x_coord: node_label_x_coord + image.patch_size, node_label_y_coord: node_label_y_coord + image.patch_size, :]
+                    patchs_label_ir = patchs_label_ir * (1 - mask_3ch)
+                    patchs_label_descr = max_pool_padding(patchs_label_ir, padding_height_left, padding_height_right, padding_width_left, padding_width_right)
+
+                    node.label_cost[i] = np.sum(np.subtract(patch_descr, patchs_label_descr, dtype=np.float32) ** 2)
+
+            node.local_likelihood = [math.exp(-cost * (1 / 100000)) for cost in node.label_cost]
+            node.mask = node.local_likelihood.index(max(node.local_likelihood))
 
 
 #TODO also calculate InitMask after local_likelihood

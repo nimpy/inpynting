@@ -137,7 +137,7 @@ def max_pool_pad_full_process(patch_ir, pool_size=8):
     return patch_descr
 
 
-def max_pool_pad(patch_ir, padding_height_left, padding_height_right, padding_width_left, padding_width_right, pool_size=8):
+def max_pool_padding(patch_ir, padding_height_left, padding_height_right, padding_width_left, padding_width_right, pool_size=8):
 
     height, width, nr_channels = patch_ir.shape
 
