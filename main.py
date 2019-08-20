@@ -23,7 +23,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
     image_rgb = imageio.imread(folder_path + '/' + image_filename)
 
     mask = imageio.imread(folder_path + '/' + mask_filename)
-    mask = mask[:, :, 0]
+    # mask = mask[:, :, 0]  # TODO sometimes needed depending on the image encoding
 
     for i in range(mask.shape[0]):
         for j in range(mask.shape[1]):
@@ -45,7 +45,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
         # compute the intermediate representation, from which descriptors for a single patch can be easily computed
         encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, patch_size)
         # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
-        ir = ae_descriptor.compute_IR(image.rgb, encoder_ir)
+        ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
         image.ir = ir
 
     return image, image_inpainted_name
@@ -152,14 +152,18 @@ def main():
     # image_filename = 'building64.jpg'
     # mask_filename = 'girl64_mask.png'
 
-    folder_path = '/home/niaki/Code/inpynting_images/building'
-    image_filename = 'building128.jpeg'
-    mask_filename = 'mask128.jpg' # 'mask128.jpg' 'mask128_ULcorner.jpg'
+    # folder_path = '/home/niaki/Code/inpynting_images/building'
+    # image_filename = 'building128.jpeg'
+    # mask_filename = 'mask128.jpg' # 'mask128.jpg' 'mask128_ULcorner.jpg'
 
-    # jian_number = '8'
+    # jian_number = '9'
     # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
     # image_filename = 'Jian' + jian_number + '_degra.png'
     # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
+
+    folder_path = '/scratch/data/mystic_lamb'
+    image_filename = 'mystic_lamb.png'
+    mask_filename = 'mystic_lamb_mask.png'
 
     
     inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors)
@@ -218,14 +222,15 @@ def main():
 
 
     #####
-
-    # folder_path_origin = '/home/niaki/Code/inpynting_images/Tijana'
-    # image_filename_versions = ['1', '3', '8', '9', '10']
     #
-    # patch_size_values = [6]
-    # thresh_uncertainty_values = [70000, 150000, 6750000]
+    # folder_path_origin = '/home/niaki/Code/inpynting_images/Tijana'
+    # image_filename_versions = ['3', '8', '9', '10']
+    #
+    # patch_size_values = [16] #[6, 10, 14]
+    # thresh_uncertainty_values = [10360] #[70000, 150000, 6750000]
     # max_nr_labels_values = [10]
     # max_nr_iterations_values = [10]
+    # use_descriptors_values = [False, True]
     #
     # counter = 0
     # for i, image_filename_version in enumerate(image_filename_versions):
@@ -237,28 +242,29 @@ def main():
     #         for thresh_uncertainty in thresh_uncertainty_values:
     #             for max_nr_labels in max_nr_labels_values:
     #                 for max_nr_iterations in max_nr_iterations_values:
-    #                     print('*****************************************************')
-    #                     print(folder_path)
-    #                     print(image_filename)
-    #                     print(mask_filename)
-    #                     print(patch_size)
-    #                     print(stride)
-    #                     print(thresh_uncertainty)
-    #                     print(max_nr_labels)
-    #                     print(max_nr_iterations)
-    #                     print(counter)
-    #                     try:
-    #                         eeo.patches = []
-    #                         eeo.nodes_count = 0
-    #                         eeo.nodes_order = []
-    #                         inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride,
-    #                                   thresh_uncertainty, max_nr_labels, max_nr_iterations)
-    #                     except Exception as e:
-    #                         print("Problem!!", str(e))
+    #                     for use_descriptors in use_descriptors_values:
+    #                         print('*****************************************************')
+    #                         print(folder_path)
+    #                         print(image_filename)
+    #                         print(mask_filename)
+    #                         print(patch_size)
+    #                         print(stride)
+    #                         print(thresh_uncertainty)
+    #                         print(max_nr_labels)
+    #                         print(max_nr_iterations)
+    #                         print(counter)
+    #                         try:
+    #                             eeo.patches = []
+    #                             eeo.nodes_count = 0
+    #                             eeo.nodes_order = []
+    #                             inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride,
+    #                                       thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors)
+    #                         except Exception as e:
+    #                             print("Problem!!", str(e))
     #
-    #                     print(counter)
-    #                     print()
-    #                     counter += 1
+    #                         print(counter)
+    #                         print()
+    #                         counter += 1
     #
     # print(counter)
 
