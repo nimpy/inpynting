@@ -5,13 +5,20 @@ import os
 import datetime
 # import random
 # import sys
-import ae_descriptor
+# import ae_descriptor
 
-from data_structures import Image2BInpainted
-import eeo
+from .data_structures import Image2BInpainted
+from . import eeo
 
 
-def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors):
+def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors,
+                 thresh=128,
+                 b_debug=False):
+    """
+    
+    :param thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
+    :return:
+    """
 
     image_inpainted_name, _ = os.path.splitext(image_filename)
     image_inpainted_name = image_inpainted_name + '_'
@@ -23,21 +30,19 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
     image_rgb = imageio.imread(folder_path + '/' + image_filename)
 
     mask = imageio.imread(folder_path + '/' + mask_filename)
-    mask = mask[:, :, 0]
+    if len(mask.shape) == 3:
+        mask = mask[:, :, 0]
 
-    for i in range(mask.shape[0]):
-        for j in range(mask.shape[1]):
-            if mask[i,j] < 128:
-                mask[i, j] = 0
-            else:
-                mask[i, j] = 1
-
-    # on the image: set everything that's under the mask to black
-    for i in range(image_rgb.shape[0]):
-        for j in range(image_rgb.shape[1]):
-            for k in range(image_rgb.shape[2]):
-                if mask[i,j] == 1:
-                    image_rgb[i, j, k] = 0
+    mask = np.greater_equal(mask, thresh).astype(np.uint8)
+    
+    # on the image: set everything that's under the mask to cyan (for debugging purposes
+    cyan = [0, 255, 255]
+    image_rgb[mask.astype(bool), :] = cyan
+    
+    if b_debug:
+        import matplotlib.pyplot as plt
+        plt.imshow(image_rgb)
+        plt.show()
 
     image = Image2BInpainted(image_rgb, mask, patch_size=patch_size, stride=stride)
 
@@ -51,9 +56,15 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
     return image, image_inpainted_name
 
 
-def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors):
+def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors,
+                  thresh=128, b_debug=False):
+    """
 
-    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors)
+    :param thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
+    :return:
+    """
+
+    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, thresh=thresh, b_debug=b_debug)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(patch_size) + "_" + str(stride) + "_" + str(thresh_uncertainty) + "_" + str(max_nr_labels) + "_" + str(max_nr_iterations)
     if use_descriptors:
         image_inpainted_version += '_descr'

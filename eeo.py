@@ -6,17 +6,13 @@ from scipy import signal
 import matplotlib.pyplot as plt
 import imageio
 
-from data_structures import Node, coordinates_to_position, position_to_coordinates
-from data_structures import UP, DOWN, LEFT, RIGHT
-from data_structures import get_half_patch_from_patch, opposite_side
+from .data_structures import Node, coordinates_to_position, position_to_coordinates
+from .data_structures import UP, DOWN, LEFT, RIGHT
+from .data_structures import get_half_patch_from_patch, opposite_side
 # from patch_diff import non_masked_patch_diff, half_patch_diff # TODO should work without these
-from patch_diff import max_pool, max_pool_padding
+from .patch_diff import max_pool, max_pool_padding
 
 POOL_SIZE = 8
-
-nodes = {}  # the indices in this list patches match the node_id
-nodes_count = 0
-nodes_order = []
 
 
 # -- 1st phase --
@@ -111,7 +107,12 @@ def initialization(image, thresh_uncertainty):
 
     global nodes
     global nodes_count
+    global nodes_order
 
+    nodes = {}  # the indices in this list patches match the node_id
+    nodes_count = 0
+    nodes_order = []
+    
     # for all the patches in an image with stride $stride
     for y in range(0, image.width - image.patch_size + 1, image.stride):
         for x in range(0, image.height - image.patch_size + 1, image.stride):
@@ -171,7 +172,7 @@ def initialization(image, thresh_uncertainty):
                             node.differences[patch_compare_position] = patch_difference
                             node.labels.append(patch_compare_position)
 
-                temp_min_diff = min(list(node.differences.values()))
+                temp_min_diff = min(node.differences.values())
                 temp = [value - temp_min_diff for value in list(node.differences.values())]
                 #TODO change thresh_uncertainty such that only patches which are completely in the target region
                 #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
@@ -380,14 +381,17 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
     # for all the patches that have an overlap with the target region (aka nodes)
     for i in range(nodes_count):
 
-        # find the node with the highest priority that hasn't yet been visited
-        highest_priority = -1
-        node_highest_priority_id = -1
-        for node in nodes.values():
-            if not node.committed and node.priority > highest_priority:
-                highest_priority = node.priority
-                node_highest_priority_id = node.node_id
-
+        # # find the node with the highest priority that hasn't yet been visited
+        node_highest_priority = max(filter(lambda node:not node.committed, nodes.values()),
+                                    key=lambda node: node.priority,
+                                    default=-1)
+        if node_highest_priority == -1:
+            err_msg = f'Nodes has no non-committed entries. Make sure the global values are Reset when inpainting new image! {nodes.values}'
+            raise AssertionError(err_msg)
+            
+        highest_priority = node_highest_priority.priority
+        node_highest_priority_id = node_highest_priority.node_id
+        
         node = nodes[node_highest_priority_id]
         node.committed = True
 
@@ -491,9 +495,10 @@ def update_neighbors_priority_rgb(node, neighbor, side, image, thresh_uncertaint
                                    node_label_y_coord: node_label_y_coord + image.patch_size, :]
                 patchs_label_rgb_half = get_half_patch_from_patch(patchs_label_rgb, image.stride, side)
 
-                difference = np.sum(np.subtract(patch_neighbors_label_rgb_half, patchs_label_rgb_half, dtype=np.int32) ** 2)
+                # TODO: change to MSE for better interpretation
+                difference = np.sum((patch_neighbors_label_rgb_half - patchs_label_rgb_half).astype(np.int32)**2)
 
-                if difference < min_additional_difference:
+                if difference < (min_additional_difference):    # When changing to mse? /patch_neighbors_label_rgb_half.size
                     min_additional_difference = difference
 
             additional_differences[neighbors_label_id] = min_additional_difference
@@ -1002,6 +1007,7 @@ def neighborhood_consensus_message_passing(image, max_nr_labels, max_nr_iteratio
             neighbor_up, neighbor_down, neighbor_left, neighbor_right = get_neighbor_nodes(node, image)
 
             #TODO big problem! they are overriding each other!!
+            # TODO implement an overwrite condition?
             if neighbor_up is not None:
                 node.messages = np.matmul(node.potential_matrix_up, neighbor_up.beliefs.reshape((max_nr_labels, 1)))
             if neighbor_down is not None:
@@ -1023,23 +1029,41 @@ def neighborhood_consensus_message_passing(image, max_nr_labels, max_nr_iteratio
             node.beliefs = node.beliefs_new
 
 
-def generate_inpainted_image(image):
+def generate_inpainted_image(image, blend_method=1, mask_type=1):
+    """
+    
+    :param image:
+    :param blend_method: Either 0 or 1
+    :param mask_type: Either 0 or 1
+    :return:
+    """
 
     global nodes
     global nodes_count
     global nodes_order
+    
+    assert blend_method in [0, 1], 'blend_method should be either 0 or 1'
+    assert mask_type in [0, 1], 'mask_type should be either 0 or 1'
 
-    target_region = image.mask
+    target_region = np.copy(image.mask).astype('bool')
+    original_mask = np.copy(image.mask).astype('bool')
+    
+    cyan = np.reshape([0, 255, 255], (1, 1, 3))
+    image.inpainted = np.copy(image.rgb)
+    image.inpainted[target_region, :] = cyan    # To make clear in debugging mode
 
-    image.inpainted = np.multiply(image.rgb,
-                                  np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
-
-    filter_size = 4  # should be > 1
-    smooth_filter = generate_smooth_filter(filter_size)
-    blend_mask = generate_blend_mask(image.patch_size)
-    blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
-    blend_mask_rgb = np.repeat(blend_mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
-
+    if mask_type == 0:
+        filter_size = max(2, image.patch_size // 2)  # should be > 1
+        smooth_filter = generate_smooth_filter(filter_size)
+        
+        blend_mask = generate_blend_mask(image.patch_size)
+        blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
+    elif mask_type == 1:
+        blend_mask = generate_linear_diamond_mask(image.patch_size)
+    else:
+        blend_mask = None
+    
+    blend_mask_rgb = np.repeat(blend_mask[..., None], 3, axis=2)
     for i in range(len(nodes_order)):
     # for i in range(len(nodes_order) - 1, -1, -1):
 
@@ -1052,10 +1076,31 @@ def generate_inpainted_image(image):
 
         node_rgb_new = image.inpainted[node_mask_patch_x_coord: node_mask_patch_x_coord + image.patch_size, node_mask_patch_y_coord: node_mask_patch_y_coord + image.patch_size, :]
 
-        image.inpainted[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :] =\
-            np.multiply(node_rgb, blend_mask_rgb) + np.multiply(node_rgb_new, 1 - blend_mask_rgb)
+        if blend_method == 0:
+            image.inpainted[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :] =\
+                node_rgb*blend_mask_rgb + node_rgb_new*(1 - blend_mask_rgb)
+        
+        # Only inpaint/update pixels belonging to mask
+        elif blend_method == 1:
+            mask_new = target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+            mask_new_orig = original_mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
 
-        target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size] = 0
+            # only inpaint the mask part
+            image.inpainted[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :][mask_new]=\
+                (node_rgb_new)[mask_new]   # TODO
+
+            # average out with previous values
+            mask_prev = np.logical_and(mask_new_orig, np.logical_not(mask_new))
+            
+            image.inpainted[node.x_coord: node.x_coord + image.patch_size,
+                            node.y_coord: node.y_coord + image.patch_size, :][mask_prev] = \
+                (node_rgb*blend_mask_rgb + node_rgb_new*(1 - blend_mask_rgb))[mask_prev]
+                
+        else:
+            ValueError(f'Unknown inpainting strategy: {blend_method}')
+
+        # update the mask
+        target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size] = False
 
         # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
         # plt.show()
@@ -1225,9 +1270,29 @@ def generate_blend_mask_diamond(patch_size):
 def generate_blend_mask(patch_size):
 
     blend_mask = np.zeros((patch_size, patch_size))
-    for i in range(patch_size // 3):
-        blend_mask[i, :] = 1
-        blend_mask[:, i] = 1
+    blend_mask[:patch_size // 3, :] = 1
+    blend_mask[:, :patch_size // 3] = 1
+
+    return blend_mask
+
+
+def generate_linear_diamond_mask(patch_size):
+    # Does NOT need post filtering
+
+    blend_mask = np.zeros((patch_size, patch_size))
+    
+    # Even e.g. 8: from 0 to 3 (and 4 to 7)
+    # Uneven e.g 7: from 0 to 3 (and 3 to 6)
+    patch_size_half = int(np.ceil(patch_size/2.))
+    
+    for i in range(patch_size_half):
+        for j in range(patch_size_half):
+            val = (i + j) / (patch_size_half - 1 + patch_size_half - 1)
+
+            blend_mask[i, j] = val
+            blend_mask[patch_size-1-i, j] = val
+            blend_mask[i, patch_size-1-j] = val
+            blend_mask[patch_size-1-i, patch_size-1-j] = val
 
     return blend_mask
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-from data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
+from .data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
 
 def patch_diff(img1, img2):
     """Computing the sum of squared differences (SSD) between two images."""
