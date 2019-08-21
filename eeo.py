@@ -6,11 +6,11 @@ from scipy import signal
 import matplotlib.pyplot as plt
 import imageio
 
-from .data_structures import Node, coordinates_to_position, position_to_coordinates
-from .data_structures import UP, DOWN, LEFT, RIGHT
-from .data_structures import get_half_patch_from_patch, opposite_side
+from data_structures import Node, coordinates_to_position, position_to_coordinates
+from data_structures import UP, DOWN, LEFT, RIGHT
+from data_structures import get_half_patch_from_patch, opposite_side
 # from patch_diff import non_masked_patch_diff, half_patch_diff # TODO should work without these
-from .patch_diff import max_pool, max_pool_padding
+from patch_diff import max_pool, max_pool_padding
 
 POOL_SIZE = 8
 
@@ -140,7 +140,7 @@ def initialization(image, thresh_uncertainty):
     labels_diametar = 100
 
     # using the rgb values of the patches for comparison, as opposed to their descriptors
-    if image.ir is None:
+    if image.ir is None and image.descriptors is None:
 
         for i, node in enumerate(nodes.values()):
 
@@ -200,8 +200,8 @@ def initialization(image, thresh_uncertainty):
             # the higher priority the higher priority :D
             node.priority = len(node.labels) / max(node_uncertainty, 1)
 
-    # using the descriptors, when patch_size is divisible by pooling size, so no need for padding
-    elif image.patch_size % POOL_SIZE == 0:
+    # using the descriptors from the IR, when patch_size is divisible by pooling size, so no need for padding
+    elif image.ir is not None and image.patch_size % POOL_SIZE == 0:
 
         nr_channels = image.ir.shape[2]
 
@@ -274,8 +274,8 @@ def initialization(image, thresh_uncertainty):
             # the higher priority the higher priority :D
             node.priority = len(node.labels) / max(node_uncertainty, 1)
 
-    # using the descriptors, when patch_size is not divisible by pooling size, so padding is needed
-    else:
+    # using the descriptors from the IR, when patch_size is not divisible by pooling size, so padding is needed
+    elif image.ir is not None:
 
         nr_channels = image.ir.shape[2]
 
@@ -358,6 +358,10 @@ def initialization(image, thresh_uncertainty):
 
             # the higher priority the higher priority :D
             node.priority = len(node.labels) / max(node_uncertainty, 1)
+
+    # using the pre-computed descriptors
+    else:
+        pass
 
     print("\nTotal number of patches: ", len(nodes))
     print("Number of patches to be inpainted: ", nodes_count)

@@ -5,13 +5,13 @@ import os
 import datetime
 # import random
 # import sys
-# import ae_descriptor
+import ae_descriptor
 
-from .data_structures import Image2BInpainted
-from . import eeo
+from data_structures import Image2BInpainted, coordinates_to_position
+import eeo
 
 
-def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors,
+def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors,
                  thresh=128,
                  b_debug=False):
     """
@@ -47,16 +47,27 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
     image = Image2BInpainted(image_rgb, mask, patch_size=patch_size, stride=stride)
 
     if use_descriptors:
-        # compute the intermediate representation, from which descriptors for a single patch can be easily computed
-        encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, patch_size)
-        # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
-        ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
-        image.ir = ir
+        if not store_descriptors:
+            # compute the intermediate representation, from which descriptors for a single patch can be easily computed
+            encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
+            # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
+            ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
+            image.ir = ir
+        else:
+            # compute a descriptor for all the patches and store it in image object
+            encoder = ae_descriptor.init_descr_128(image.patch_size)
+            image.descriptors = {}
+            for y in range(0, image.width - image.patch_size + 1, image.stride):
+                for x in range(0, image.height - image.patch_size + 1, image.stride):
+                    patch = image.rgb[x: x + image.patch_size, y: y + image.patch_size, :]
+                    patch_descr = ae_descriptor.compute_descriptor(patch, encoder)
+                    position = coordinates_to_position(x, y, image.height, image.patch_size)
+                    image.descriptors[position] = patch_descr
 
     return image, image_inpainted_name
 
 
-def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors,
+def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors,
                   thresh=128, b_debug=False):
     """
 
@@ -64,10 +75,12 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
     :return:
     """
 
-    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, thresh=thresh, b_debug=b_debug)
+    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors, thresh=thresh, b_debug=b_debug)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(patch_size) + "_" + str(stride) + "_" + str(thresh_uncertainty) + "_" + str(max_nr_labels) + "_" + str(max_nr_iterations)
     if use_descriptors:
         image_inpainted_version += '_descr'
+        if store_descriptors:
+            image_inpainted_version += '_stored'
 
     # plt.imshow(image.rgb, interpolation='nearest')
     # plt.show()
@@ -143,12 +156,13 @@ def main():
     # TODO thresh_uncertainty should maybe be related to the patch size relative to the image size,
     #  also taking into account whether the descripotrs are used
     # inputs
-    patch_size = 16  # needs to be an even number
+    patch_size = 8  # needs to be an even number
     stride = patch_size // 2 #TODO fix problem when stride isn't exactly half of patch size!
     thresh_uncertainty = 10360 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
     max_nr_labels = 10
     max_nr_iterations = 10
-    use_descriptors = False
+    use_descriptors = True
+    store_descriptors = True
     
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'
@@ -167,17 +181,17 @@ def main():
     # image_filename = 'building128.jpeg'
     # mask_filename = 'mask128.jpg' # 'mask128.jpg' 'mask128_ULcorner.jpg'
 
-    # jian_number = '9'
-    # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
-    # image_filename = 'Jian' + jian_number + '_degra.png'
-    # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
+    jian_number = '9'
+    folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
+    image_filename = 'Jian' + jian_number + '_degra.png'
+    mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
 
-    folder_path = '/scratch/data/mystic_lamb'
-    image_filename = 'mystic_lamb.png'
-    mask_filename = 'mystic_lamb_mask.png'
+    # folder_path = '/scratch/data/mystic_lamb'
+    # image_filename = 'mystic_lamb.png'
+    # mask_filename = 'mystic_lamb_mask.png'
 
     
-    inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors)
+    inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors)
 
 
 
