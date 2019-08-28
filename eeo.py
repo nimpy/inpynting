@@ -666,9 +666,6 @@ def update_neighbors_priority_stored_descrs(node, neighbor, side, image, thresh_
 
         for neighbors_label_id in neighbor.labels:
 
-            if (neighbors_label_id + position_shift_down) >= 13673:
-                print(":o")
-
             if opposite_side(side) == UP:
                 neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
                 neighbor_position = coordinates_to_position(neighbors_label_x_coord, neighbors_label_y_coord, image.height, image.stride)

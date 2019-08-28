@@ -13,7 +13,7 @@ import eeo
 
 
 def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors,
-                 thresh=128,
+                 thresh=200,
                  b_debug=False):
     """
     
@@ -55,7 +55,11 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
         # if not store_descriptors:
         # compute the intermediate representation, from which descriptors for a single patch can be easily computed
-        encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
+
+        # encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
+        encoder_ir, _ = ae_descriptor.init_IR(image.height, image.width, image.patch_size,
+                        model_version='16_alex_layer1finetuned_2_finetuned_3conv3mp_lamb', nr_feature_maps_layer1=32,
+                        nr_feature_maps_layer23=32)
         # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
         ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
         image.ir = ir
@@ -66,35 +70,13 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
             print("... Computing descriptors ...")
 
             image.inpainting_approach = Image2BInpainted.USING_STORED_DESCRIPTORS
-            # compute a descriptor for all the patches and store it in image object
 
-            # encoder_patch = ae_descriptor.init_descr_128(image.patch_size)
+            # compute a descriptor for all the half-patches and store it in image object
+
             encoder_landscape_half_patch = ae_descriptor.init_descr_128(image.patch_size // 2, image.patch_size)
             encoder_portrait_half_patch = ae_descriptor.init_descr_128(image.patch_size, image.patch_size // 2)
-            # image.patch_descriptors = {}
             image.half_patch_landscape_descriptors = {}
             image.half_patch_portrait_descriptors = {}
-
-            # for y in range(0, image.width - image.patch_size + 1):
-            #     for x in range(0, image.height - image.patch_size + 1):
-            #         patch = image.rgb[x: x + image.patch_size, y: y + image.patch_size, :]
-            #         # patch_half_landscape_1 = patch[: image.patch_size // 2, :, :]
-            #         # patch_half_landscape_2 = patch[image.patch_size // 2:, :, :]
-            #         # patch_half_portrait_1 = patch[:, : image.patch_size // 2, :]
-            #         # patch_half_portrait_2 = patch[:, image.patch_size // 2:, :]
-            #
-            #         patch_descr = ae_descriptor.compute_descriptor(patch, encoder_patch)
-            #         # patch_descr_half_landscape_1 = ae_descriptor.compute_descriptor(patch_half_landscape_1, encoder_landscape_half_patch)
-            #         # patch_descr_half_landscape_2 = ae_descriptor.compute_descriptor(patch_half_landscape_2, encoder_landscape_half_patch)
-            #         # patch_descr_half_portrait_1 = ae_descriptor.compute_descriptor(patch_half_portrait_1, encoder_portrait_half_patch)
-            #         # patch_descr_half_portrait_2 = ae_descriptor.compute_descriptor(patch_half_portrait_2, encoder_portrait_half_patch)
-            #
-            #         position = coordinates_to_position(x, y, image.height, image.patch_size)
-            #         image.patch_descriptors[position] = patch_descr
-            #         # image.half_patch_landscape_descriptors[position] = patch_descr_half_landscape_1
-            #         # image.half_patch_landscape_descriptors[max_position + position] = patch_descr_half_landscape_2
-            #         # image.half_patch_portrait_descriptors[position] = patch_descr_half_portrait_1
-            #         # image.half_patch_portrait_descriptors[max_position + position] = patch_descr_half_portrait_2
 
             count = 0
             total_count = len(range(0, image.width - image.patch_size + 1)) * len(range(0, image.height - image.stride + 1)) + \
@@ -252,9 +234,9 @@ def main():
     # image_filename = 'Jian' + jian_number + '_degra.png'
     # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
 
-    # folder_path = '/scratch/data/mystic_lamb'
-    # image_filename = 'mystic_lamb.png'
-    # mask_filename = 'mystic_lamb_mask.png'
+    folder_path = '/scratch/data/mystic_lamb'
+    image_filename = 'mystic_lamb_cropped2.png'
+    mask_filename = 'mystic_lamb_mask_cropped2.png'
 
     
     inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors)
