@@ -1,6 +1,6 @@
 import numpy as np
 import sys
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import imageio
 import os
 import datetime
@@ -13,7 +13,7 @@ import eeo
 
 
 def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors,
-                 thresh=200,
+                 thresh=50,
                  b_debug=False):
     """
     
@@ -58,7 +58,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
         # encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
         encoder_ir, _ = ae_descriptor.init_IR(image.height, image.width, image.patch_size,
-                        model_version='16_alex_layer1finetuned_2_finetuned_3conv3mp_lamb', nr_feature_maps_layer1=32,
+                        model_version='16_alex_layer1finetuned_2_finetuned_3conv3mp_panel13', nr_feature_maps_layer1=32,
                         nr_feature_maps_layer23=32)
         # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
         ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
@@ -191,8 +191,8 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
     
 
     imageio.imwrite(filename_inpainted, image.inpainted)
-    # plt.imshow(image.inpainted, interpolation='nearest')
-    # plt.show()
+    plt.imshow(image.inpainted, interpolation='nearest')
+    plt.show()
 
     imageio.imwrite(filename_order_image, image.order_image)
     # plt.imshow(image.order_image, cmap='gray')
@@ -204,9 +204,9 @@ def main():
     # TODO thresh_uncertainty should maybe be related to the patch size relative to the image size,
     #  also taking into account whether the descripotrs are used
     # inputs
-    patch_size = 16  # needs to be an even number
+    patch_size = 8  # needs to be an even number
     stride = patch_size // 2 #TODO fix problem when stride isn't exactly half of patch size!
-    thresh_uncertainty = 6755360 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
+    thresh_uncertainty = 6755360 #10360 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
     max_nr_labels = 10
     max_nr_iterations = 10
     use_descriptors = True
@@ -234,12 +234,36 @@ def main():
     # image_filename = 'Jian' + jian_number + '_degra.png'
     # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
 
-    folder_path = '/scratch/data/mystic_lamb'
-    image_filename = 'mystic_lamb_cropped2.png'
-    mask_filename = 'mystic_lamb_mask_cropped2.png'
+    # folder_path = '/scratch/data/hand'  # don't forget to also change the descriptor
+    # image_filename = 'clean.tif'
+    # mask_filename = 'pred.tif'
+
+    folder_path = '/scratch/data/panel13'  # don't forget to also change the descriptor
+    image_filename = 'panel13_cropped3.png'
+    mask_filename = 'panel13_mask_cropped3.png'
 
     
     inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors)
+
+    #####
+
+    # folder_path = '/scratch/data/panel13/crops1'
+    #
+    # crop_height = 389
+    # crop_width = 406
+    #
+    # for i in range(0, 1945, crop_height):
+    #     for j in range(0, 1218, crop_width):
+    #         print("=================================================")
+    #         print(i, j)
+    #         image_filename = "image_" + str(i) + "_" + str(j) + ".tif"
+    #         mask_filename = "mask_" + str(i) + "_" + str(j) + ".png"
+    #
+    #         inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty,
+    #                       max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors)
+    #
+    #         print()
+    #         print()
 
 
 
