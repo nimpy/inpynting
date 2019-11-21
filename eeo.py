@@ -10,7 +10,7 @@ from .data_structures import Node, coordinates_to_position, position_to_coordina
 from .data_structures import UP, DOWN, LEFT, RIGHT
 from .data_structures import get_half_patch_from_patch, opposite_side
 # from patch_diff import non_masked_patch_diff, half_patch_diff # TODO should work without these
-from .patch_diff import max_pool, max_pool_padding
+from .patch_diff import max_pool, max_pool_padding, rmse
 
 POOL_SIZE = 8
 
@@ -65,6 +65,7 @@ def initialization_slow(image, thresh_uncertainty):
 
                     if patch_compare_mask_overlap_nonzero_elements == 0:
                         patch_difference = non_masked_patch_diff(image, node.x_coord, node.y_coord, x_compare, y_compare)
+                        
                         patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
                         node.differences[patch_compare_position] = patch_difference
                         node.labels.append(patch_compare_position)
@@ -104,7 +105,7 @@ def initialization_slow(image, thresh_uncertainty):
 
 # using the rgb values of the patches for comparison, as opposed to their descriptors
 def initialization(image, thresh_uncertainty):
-
+    
     global nodes
     global nodes_count
     global nodes_order
@@ -166,18 +167,18 @@ def initialization(image, thresh_uncertainty):
                             patch_compare_rgb = image.rgb[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size, :]
                             patch_compare_rgb = patch_compare_rgb * (1 - mask_3ch)
 
-                            patch_difference = np.sum(np.subtract(node_rgb, patch_compare_rgb, dtype=np.int32) ** 2)
-
+                            patch_difference = rmse(node_rgb, patch_compare_rgb)
+                            
                             patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height, image.patch_size)
                             node.differences[patch_compare_position] = patch_difference
                             node.labels.append(patch_compare_position)
 
                 temp_min_diff = min(node.differences.values())
-                temp = [value - temp_min_diff for value in list(node.differences.values())]
+                temp = np.array(list(node.differences.values())) - temp_min_diff
                 #TODO change thresh_uncertainty such that only patches which are completely in the target region
                 #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
-                node_uncertainty = len([val for (i, val) in enumerate(temp) if val < thresh_uncertainty])
-
+                node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty, temp)))
+        
             # if the patch is completely in the target region
             else:
 
@@ -235,20 +236,19 @@ def initialization(image, thresh_uncertainty):
                                                y_compare: y_compare + image.patch_size, :]
                             patch_compare_ir = patch_compare_ir * (1 - mask_more_ch)
                             patch_compare_descr = max_pool(patch_compare_ir)
-
-                            patch_difference = np.sum(
-                                np.subtract(node_descr, patch_compare_descr, dtype=np.float32) ** 2)
+                            
+                            patch_difference = rmse(node_descr, patch_compare_descr)
 
                             patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height,
                                                                              image.patch_size)
                             node.differences[patch_compare_position] = patch_difference
                             node.labels.append(patch_compare_position)
-
-                temp_min_diff = min(list(node.differences.values()))
-                temp = [value - temp_min_diff for value in list(node.differences.values())]
-                # TODO change thresh_uncertainty such that only patches which are completely in the target region
+                
+                temp_min_diff = min(node.differences.values())
+                temp = np.array(list(node.differences.values())) - temp_min_diff
+                #TODO change thresh_uncertainty such that only patches which are completely in the target region
                 #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
-                node_uncertainty = len([val for (i, val) in enumerate(temp) if val < thresh_uncertainty])
+                node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty, temp)))
 
             # if the patch is completely in the target region
             else:
@@ -321,19 +321,18 @@ def initialization(image, thresh_uncertainty):
                                                                    padding_height_right, padding_width_left,
                                                                    padding_width_right)
 
-                            patch_difference = np.sum(
-                                np.subtract(node_descr, patch_compare_descr, dtype=np.float32) ** 2)
+                            patch_difference = rmse(node_descr, patch_compare_descr)
 
                             patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height,
                                                                              image.patch_size)
                             node.differences[patch_compare_position] = patch_difference
                             node.labels.append(patch_compare_position)
 
-                temp_min_diff = min(list(node.differences.values()))
-                temp = [value - temp_min_diff for value in list(node.differences.values())]
+                temp_min_diff = min(node.differences.values())
+                temp = np.array(list(node.differences.values())) - temp_min_diff
                 # TODO change thresh_uncertainty such that only patches which are completely in the target region
                 #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
-                node_uncertainty = len([val for (i, val) in enumerate(temp) if val < thresh_uncertainty])
+                node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty, temp)))
 
             # if the patch is completely in the target region
             else:
@@ -495,8 +494,8 @@ def update_neighbors_priority_rgb(node, neighbor, side, image, thresh_uncertaint
                                    node_label_y_coord: node_label_y_coord + image.patch_size, :]
                 patchs_label_rgb_half = get_half_patch_from_patch(patchs_label_rgb, image.stride, side)
 
-                # TODO: change to MSE for better interpretation
-                difference = np.sum((patch_neighbors_label_rgb_half - patchs_label_rgb_half).astype(np.int32)**2)
+                # Normalised
+                difference = rmse(patch_neighbors_label_rgb_half, patchs_label_rgb_half)
 
                 if difference < (min_additional_difference):    # When changing to mse? /patch_neighbors_label_rgb_half.size
                     min_additional_difference = difference
@@ -546,7 +545,8 @@ def update_neighbors_priority_ir(node, neighbor, side, image, thresh_uncertainty
                 patchs_label_half_ir = get_half_patch_from_patch(patchs_label_ir, image.stride, side)
                 patchs_label_half_descr = max_pool(patchs_label_half_ir)
 
-                difference = np.sum(np.subtract(patch_neighbors_label_half_descr, patchs_label_half_descr, dtype=np.float32) ** 2)
+                # normalised
+                difference = rmse(patch_neighbors_label_half_descr, patchs_label_half_descr)
 
                 if difference < min_additional_difference:
                     min_additional_difference = difference
@@ -617,7 +617,7 @@ def update_neighbors_priority_ir_padded_mp(node, neighbor, side, image, thresh_u
                 else:  # up or down
                     patchs_label_half_descr = max_pool_padding(patchs_label_half_ir, padding_height_left_ud, padding_height_right_ud, padding_width_left_ud, padding_width_right_ud)
 
-                difference = np.sum(np.subtract(patch_neighbors_label_half_descr, patchs_label_half_descr, dtype=np.float32) ** 2)
+                difference = rmse(patch_neighbors_label_half_descr, patchs_label_half_descr)
 
                 if difference < min_additional_difference:
                     min_additional_difference = difference
@@ -707,7 +707,7 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
 
                         patchs_neighbors_label_rgb_down = get_half_patch_from_patch(patchs_neighbors_label_rgb, image.stride, DOWN)
 
-                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_rgb_up, patchs_neighbors_label_rgb_down, dtype=np.int32) ** 2)
+                        potential_matrix[i, j] = rmse(patchs_label_rgb_up, patchs_neighbors_label_rgb_down)
 
 
                 node.potential_matrix_up = potential_matrix
@@ -738,7 +738,7 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
                         patchs_neighbors_label_rgb_right = get_half_patch_from_patch(patchs_neighbors_label_rgb, image.stride,
                                                                                     RIGHT)
 
-                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_rgb_left, patchs_neighbors_label_rgb_right, dtype=np.int32) ** 2)
+                        potential_matrix[i, j] = rmse(patchs_label_rgb_left, patchs_neighbors_label_rgb_right)
 
 
                 node.potential_matrix_left = potential_matrix
@@ -773,7 +773,7 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
                         patchs_neighbors_label_down_ir = get_half_patch_from_patch(patchs_neighbors_label_ir, image.stride, DOWN)
                         patchs_neighbors_label_down_descr = max_pool(patchs_neighbors_label_down_ir)
 
-                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_up_descr, patchs_neighbors_label_down_descr, dtype=np.float32) ** 2)
+                        potential_matrix[i, j] = rmse(patchs_label_up_descr, patchs_neighbors_label_down_descr)
 
                 node.potential_matrix_up = potential_matrix
                 neighbor_up.potential_matrix_down = potential_matrix
@@ -799,7 +799,7 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
                         patchs_neighbors_label_right_ir = get_half_patch_from_patch(patchs_neighbors_label_ir, image.stride, RIGHT)
                         patchs_neighbors_label_right_descr = max_pool(patchs_neighbors_label_right_ir)
 
-                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_left_descr, patchs_neighbors_label_right_descr, dtype=np.float32) ** 2)
+                        potential_matrix[i, j] = rmse(patchs_label_left_descr, patchs_neighbors_label_right_descr)
 
                 node.potential_matrix_left = potential_matrix
                 neighbor_left.potential_matrix_right = potential_matrix
@@ -848,7 +848,7 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
                         patchs_neighbors_label_down_ir = get_half_patch_from_patch(patchs_neighbors_label_ir, image.stride, DOWN)
                         patchs_neighbors_label_down_descr = max_pool_padding(patchs_neighbors_label_down_ir, padding_height_left_ud, padding_height_right_ud, padding_width_left_ud, padding_width_right_ud)
 
-                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_up_descr, patchs_neighbors_label_down_descr, dtype=np.float32) ** 2)
+                        potential_matrix[i, j] = rmse(patchs_label_up_descr, patchs_neighbors_label_down_descr)
 
                 node.potential_matrix_up = potential_matrix
                 neighbor_up.potential_matrix_down = potential_matrix
@@ -874,7 +874,7 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
                         patchs_neighbors_label_right_ir = get_half_patch_from_patch(patchs_neighbors_label_ir, image.stride, RIGHT)
                         patchs_neighbors_label_right_descr = max_pool_padding(patchs_neighbors_label_right_ir, padding_height_left_lr, padding_height_right_lr, padding_width_left_lr, padding_width_right_lr)
 
-                        potential_matrix[i, j] = np.sum(np.subtract(patchs_label_left_descr, patchs_neighbors_label_right_descr, dtype=np.float32) ** 2)
+                        potential_matrix[i, j] = rmse(patchs_label_left_descr, patchs_neighbors_label_right_descr)
 
                 node.potential_matrix_left = potential_matrix
                 neighbor_left.potential_matrix_right = potential_matrix
@@ -905,7 +905,7 @@ def compute_label_cost(image, max_nr_labels):
                     patchs_label_rgb = image.rgb[node_label_x_coord: node_label_x_coord + image.patch_size, node_label_y_coord: node_label_y_coord + image.patch_size, :]
                     patchs_label_rgb = patchs_label_rgb * (1 - mask_3ch)
 
-                    node.label_cost[i] = np.sum(np.subtract(patch_rgb, patchs_label_rgb, dtype=np.int32) ** 2)
+                    node.label_cost[i] = rmse(patch_rgb, patchs_label_rgb)
 
             node.local_likelihood = [math.exp(-cost * (1/100000)) for cost in node.label_cost]
             node.mask = node.local_likelihood.index(max(node.local_likelihood))
@@ -932,7 +932,7 @@ def compute_label_cost(image, max_nr_labels):
                     patchs_label_ir = patchs_label_ir * (1 - mask_3ch)
                     patchs_label_descr = max_pool(patchs_label_ir)
 
-                    node.label_cost[i] = np.sum(np.subtract(patch_descr, patchs_label_descr, dtype=np.float32) ** 2)
+                    node.label_cost[i] = rmse(patch_descr, patchs_label_descr)
 
             node.local_likelihood = [math.exp(-cost * (1 / 100000)) for cost in node.label_cost]
             node.mask = node.local_likelihood.index(max(node.local_likelihood))
@@ -966,7 +966,7 @@ def compute_label_cost(image, max_nr_labels):
                     patchs_label_ir = patchs_label_ir * (1 - mask_3ch)
                     patchs_label_descr = max_pool_padding(patchs_label_ir, padding_height_left, padding_height_right, padding_width_left, padding_width_right)
 
-                    node.label_cost[i] = np.sum(np.subtract(patch_descr, patchs_label_descr, dtype=np.float32) ** 2)
+                    node.label_cost[i] = rmse(patch_descr, patchs_label_descr)
 
             node.local_likelihood = [math.exp(-cost * (1 / 100000)) for cost in node.label_cost]
             node.mask = node.local_likelihood.index(max(node.local_likelihood))

@@ -12,11 +12,11 @@ from . import eeo
 
 
 def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors,
-                 thresh=128,
+                 mask_thresh=128,
                  b_debug=False):
     """
     
-    :param thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
+    :param mask_thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
     :return:
     """
 
@@ -33,7 +33,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
     if len(mask.shape) == 3:
         mask = mask[:, :, 0]
 
-    mask = np.greater_equal(mask, thresh).astype(np.uint8)
+    mask = np.greater_equal(mask, mask_thresh).astype(np.uint8)
     
     # on the image: set everything that's under the mask to cyan (for debugging purposes
     cyan = [0, 255, 255]
@@ -56,15 +56,21 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
     return image, image_inpainted_name
 
 
-def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors,
-                  thresh=128, b_debug=False):
+def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride,
+                  thresh_uncertainty:int, max_nr_labels, max_nr_iterations, use_descriptors,
+                  thresh:int=128, b_debug=False):
     """
-
+    
+    :param: thresh_uncertainty: thresh for distance function. Value in [0.; 1.] or [0;255]
     :param thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
     :return:
     """
+    
+    # assert thresh_uncertainty <= 255, f'thresh_uncertainty = {thresh_uncertainty}. Should be in [0.; 1.] or [0;255]'
+    if thresh_uncertainty <= 1:     # Transform to working in int8 domain
+        thresh_uncertainty = thresh_uncertainty*255
 
-    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, thresh=thresh, b_debug=b_debug)
+    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, mask_thresh=thresh, b_debug=b_debug)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(patch_size) + "_" + str(stride) + "_" + str(thresh_uncertainty) + "_" + str(max_nr_labels) + "_" + str(max_nr_iterations)
     if use_descriptors:
         image_inpainted_version += '_descr'
@@ -139,13 +145,11 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
 
 def main():
-
-    # TODO thresh_uncertainty should maybe be related to the patch size relative to the image size,
-    #  also taking into account whether the descripotrs are used
+    # TODO also taking into account whether the descripotrs are used
     # inputs
     patch_size = 16  # needs to be an even number
     stride = patch_size // 2 #TODO fix problem when stride isn't exactly half of patch size!
-    thresh_uncertainty = 10360 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
+    thresh_uncertainty = 40 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
     max_nr_labels = 10
     max_nr_iterations = 10
     use_descriptors = False
