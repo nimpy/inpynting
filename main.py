@@ -13,11 +13,11 @@ import eeo
 
 
 def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors,
-                 thresh=50,
+                 mask_thresh=50,
                  b_debug=False):
     """
     
-    :param thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
+    :param mask_thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
     :return:
     """
 
@@ -34,7 +34,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
     if len(mask.shape) == 3:
         mask = mask[:, :, 0]
 
-    mask = np.greater_equal(mask, thresh).astype(np.uint8)
+    mask = np.greater_equal(mask, mask_thresh).astype(np.uint8)
     
     # on the image: set everything that's under the mask to cyan (for debugging purposes
     cyan = [0, 255, 255]
@@ -53,7 +53,8 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
         image.inpainting_approach = Image2BInpainted.USING_IR
 
-        # if not store_descriptors:
+        # if not 
+                 :
         # compute the intermediate representation, from which descriptors for a single patch can be easily computed
 
         # encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
@@ -116,15 +117,22 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
     return image, image_inpainted_name
 
 
-def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors,
-                  thresh=128, b_debug=False):
-    """
+def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride,
+                  thresh_uncertainty:int, max_nr_labels, max_nr_iterations, store_descriptors, use_descriptors,
+                  thresh:int=128, b_debug=False):
 
+    """
+    
+    :param: thresh_uncertainty: thresh for distance function. Value in [0.; 1.] or [0;255]
     :param thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
     :return:
     """
 
-    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors, thresh=thresh, b_debug=b_debug)
+    assert thresh_uncertainty <= 255, f'thresh_uncertainty = {thresh_uncertainty}. Should be in [0.; 1.] or [0;255]'
+    if thresh_uncertainty <= 1:     # Transform to working in int8 domain
+        thresh_uncertainty = thresh_uncertainty*255
+
+    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors, mask_thresh=thresh, b_debug=b_debug)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(patch_size) + "_" + str(stride) + "_" + str(thresh_uncertainty) + "_" + str(max_nr_labels) + "_" + str(max_nr_iterations)
     if use_descriptors:
         image_inpainted_version += '_descr'
@@ -186,8 +194,8 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
     print("... Generating order image ...")
     eeo.generate_order_image(image)
 
-    filename_inpainted = folder_path + '/' + image_inpainted_name + image_inpainted_version + '.jpg'
-    filename_order_image = folder_path + '/' + image_inpainted_name + 'orderimg_' + image_inpainted_version + '.jpg'
+    filename_inpainted = folder_path + '/' + image_inpainted_name + image_inpainted_version + '.png'
+    filename_order_image = folder_path + '/' + image_inpainted_name + 'orderimg_' + image_inpainted_version + '.png'
     
 
     imageio.imwrite(filename_inpainted, image.inpainted)
@@ -200,13 +208,11 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
 
 def main():
-
-    # TODO thresh_uncertainty should maybe be related to the patch size relative to the image size,
-    #  also taking into account whether the descripotrs are used
+    # TODO also taking into account whether the descripotrs are used
     # inputs
     patch_size = 16  # needs to be an even number
     stride = patch_size // 2 #TODO fix problem when stride isn't exactly half of patch size!
-    thresh_uncertainty = 10360 #10360 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
+    thresh_uncertainty = 40 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
     max_nr_labels = 10
     max_nr_iterations = 10
     use_descriptors = False
@@ -214,20 +220,20 @@ def main():
     
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'
-    mask_filename = 'Mask512.jpg'
+    mask_filename = 'Mask512.png'
     # mask_filename = 'Mask512_3.png'
 
     # folder_path = '/home/niaki/Code/inpynting_images/Greenland'
-    # image_filename = 'Greenland.jpg'
-    # mask_filename = 'Mask512.jpg'
+    # image_filename = 'Greenland.png'
+    # mask_filename = 'Mask512.png'
 
     # folder_path = '/home/niaki/Downloads'
-    # image_filename = 'building64.jpg'
+    # image_filename = 'building64.png'
     # mask_filename = 'girl64_mask.png'
 
     folder_path = '/home/niaki/Code/inpynting_images/building'
-    image_filename = 'building128.jpeg'
-    mask_filename = 'mask128.jpg' # 'mask128.jpg' 'mask128_ULcorner.jpg'
+    image_filename = 'building128.png'
+    mask_filename = 'mask128.png' # 'mask128.png' 'mask128_ULcorner.png'
 
     # jian_number = '9'
     # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
@@ -271,9 +277,9 @@ def main():
 
     # folder_path_origin = '/home/niaki/Code/inpynting_images'
     # folder_path_subfolders = ['Lenna', 'Greenland']  # , 'Waterfall']
-    # image_filenames = ['Lenna.png', 'Greenland.jpg']  # , 'Waterfall.jpg']
+    # image_filenames = ['Lenna.png', 'Greenland.png']  # , 'Waterfall.png']
     #
-    # mask_filenames = ['Mask512_1.jpg', 'Mask512_2.png', 'Mask512_3.png']
+    # mask_filenames = ['Mask512_1.png', 'Mask512_2.png', 'Mask512_3.png']
     #
     # patch_size_values = [10, 16, 20]
     # # stride_values = [4, 6, 8, 10]

@@ -1,3 +1,6 @@
+# In progress:
+ *[ ] Replacing SSE with RMSE: Normalised and physical meaning
+
 # Problems
 ## High priority
 

@@ -1,48 +1,53 @@
 import numpy as np
+import warnings
 
 from data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
 
 def patch_diff(img1, img2):
-    """Computing the sum of squared differences (SSD) between two images."""
-    if img1.shape != img2.shape:
-        print("Images don't have the same shape.")
-        return
-
-    return np.sum((np.array(img1, dtype=np.float32) - np.array(img2, dtype=np.float32)) ** 2)
-
-
-# def patch_diff_img(image, x1, y1, x2, y2):
-#     patch1_rgb = image.rgb[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
-#     patch2_rgb = image.rgb[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
-#
-#     return np.sum((np.array(patch1_rgb, dtype=np.float32) - np.array(patch2_rgb, dtype=np.float32)) ** 2)
-#
-#
-# def patch_diff_ir(image, x1, y1, x2, y2):
-#     patch1_ir = image.ir[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
-#     patch2_ir = image.ir[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
-#
-#     patch1_descr = max_pool(patch1_ir, image.patch_size)
-#     patch2_descr = max_pool(patch2_ir, image.patch_size)
-#
-#     return np.sum((np.array(patch1_descr, dtype=np.float32) - np.array(patch2_descr, dtype=np.float32)) ** 2)
+    """ UPDATED Root mean squared differences as it is normalised to patchsize AND has a physical meaning"""
+    """ Deprecated: Computing the sum of squared differences (SSD) between two images."""
+    assert img1.shape == img2.shape, "Images don't have the same shape."
+    
+    return rmse(img1, img2)
 
 
-# def patch_diff1(image, x1, y1, x2, y2):
-#     if image.ir is not None:
-#         patch1_ir = image.ir[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
-#         patch2_ir = image.ir[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
-#
-#         patch1_descr = max_pool(patch1_ir)
-#         patch2_descr = max_pool(patch2_ir)
-#
-#         return np.sum((np.array(patch1_descr, dtype=np.float32) - np.array(patch2_descr, dtype=np.float32)) ** 2)
-#
-#     else:
-#         patch1_rgb = image.rgb[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
-#         patch2_rgb = image.rgb[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
-#
-#         return np.sum((np.array(patch1_rgb, dtype=np.float32) - np.array(patch2_rgb, dtype=np.float32)) ** 2)
+def patch_diff_img(image, x1, y1, x2, y2):
+    warnings.warn("deprecated function", DeprecationWarning)
+    
+    patch1_rgb = image.rgb[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
+    patch2_rgb = image.rgb[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
+
+    return patch_diff(patch1_rgb, patch2_rgb)
+
+
+def patch_diff_ir(image, x1, y1, x2, y2):
+    warnings.warn("deprecated function", DeprecationWarning)
+
+    patch1_ir = image.ir[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
+    patch2_ir = image.ir[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
+
+    patch1_descr = max_pool(patch1_ir, image.patch_size)
+    patch2_descr = max_pool(patch2_ir, image.patch_size)
+
+    return patch_diff(patch1_descr, patch2_descr)
+
+
+def patch_diff1(image, x1, y1, x2, y2):
+    warnings.warn("deprecated function", DeprecationWarning)
+    if image.ir is not None:
+        patch1_ir = image.ir[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
+        patch2_ir = image.ir[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
+
+        patch1_descr = max_pool(patch1_ir)
+        patch2_descr = max_pool(patch2_ir)
+
+        return patch_diff(patch1_descr, patch2_descr)
+
+    else:
+        patch1_rgb = image.rgb[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
+        patch2_rgb = image.rgb[x2: x2 + image.patch_size, y2: y2 + image.patch_size, :]
+
+        return patch_diff(patch1_rgb, patch2_rgb)
 
 
 def non_masked_patch_diff(image, x, y, x_compare, y_compare):
@@ -62,7 +67,7 @@ def non_masked_patch_diff(image, x, y, x_compare, y_compare):
         patch_descr = max_pool(patch_ir)
         patch_compare_descr = max_pool(patch_compare_ir)
 
-        return np.sum((np.array(patch_descr, dtype=np.float32) - np.array(patch_compare_descr, dtype=np.float32)) ** 2)
+        return patch_diff(patch_descr, patch_compare_descr)
 
     else:
 
@@ -73,8 +78,8 @@ def non_masked_patch_diff(image, x, y, x_compare, y_compare):
         patch_rgb = patch_rgb * (1 - mask_3ch)
         patch_compare_rgb = patch_compare_rgb * (1 - mask_3ch)
 
-        return np.sum((np.array(patch_rgb, dtype=np.float32) - np.array(patch_compare_rgb, dtype=np.float32)) ** 2)
-
+        return patch_diff(patch_rgb, patch_compare_rgb)
+    
 
 def half_patch_diff(image, x1, y1, x2, y2, side):
     if image.ir is not None:
@@ -87,7 +92,7 @@ def half_patch_diff(image, x1, y1, x2, y2, side):
         patch1_descr = max_pool(patch1_ir_half)
         patch2_descr = max_pool(patch2_ir_half)
 
-        return np.sum((np.array(patch1_descr, dtype=np.float32) - np.array(patch2_descr, dtype=np.float32)) ** 2)
+        return patch_diff(patch1_descr, patch2_descr)
 
     else:
         patch1_rgb = image.rgb[x1: x1 + image.patch_size, y1: y1 + image.patch_size, :]
@@ -96,7 +101,7 @@ def half_patch_diff(image, x1, y1, x2, y2, side):
         patch1_rgb_half = get_half_patch_from_patch(patch1_rgb, image.stride, side)
         patch2_rgb_half = get_half_patch_from_patch(patch2_rgb, image.stride, opposite_side(side))
 
-        return np.sum((np.array(patch1_rgb_half, dtype=np.float32) - np.array(patch2_rgb_half, dtype=np.float32)) ** 2)
+        return patch_diff(patch1_rgb_half, patch2_rgb_half)
 
 
 def max_pool(patch_ir, pool_size=8):
@@ -153,3 +158,8 @@ def max_pool_padding(patch_ir, padding_height_left, padding_height_right, paddin
     patch_descr = patch_ir_reshaped.max(axis=1).max(axis=2)
 
     return patch_descr
+
+
+def rmse(a, b):
+    # Normalised and has physical meaning
+    return np.sqrt(np.mean(np.subtract(a, b, dtype=float)**2))
