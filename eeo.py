@@ -12,7 +12,7 @@ from data_structures import UP, DOWN, LEFT, RIGHT
 from data_structures import get_half_patch_from_patch, opposite_side
 # from patch_diff import non_masked_patch_diff, half_patch_diff # TODO should work without these
 
-from .patch_diff import max_pool, max_pool_padding, rmse
+from patch_diff import max_pool, max_pool_padding, rmse
 
 POOL_SIZE = 8
 
@@ -330,12 +330,12 @@ def initialization(image, thresh_uncertainty):
                                 node.differences[patch_compare_position] = patch_difference
                                 node.labels.append(patch_compare_position)
 
-                temp_min_diff = min(node.differences.values())
-                temp = np.array(list(node.differences.values())) - temp_min_diff
-                # TODO change thresh_uncertainty such that only patches which are completely in the target region
-                #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
-                node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty, temp)))
-                  
+                    temp_min_diff = min(node.differences.values())
+                    temp = np.array(list(node.differences.values())) - temp_min_diff
+                    # TODO change thresh_uncertainty such that only patches which are completely in the target region
+                    #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
+                    node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty, temp)))
+
                 # if the patch is completely in the target region
                 else:
 

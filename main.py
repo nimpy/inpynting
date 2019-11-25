@@ -53,8 +53,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
         image.inpainting_approach = Image2BInpainted.USING_IR
 
-        # if not 
-                 :
+        # if not store_descriptors:
         # compute the intermediate representation, from which descriptors for a single patch can be easily computed
 
         # encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
@@ -244,9 +243,9 @@ def main():
     # image_filename = 'clean.tif'
     # mask_filename = 'pred.tif'
 
-    folder_path = '/scratch/data/panel13'  # don't forget to also change the descriptor
-    image_filename = 'panel13_cropped1.png'
-    mask_filename = 'panel13_mask_cropped1.png'
+    # folder_path = '/scratch/data/panel13'  # don't forget to also change the descriptor
+    # image_filename = 'panel13_cropped1.png'
+    # mask_filename = 'panel13_mask_cropped1.png'
 
     
     inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors)
