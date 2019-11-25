@@ -1104,7 +1104,7 @@ def generate_inpainted_image(image, blend_method=1, mask_type=1):
 
         # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
         # plt.show()
-        # imageio.imwrite('/home/niaki/Code/inpynting_images/building/ordering2/building_' + str(i).zfill(4) + '.jpg', image.inpainted)
+        # imageio.imwrite('/home/niaki/Code/inpynting_images/building/ordering2/building_' + str(i).zfill(4) + '.png', image.inpainted)
 
     image.inpainted = image.inpainted.astype(np.uint8)
 
@@ -1148,7 +1148,7 @@ def generate_inpainted_image(image, blend_method=1, mask_type=1):
 #
 #             # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
 #             # plt.show()
-#             # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.jpg', image.inpainted)
+#             # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.png', image.inpainted)
 #
 #         image.inpainted = image.inpainted.astype(np.uint8)
 #
@@ -1205,7 +1205,7 @@ def generate_inpainted_image(image, blend_method=1, mask_type=1):
 #
 #         # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
 #         # plt.show()
-#         # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.jpg', image.inpainted)
+#         # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.png', image.inpainted)
 #
 #     image.inpainted = image.inpainted.astype(np.uint8)
 #

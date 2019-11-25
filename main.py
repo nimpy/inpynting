@@ -131,8 +131,8 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
     print("... Generating order image ...")
     eeo.generate_order_image(image)
 
-    filename_inpainted = folder_path + '/' + image_inpainted_name + image_inpainted_version + '.jpg'
-    filename_order_image = folder_path + '/' + image_inpainted_name + 'orderimg_' + image_inpainted_version + '.jpg'
+    filename_inpainted = folder_path + '/' + image_inpainted_name + image_inpainted_version + '.png'
+    filename_order_image = folder_path + '/' + image_inpainted_name + 'orderimg_' + image_inpainted_version + '.png'
     
 
     imageio.imwrite(filename_inpainted, image.inpainted)
@@ -156,20 +156,20 @@ def main():
     
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'
-    mask_filename = 'Mask512.jpg'
+    mask_filename = 'Mask512.png'
     # mask_filename = 'Mask512_3.png'
 
     # folder_path = '/home/niaki/Code/inpynting_images/Greenland'
-    # image_filename = 'Greenland.jpg'
-    # mask_filename = 'Mask512.jpg'
+    # image_filename = 'Greenland.png'
+    # mask_filename = 'Mask512.png'
 
     # folder_path = '/home/niaki/Downloads'
-    # image_filename = 'building64.jpg'
+    # image_filename = 'building64.png'
     # mask_filename = 'girl64_mask.png'
 
     folder_path = '/home/niaki/Code/inpynting_images/building'
-    image_filename = 'building128.jpeg'
-    mask_filename = 'mask128.jpg' # 'mask128.jpg' 'mask128_ULcorner.jpg'
+    image_filename = 'building128.png'
+    mask_filename = 'mask128.png' # 'mask128.png' 'mask128_ULcorner.png'
 
     # jian_number = '8'
     # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
@@ -185,9 +185,9 @@ def main():
 
     # folder_path_origin = '/home/niaki/Code/inpynting_images'
     # folder_path_subfolders = ['Lenna', 'Greenland']  # , 'Waterfall']
-    # image_filenames = ['Lenna.png', 'Greenland.jpg']  # , 'Waterfall.jpg']
+    # image_filenames = ['Lenna.png', 'Greenland.png']  # , 'Waterfall.png']
     #
-    # mask_filenames = ['Mask512_1.jpg', 'Mask512_2.png', 'Mask512_3.png']
+    # mask_filenames = ['Mask512_1.png', 'Mask512_2.png', 'Mask512_3.png']
     #
     # patch_size_values = [10, 16, 20]
     # # stride_values = [4, 6, 8, 10]
