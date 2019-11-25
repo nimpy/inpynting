@@ -1,7 +1,7 @@
 import numpy as np
 import warnings
 
-from .data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
+from data_structures import UP, DOWN, LEFT, RIGHT, opposite_side, get_half_patch_from_patch
 
 def patch_diff(img1, img2):
     """ UPDATED Root mean squared differences as it is normalised to patchsize AND has a physical meaning"""

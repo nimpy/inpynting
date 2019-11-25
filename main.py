@@ -1,18 +1,19 @@
 import numpy as np
-# import matplotlib.pyplot as plt
+import sys
+import matplotlib.pyplot as plt
 import imageio
 import os
 import datetime
 # import random
 # import sys
-# import ae_descriptor
+import ae_descriptor
 
-from .data_structures import Image2BInpainted
-from . import eeo
+from data_structures import Image2BInpainted, coordinates_to_position
+import eeo
 
 
-def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors,
-                 mask_thresh=128,
+def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors,
+                 mask_thresh=50,
                  b_debug=False):
     """
     
@@ -46,40 +47,104 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
     image = Image2BInpainted(image_rgb, mask, patch_size=patch_size, stride=stride)
 
+    image.inpainting_approach = Image2BInpainted.USING_RBG_VALUES
+
     if use_descriptors:
+
+        image.inpainting_approach = Image2BInpainted.USING_IR
+
+        # if not 
+                 :
         # compute the intermediate representation, from which descriptors for a single patch can be easily computed
-        encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, patch_size)
+
+        # encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
+        encoder_ir, _ = ae_descriptor.init_IR(image.height, image.width, image.patch_size,
+                        model_version='16_alex_layer1finetuned_2_finetuned_3conv3mp_panel13', nr_feature_maps_layer1=32,
+                        nr_feature_maps_layer23=32)
         # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
-        ir = ae_descriptor.compute_IR(image.rgb, encoder_ir)
+        ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
         image.ir = ir
+
+        if store_descriptors:
+
+            print()
+            print("... Computing descriptors ...")
+
+            image.inpainting_approach = Image2BInpainted.USING_STORED_DESCRIPTORS
+
+            # compute a descriptor for all the half-patches and store it in image object
+
+            encoder_landscape_half_patch = ae_descriptor.init_descr_128(image.patch_size // 2, image.patch_size)
+            encoder_portrait_half_patch = ae_descriptor.init_descr_128(image.patch_size, image.patch_size // 2)
+            image.half_patch_landscape_descriptors = {}
+            image.half_patch_portrait_descriptors = {}
+
+            count = 0
+            total_count = len(range(0, image.width - image.patch_size + 1)) * len(range(0, image.height - image.stride + 1)) + \
+                          len(range(0, image.width - image.stride + 1)) * len(range(0, image.height - image.patch_size + 1))
+
+            print(len(range(0, image.width - image.patch_size + 1)) * len(range(0, image.height - image.stride + 1)))
+            print(len(range(0, image.width - image.stride + 1)) * len(range(0, image.height - image.patch_size + 1)))
+
+            for y in range(0, image.width - image.patch_size + 1):
+                for x in range(0, image.height - image.stride + 1):
+
+                    sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
+                    count += 1
+
+                    patch_half_landscape = image.rgb[x: x + image.patch_size // 2, y: y + image.patch_size, :]
+
+                    patch_descr_half_landscape = ae_descriptor.compute_descriptor(patch_half_landscape, encoder_landscape_half_patch)
+
+                    position = coordinates_to_position(x, y, image.height, image.stride)
+                    image.half_patch_landscape_descriptors[position] = patch_descr_half_landscape
+
+            for y in range(0, image.width - image.stride + 1):
+                for x in range(0, image.height - image.patch_size + 1):
+
+                    sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
+                    count += 1
+
+                    patch_half_portrait = image.rgb[x: x + image.patch_size, y: y + image.patch_size // 2, :]
+
+                    patch_descr_half_portrait = ae_descriptor.compute_descriptor(patch_half_portrait, encoder_portrait_half_patch)
+
+                    position = coordinates_to_position(x, y, image.height, image.patch_size)
+                    image.half_patch_portrait_descriptors[position] = patch_descr_half_portrait
+
+            sys.stdout.write("\rComputing descriptor " + str(total_count) + "/" + str(total_count) + " ... Done! \n")
 
     return image, image_inpainted_name
 
 
 def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride,
-                  thresh_uncertainty:int, max_nr_labels, max_nr_iterations, use_descriptors,
+                  thresh_uncertainty:int, max_nr_labels, max_nr_iterations, store_descriptors, use_descriptors,
                   thresh:int=128, b_debug=False):
+
     """
     
     :param: thresh_uncertainty: thresh for distance function. Value in [0.; 1.] or [0;255]
     :param thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
     :return:
     """
-    
-    # assert thresh_uncertainty <= 255, f'thresh_uncertainty = {thresh_uncertainty}. Should be in [0.; 1.] or [0;255]'
+
+    assert thresh_uncertainty <= 255, f'thresh_uncertainty = {thresh_uncertainty}. Should be in [0.; 1.] or [0;255]'
     if thresh_uncertainty <= 1:     # Transform to working in int8 domain
         thresh_uncertainty = thresh_uncertainty*255
 
-    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, mask_thresh=thresh, b_debug=b_debug)
+    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors, mask_thresh=thresh, b_debug=b_debug)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(patch_size) + "_" + str(stride) + "_" + str(thresh_uncertainty) + "_" + str(max_nr_labels) + "_" + str(max_nr_iterations)
     if use_descriptors:
         image_inpainted_version += '_descr'
+        if store_descriptors:
+            image_inpainted_version += '_stored'
 
     # plt.imshow(image.rgb, interpolation='nearest')
     # plt.show()
     # plt.imshow(image.mask, cmap='gray')
     # plt.show()
 
+    print()
     print("Number of pixels to be inpainted: " + str(np.count_nonzero(image.mask)))
 
 
@@ -91,8 +156,6 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
     eeo.initialization(image, thresh_uncertainty)
 
     eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
-
-
 
     print()
     print("... Label pruning ...")
@@ -136,8 +199,8 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
     
 
     imageio.imwrite(filename_inpainted, image.inpainted)
-    # plt.imshow(image.inpainted, interpolation='nearest')
-    # plt.show()
+    plt.imshow(image.inpainted, interpolation='nearest')
+    plt.show()
 
     imageio.imwrite(filename_order_image, image.order_image)
     # plt.imshow(image.order_image, cmap='gray')
@@ -153,6 +216,7 @@ def main():
     max_nr_labels = 10
     max_nr_iterations = 10
     use_descriptors = False
+    store_descriptors = False
     
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'
@@ -171,13 +235,41 @@ def main():
     image_filename = 'building128.png'
     mask_filename = 'mask128.png' # 'mask128.png' 'mask128_ULcorner.png'
 
-    # jian_number = '8'
+    # jian_number = '9'
     # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
     # image_filename = 'Jian' + jian_number + '_degra.png'
     # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
 
+    # folder_path = '/scratch/data/hand'  # don't forget to also change the descriptor
+    # image_filename = 'clean.tif'
+    # mask_filename = 'pred.tif'
+
+    folder_path = '/scratch/data/panel13'  # don't forget to also change the descriptor
+    image_filename = 'panel13_cropped1.png'
+    mask_filename = 'panel13_mask_cropped1.png'
+
     
-    inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors)
+    inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors)
+
+    #####
+
+    # folder_path = '/scratch/data/panel13/crops1'
+    #
+    # crop_height = 389
+    # crop_width = 406
+    #
+    # for i in range(0, 1945, crop_height):
+    #     for j in range(0, 1218, crop_width):
+    #         print("=================================================")
+    #         print(i, j)
+    #         image_filename = "image_" + str(i) + "_" + str(j) + ".tif"
+    #         mask_filename = "mask_" + str(i) + "_" + str(j) + ".png"
+    #
+    #         inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty,
+    #                       max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors)
+    #
+    #         print()
+    #         print()
 
 
 
@@ -233,14 +325,15 @@ def main():
 
 
     #####
-
-    # folder_path_origin = '/home/niaki/Code/inpynting_images/Tijana'
-    # image_filename_versions = ['1', '3', '8', '9', '10']
     #
-    # patch_size_values = [6]
-    # thresh_uncertainty_values = [70000, 150000, 6750000]
+    # folder_path_origin = '/home/niaki/Code/inpynting_images/Tijana'
+    # image_filename_versions = ['3', '8', '9', '10']
+    #
+    # patch_size_values = [16] #[6, 10, 14]
+    # thresh_uncertainty_values = [10360] #[70000, 150000, 6750000]
     # max_nr_labels_values = [10]
     # max_nr_iterations_values = [10]
+    # use_descriptors_values = [False, True]
     #
     # counter = 0
     # for i, image_filename_version in enumerate(image_filename_versions):
@@ -252,28 +345,29 @@ def main():
     #         for thresh_uncertainty in thresh_uncertainty_values:
     #             for max_nr_labels in max_nr_labels_values:
     #                 for max_nr_iterations in max_nr_iterations_values:
-    #                     print('*****************************************************')
-    #                     print(folder_path)
-    #                     print(image_filename)
-    #                     print(mask_filename)
-    #                     print(patch_size)
-    #                     print(stride)
-    #                     print(thresh_uncertainty)
-    #                     print(max_nr_labels)
-    #                     print(max_nr_iterations)
-    #                     print(counter)
-    #                     try:
-    #                         eeo.patches = []
-    #                         eeo.nodes_count = 0
-    #                         eeo.nodes_order = []
-    #                         inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride,
-    #                                   thresh_uncertainty, max_nr_labels, max_nr_iterations)
-    #                     except Exception as e:
-    #                         print("Problem!!", str(e))
+    #                     for use_descriptors in use_descriptors_values:
+    #                         print('*****************************************************')
+    #                         print(folder_path)
+    #                         print(image_filename)
+    #                         print(mask_filename)
+    #                         print(patch_size)
+    #                         print(stride)
+    #                         print(thresh_uncertainty)
+    #                         print(max_nr_labels)
+    #                         print(max_nr_iterations)
+    #                         print(counter)
+    #                         try:
+    #                             eeo.patches = []
+    #                             eeo.nodes_count = 0
+    #                             eeo.nodes_order = []
+    #                             inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride,
+    #                                       thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors)
+    #                         except Exception as e:
+    #                             print("Problem!!", str(e))
     #
-    #                     print(counter)
-    #                     print()
-    #                     counter += 1
+    #                         print(counter)
+    #                         print()
+    #                         counter += 1
     #
     # print(counter)
 
