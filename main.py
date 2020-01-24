@@ -16,7 +16,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
                  mask_thresh=50,
                  b_debug=False):
     """
-    
+
     :param mask_thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
     :return:
     """
@@ -35,11 +35,11 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
         mask = mask[:, :, 0]
 
     mask = np.greater_equal(mask, mask_thresh).astype(np.uint8)
-    
+
     # on the image: set everything that's under the mask to cyan (for debugging purposes
     cyan = [0, 255, 255]
     image_rgb[mask.astype(bool), :] = cyan
-    
+
     if b_debug:
         import matplotlib.pyplot as plt
         plt.imshow(image_rgb)
@@ -58,8 +58,8 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
         # encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
         encoder_ir, _ = ae_descriptor.init_IR(image.height, image.width, image.patch_size,
-                        model_version='16_alex_layer1finetuned_2_finetuned_3conv3mp_panel13', nr_feature_maps_layer1=32,
-                        nr_feature_maps_layer23=32)
+                        model_version='16_alex_layer1finetuned_2_finetuned_3conv3mp_test_images_inpainting', nr_feature_maps_layer1=32,
+                        nr_feature_maps_layer23=32) #16_alex_layer1finetuned_2_finetuned_3conv3mp_test_images_inpainting
         # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
         ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
         image.ir = ir
@@ -71,7 +71,8 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
             image.inpainting_approach = Image2BInpainted.USING_STORED_DESCRIPTORS
 
-            # compute a descriptor for all the half-patches and store it in image object
+            # compute a descri
+            # ptor for all the half-patches and store it in image object
 
             encoder_landscape_half_patch = ae_descriptor.init_descr_128(image.patch_size // 2, image.patch_size)
             encoder_portrait_half_patch = ae_descriptor.init_descr_128(image.patch_size, image.patch_size // 2)
@@ -117,11 +118,11 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
 
 def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride,
-                  thresh_uncertainty:int, max_nr_labels, max_nr_iterations, store_descriptors, use_descriptors,
+                  thresh_uncertainty:int, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors,
                   thresh:int=128, b_debug=False):
 
     """
-    
+
     :param: thresh_uncertainty: thresh for distance function. Value in [0.; 1.] or [0;255]
     :param thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
     :return:
@@ -195,7 +196,7 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
     filename_inpainted = folder_path + '/' + image_inpainted_name + image_inpainted_version + '.png'
     filename_order_image = folder_path + '/' + image_inpainted_name + 'orderimg_' + image_inpainted_version + '.png'
-    
+
 
     imageio.imwrite(filename_inpainted, image.inpainted)
     plt.imshow(image.inpainted, interpolation='nearest')
@@ -214,9 +215,9 @@ def main():
     thresh_uncertainty = 40 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
     max_nr_labels = 10
     max_nr_iterations = 10
-    use_descriptors = False
-    store_descriptors = False
-    
+    use_descriptors = True
+    store_descriptors = True
+
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'
     mask_filename = 'Mask512.png'
@@ -226,18 +227,22 @@ def main():
     # image_filename = 'Greenland.png'
     # mask_filename = 'Mask512.png'
 
+    # folder_path = '/home/niaki/Code/inpynting_images/Gradient'
+    # image_filename = 'Gradient.png'
+    # mask_filename = 'Mask256_2.png'
+
     # folder_path = '/home/niaki/Downloads'
     # image_filename = 'building64.png'
     # mask_filename = 'girl64_mask.png'
 
     folder_path = '/home/niaki/Code/inpynting_images/building'
-    image_filename = 'building128.png'
-    mask_filename = 'mask128.png' # 'mask128.png' 'mask128_ULcorner.png'
+    image_filename = 'building128.jpeg'
+    mask_filename = 'mask128.jpg' # 'mask128.png' 'mask128_ULcorner.png'
 
-    # jian_number = '9'
-    # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
-    # image_filename = 'Jian' + jian_number + '_degra.png'
-    # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
+    jian_number = '1'
+    folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
+    image_filename = 'Jian' + jian_number + '_degra.png'
+    mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
 
     # folder_path = '/scratch/data/hand'  # don't forget to also change the descriptor
     # image_filename = 'clean.tif'
@@ -247,7 +252,7 @@ def main():
     # image_filename = 'panel13_cropped1.png'
     # mask_filename = 'panel13_mask_cropped1.png'
 
-    
+
     inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors)
 
     #####

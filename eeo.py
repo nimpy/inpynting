@@ -385,7 +385,7 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
     # for all the patches that have an overlap with the target region (aka nodes)
     for i in range(nodes_count):
 
-        # # find the node with the highest priority that hasn't yet been visited
+        # find the node with the highest priority that hasn't yet been visited
         node_highest_priority = max(filter(lambda node:not node.committed, nodes.values()),
                                     key=lambda node: node.priority,
                                     default=-1)
