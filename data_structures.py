@@ -2,7 +2,8 @@ class Image2BInpainted:
 
     USING_RBG_VALUES = 0
     USING_IR = 1
-    USING_STORED_DESCRIPTORS = 2
+    USING_STORED_DESCRIPTORS_HALVES = 2
+    USING_STORED_DESCRIPTORS_CUBE = 3
 
     def __init__(self, rgb, mask, patch_size, stride, inpainting_approach=-1, ir=None, patch_descriptors=None,
                  half_patch_landscape_descriptors=None, half_patch_portrait_descriptors=None,

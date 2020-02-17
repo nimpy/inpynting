@@ -12,7 +12,7 @@ from data_structures import Image2BInpainted, coordinates_to_position
 import eeo
 
 
-def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors,
+def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors_halves,
                  mask_thresh=50,
                  b_debug=False):
     """
@@ -53,7 +53,6 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
         image.inpainting_approach = Image2BInpainted.USING_IR
 
-        # if not store_descriptors:
         # compute the intermediate representation, from which descriptors for a single patch can be easily computed
 
         # encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
@@ -64,12 +63,12 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
         ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
         image.ir = ir
 
-        if store_descriptors:
+        if store_descriptors_halves:
 
             print()
             print("... Computing descriptors ...")
 
-            image.inpainting_approach = Image2BInpainted.USING_STORED_DESCRIPTORS
+            image.inpainting_approach = Image2BInpainted.USING_STORED_DESCRIPTORS_HALVES
 
             # compute a descriptor for all the half-patches and store it in image object
 
@@ -117,7 +116,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
 
 def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride,
-                  thresh_uncertainty:int, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors,
+                  thresh_uncertainty:int, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors_halves,
                   thresh:int=128, b_debug=False):
 
     """
@@ -131,12 +130,12 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
     if thresh_uncertainty <= 1:     # Transform to working in int8 domain
         thresh_uncertainty = thresh_uncertainty*255
 
-    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors, mask_thresh=thresh, b_debug=b_debug)
+    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors_halves, mask_thresh=thresh, b_debug=b_debug)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(patch_size) + "_" + str(stride) + "_" + str(thresh_uncertainty) + "_" + str(max_nr_labels) + "_" + str(max_nr_iterations)
     if use_descriptors:
         image_inpainted_version += '_descr'
-        if store_descriptors:
-            image_inpainted_version += '_stored'
+        if store_descriptors_halves:
+            image_inpainted_version += '_storedhalves'
 
     # plt.imshow(image.rgb, interpolation='nearest')
     # plt.show()
@@ -214,8 +213,13 @@ def main():
     thresh_uncertainty = 40 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
     max_nr_labels = 10
     max_nr_iterations = 10
+
+    # valid states of these variables:
+    #  if use_descriptors is False, then other two should be False
+    #  if use_descriptors is True, then at most one other can be True (and at least zero :D)
     use_descriptors = True
-    store_descriptors = True
+    store_descriptors_halves = True
+    store_descriptors_cube = True
 
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'
@@ -262,7 +266,7 @@ def main():
     # mask_filename = 'panel13_mask_cropped1.png'
 
 
-    inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors)
+    inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors_halves)
 
     #####
 
@@ -279,7 +283,7 @@ def main():
     #         mask_filename = "mask_" + str(i) + "_" + str(j) + ".png"
     #
     #         inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty,
-    #                       max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors)
+    #                       max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors_halves)
     #
     #         print()
     #         print()

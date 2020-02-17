@@ -200,8 +200,8 @@ def initialization(image, thresh_uncertainty):
             # the higher priority the higher priority :D
             node.priority = len(node.labels) / max(node_uncertainty, 1)
 
-    # using the descriptors from the IR or stored descriptors
-    elif image.inpainting_approach == Image2BInpainted.USING_IR or image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS:
+    # using the descriptors from the IR or stored descriptors halves
+    elif image.inpainting_approach == Image2BInpainted.USING_IR or image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS_HALVES:
 
         # when patch_size is divisible by pooling size, so no need for padding
         if image.patch_size % POOL_SIZE == 0:
@@ -424,11 +424,11 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
                 update_neighbors_priority_ir_padded_mp(node, node_neighbor_down, DOWN, image, thresh_uncertainty)
                 update_neighbors_priority_ir_padded_mp(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
                 update_neighbors_priority_ir_padded_mp(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
-        elif image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS:
-            update_neighbors_priority_stored_descrs(node, node_neighbor_up, UP, image, thresh_uncertainty)
-            update_neighbors_priority_stored_descrs(node, node_neighbor_down, DOWN, image, thresh_uncertainty)
-            update_neighbors_priority_stored_descrs(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
-            update_neighbors_priority_stored_descrs(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
+        elif image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS_HALVES:
+            update_neighbors_priority_stored_descrs_halves(node, node_neighbor_up, UP, image, thresh_uncertainty)
+            update_neighbors_priority_stored_descrs_halves(node, node_neighbor_down, DOWN, image, thresh_uncertainty)
+            update_neighbors_priority_stored_descrs_halves(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
+            update_neighbors_priority_stored_descrs_halves(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
         else:
             raise AssertionError("Inpainting approach has not been properly set.")
 
@@ -653,8 +653,8 @@ def update_neighbors_priority_ir_padded_mp(node, neighbor, side, image, thresh_u
         neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
 
 
-# using the stored descriptors
-def update_neighbors_priority_stored_descrs(node, neighbor, side, image, thresh_uncertainty):
+# using the stored descriptors halves
+def update_neighbors_priority_stored_descrs_halves(node, neighbor, side, image, thresh_uncertainty):
 
     # if neighbor is a node that hasn't been committed yet
     if neighbor is not None and not neighbor.committed:
@@ -822,7 +822,7 @@ def compute_pairwise_potential_matrix(image, max_nr_labels):
                 node.potential_matrix_left = potential_matrix
                 neighbor_left.potential_matrix_right = potential_matrix
 
-    elif image.inpainting_approach == Image2BInpainted.USING_IR or image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS:
+    elif image.inpainting_approach == Image2BInpainted.USING_IR or image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS_HALVES:
 
         if (image.patch_size // 2) % POOL_SIZE == 0:  # div by 2 is because we will be comparing half patches
 
@@ -993,7 +993,7 @@ def compute_label_cost(image, max_nr_labels):
             node.local_likelihood = [math.exp(-cost * (1/100000)) for cost in node.label_cost]
             node.mask = node.local_likelihood.index(max(node.local_likelihood))
 
-    elif image.inpainting_approach == Image2BInpainted.USING_IR or image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS:
+    elif image.inpainting_approach == Image2BInpainted.USING_IR or image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS_HALVES:
 
         if image.patch_size % POOL_SIZE == 0:
 
