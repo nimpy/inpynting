@@ -58,8 +58,8 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
         # encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
         encoder_ir, _ = ae_descriptor.init_IR(image.height, image.width, image.patch_size,
-                        model_version='16_alex_layer1finetuned_2_finetuned_3conv3mp_test_images_inpainting', nr_feature_maps_layer1=32,
-                        nr_feature_maps_layer23=32) #16_alex_layer1finetuned_2_finetuned_3conv3mp_test_images_inpainting
+                        model_version='128', nr_feature_maps_layer1=32,
+                        nr_feature_maps_layer23=32) #128 or 16_alex_layer1finetuned_2_finetuned_3conv3mp_test_images_inpainting
         # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
         ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
         image.ir = ir
@@ -71,8 +71,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
             image.inpainting_approach = Image2BInpainted.USING_STORED_DESCRIPTORS
 
-            # compute a descri
-            # ptor for all the half-patches and store it in image object
+            # compute a descriptor for all the half-patches and store it in image object
 
             encoder_landscape_half_patch = ae_descriptor.init_descr_128(image.patch_size // 2, image.patch_size)
             encoder_portrait_half_patch = ae_descriptor.init_descr_128(image.patch_size, image.patch_size // 2)
@@ -239,10 +238,20 @@ def main():
     image_filename = 'building128.jpeg'
     mask_filename = 'mask128.jpg' # 'mask128.png' 'mask128_ULcorner.png'
 
+    folder_path = '/home/niaki/Code/inpynting_images/Colours'
+    image_filename = 'beach_small_degra1.bmp'
+    mask_filename = 'beach_small_mask1.bmp'  # 'mask128.png' 'mask128_ULcorner.png'
+
     jian_number = '1'
-    folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
-    image_filename = 'Jian' + jian_number + '_degra.png'
-    mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
+    folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8_downscaled'
+    image_filename = 'Jian_small_' + jian_number + '_degra2.png'
+    mask_filename = 'Jian_small_' + jian_number + 'Mask_inverted2.png'
+
+
+    # jian_number = '1'
+    # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
+    # image_filename = 'Jian' + jian_number + '_degra.png'
+    # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
 
     # folder_path = '/scratch/data/hand'  # don't forget to also change the descriptor
     # image_filename = 'clean.tif'
