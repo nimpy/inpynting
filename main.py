@@ -12,9 +12,9 @@ from data_structures import Image2BInpainted, coordinates_to_position
 import eeo
 
 
-def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors_halves,
-                 mask_thresh=50,
-                 b_debug=False):
+def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors,
+                 store_descriptors_halves, store_descriptors_cube,
+                 mask_thresh=50, b_debug=False):
     """
 
     :param mask_thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
@@ -51,72 +51,143 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
     if use_descriptors:
 
-        image.inpainting_approach = Image2BInpainted.USING_IR
+        if store_descriptors_cube:
 
-        # compute the intermediate representation, from which descriptors for a single patch can be easily computed
-
-        # encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
-        encoder_ir, _ = ae_descriptor.init_IR(image.height, image.width, image.patch_size,
-                        model_version='128', nr_feature_maps_layer1=32,
-                        nr_feature_maps_layer23=32) #128 or 16_alex_layer1finetuned_2_finetuned_3conv3mp_test_images_inpainting
-        # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
-        ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
-        image.ir = ir
-
-        if store_descriptors_halves:
-
-            print()
-            print("... Computing descriptors ...")
-
-            image.inpainting_approach = Image2BInpainted.USING_STORED_DESCRIPTORS_HALVES
-
-            # compute a descriptor for all the half-patches and store it in image object
-
+            image.inpainting_approach = Image2BInpainted.USING_STORED_DESCRIPTORS_CUBE
+            encoder_whole_patch = ae_descriptor.init_descr_128(image.patch_size, image.patch_size)
             encoder_landscape_half_patch = ae_descriptor.init_descr_128(image.patch_size // 2, image.patch_size)
             encoder_portrait_half_patch = ae_descriptor.init_descr_128(image.patch_size, image.patch_size // 2)
-            image.half_patch_landscape_descriptors = {}
-            image.half_patch_portrait_descriptors = {}
+
+            # calculating the dimensionalities of the descriptors in order to initialise the cubes
+            patch_0 = image.rgb[0: 0 + image.patch_size, 0: 0 + image.patch_size, :]
+            patch_half_landscape_0 = image.rgb[0: 0 + image.patch_size // 2, 0: 0 + image.patch_size, :]
+            patch_half_portrait_0 = image.rgb[0: 0 + image.patch_size, 0: 0 + image.patch_size // 2, :]
+            dimensionality_patch_descr = ae_descriptor.compute_descriptor(patch_0, encoder_whole_patch).flatten().shape[0]
+            dimensionality_patch_descr_half_landscape = ae_descriptor.compute_descriptor(patch_half_landscape_0, encoder_landscape_half_patch).flatten().shape[0]
+            dimensionality_patch_descr_half_portrait = ae_descriptor.compute_descriptor(patch_half_portrait_0, encoder_portrait_half_patch).flatten().shape[0]
+
+            image.descriptor_cube = np.zeros((image.height - image.patch_size + 1, image.width - image.patch_size + 1, dimensionality_patch_descr), dtype=np.float32)
+            image.half_patch_landscape_descriptor_cube = np.zeros((image.height - image.stride + 1, image.width - image.patch_size + 1, dimensionality_patch_descr_half_landscape), dtype=np.float32)
+            image.half_patch_portrait_descriptor_cube = np.zeros((image.height - image.patch_size + 1, image.width - image.stride + 1, dimensionality_patch_descr_half_portrait), dtype=np.float32)
 
             count = 0
-            total_count = len(range(0, image.width - image.patch_size + 1)) * len(range(0, image.height - image.stride + 1)) + \
+            total_count = len(range(0, image.width - image.patch_size + 1)) * len(range(0, image.height - image.patch_size + 1)) + \
+                          len(range(0, image.width - image.patch_size + 1)) * len(range(0, image.height - image.stride + 1)) + \
                           len(range(0, image.width - image.stride + 1)) * len(range(0, image.height - image.patch_size + 1))
 
+            print(len(range(0, image.width - image.patch_size + 1)) * len(range(0, image.height - image.patch_size + 1)))
             print(len(range(0, image.width - image.patch_size + 1)) * len(range(0, image.height - image.stride + 1)))
             print(len(range(0, image.width - image.stride + 1)) * len(range(0, image.height - image.patch_size + 1)))
 
+            # compute descriptors for the whole patches
+            for y in range(0, image.width - image.patch_size + 1):
+                for x in range(0, image.height - image.patch_size + 1):
+                    sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
+                    count += 1
+
+                    patch = image.rgb[x: x + image.patch_size, y: y + image.patch_size, :]
+
+                    patch_descr = ae_descriptor.compute_descriptor(patch, encoder_whole_patch)
+                    patch_descr = patch_descr.flatten()
+
+                    image.descriptor_cube[x, y] = patch_descr
+
+            # compute descriptors for the half patches (landscape)
             for y in range(0, image.width - image.patch_size + 1):
                 for x in range(0, image.height - image.stride + 1):
-
                     sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
                     count += 1
 
                     patch_half_landscape = image.rgb[x: x + image.patch_size // 2, y: y + image.patch_size, :]
 
                     patch_descr_half_landscape = ae_descriptor.compute_descriptor(patch_half_landscape, encoder_landscape_half_patch)
+                    patch_descr_half_landscape = patch_descr_half_landscape.flatten()
 
-                    position = coordinates_to_position(x, y, image.height, image.stride)
-                    image.half_patch_landscape_descriptors[position] = patch_descr_half_landscape
+                    image.half_patch_landscape_descriptor_cube[x, y] = patch_descr_half_landscape
 
+            # compute descriptors for the half patches (portrait)
             for y in range(0, image.width - image.stride + 1):
                 for x in range(0, image.height - image.patch_size + 1):
-
                     sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
                     count += 1
 
                     patch_half_portrait = image.rgb[x: x + image.patch_size, y: y + image.patch_size // 2, :]
 
                     patch_descr_half_portrait = ae_descriptor.compute_descriptor(patch_half_portrait, encoder_portrait_half_patch)
+                    patch_descr_half_portrait = patch_descr_half_portrait.flatten()
 
-                    position = coordinates_to_position(x, y, image.height, image.patch_size)
-                    image.half_patch_portrait_descriptors[position] = patch_descr_half_portrait
+                    image.half_patch_portrait_descriptor_cube[x, y] = patch_descr_half_portrait
 
             sys.stdout.write("\rComputing descriptor " + str(total_count) + "/" + str(total_count) + " ... Done! \n")
+
+        else:
+
+            image.inpainting_approach = Image2BInpainted.USING_IR
+
+            # compute the intermediate representation, from which descriptors for a single patch can be easily computed
+
+            # encoder_ir, _ = ae_descriptor.init_IR_128(image.height, image.width, image.patch_size)
+            encoder_ir, _ = ae_descriptor.init_IR(image.height, image.width, image.patch_size,
+                            model_version='128', nr_feature_maps_layer1=32,
+                            nr_feature_maps_layer23=32) #128 or 16_alex_layer1finetuned_2_finetuned_3conv3mp_test_images_inpainting
+            # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
+            ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
+            image.ir = ir
+
+            if store_descriptors_halves:
+
+                print()
+                print("... Computing descriptors ...")
+
+                image.inpainting_approach = Image2BInpainted.USING_STORED_DESCRIPTORS_HALVES
+
+                # compute a descriptor for all the half-patches and store it in image object
+
+                encoder_landscape_half_patch = ae_descriptor.init_descr_128(image.patch_size // 2, image.patch_size)
+                encoder_portrait_half_patch = ae_descriptor.init_descr_128(image.patch_size, image.patch_size // 2)
+                image.half_patch_landscape_descriptors = {}
+                image.half_patch_portrait_descriptors = {}
+
+                count = 0
+                total_count = len(range(0, image.width - image.patch_size + 1)) * len(range(0, image.height - image.stride + 1)) + \
+                              len(range(0, image.width - image.stride + 1)) * len(range(0, image.height - image.patch_size + 1))
+
+                print(len(range(0, image.width - image.patch_size + 1)) * len(range(0, image.height - image.stride + 1)))
+                print(len(range(0, image.width - image.stride + 1)) * len(range(0, image.height - image.patch_size + 1)))
+
+                for y in range(0, image.width - image.patch_size + 1):
+                    for x in range(0, image.height - image.stride + 1):
+
+                        sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
+                        count += 1
+
+                        patch_half_landscape = image.rgb[x: x + image.patch_size // 2, y: y + image.patch_size, :]
+
+                        patch_descr_half_landscape = ae_descriptor.compute_descriptor(patch_half_landscape, encoder_landscape_half_patch)
+
+                        position = coordinates_to_position(x, y, image.height, image.stride)
+                        image.half_patch_landscape_descriptors[position] = patch_descr_half_landscape
+
+                for y in range(0, image.width - image.stride + 1):
+                    for x in range(0, image.height - image.patch_size + 1):
+
+                        sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
+                        count += 1
+
+                        patch_half_portrait = image.rgb[x: x + image.patch_size, y: y + image.patch_size // 2, :]
+
+                        patch_descr_half_portrait = ae_descriptor.compute_descriptor(patch_half_portrait, encoder_portrait_half_patch)
+
+                        position = coordinates_to_position(x, y, image.height, image.patch_size)
+                        image.half_patch_portrait_descriptors[position] = patch_descr_half_portrait
+
+                sys.stdout.write("\rComputing descriptor " + str(total_count) + "/" + str(total_count) + " ... Done! \n")
 
     return image, image_inpainted_name
 
 
-def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride,
-                  thresh_uncertainty:int, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors_halves,
+def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty:int,
+                  max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors_halves, store_descriptors_cube,
                   thresh:int=128, b_debug=False):
 
     """
@@ -130,12 +201,16 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
     if thresh_uncertainty <= 1:     # Transform to working in int8 domain
         thresh_uncertainty = thresh_uncertainty*255
 
-    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors, store_descriptors_halves, mask_thresh=thresh, b_debug=b_debug)
+    image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
+                                               use_descriptors, store_descriptors_halves, store_descriptors_cube,
+                                               mask_thresh=thresh, b_debug=b_debug)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(patch_size) + "_" + str(stride) + "_" + str(thresh_uncertainty) + "_" + str(max_nr_labels) + "_" + str(max_nr_iterations)
     if use_descriptors:
         image_inpainted_version += '_descr'
         if store_descriptors_halves:
             image_inpainted_version += '_storedhalves'
+        if store_descriptors_cube:
+            image_inpainted_version += '_storedcube'
 
     # plt.imshow(image.rgb, interpolation='nearest')
     # plt.show()
@@ -218,7 +293,7 @@ def main():
     #  if use_descriptors is False, then other two should be False
     #  if use_descriptors is True, then at most one other can be True (and at least zero :D)
     use_descriptors = True
-    store_descriptors_halves = True
+    store_descriptors_halves = False
     store_descriptors_cube = True
 
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
@@ -266,7 +341,8 @@ def main():
     # mask_filename = 'panel13_mask_cropped1.png'
 
 
-    inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty, max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors_halves)
+    inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty,
+                  max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors_halves, store_descriptors_cube)
 
     #####
 
