@@ -1,3 +1,5 @@
+import numpy as np
+
 class Image2BInpainted:
 
     USING_RBG_VALUES = 0
@@ -26,7 +28,9 @@ class Image2BInpainted:
         self.half_patch_portrait_descriptors = half_patch_portrait_descriptors
         self.inpainted = inpainted
         self.order_image = order_image
-
+        # TODO use this!
+        # self.inverted_mask_3ch = 1 - np.repeat(mask, 3, axis=1).reshape((self.height, self.width, 3))
+        # self.inverted_mask_Nch = None
 
 # a patch to be inpainted
 class Node:

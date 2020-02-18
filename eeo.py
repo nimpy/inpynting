@@ -102,7 +102,6 @@ def initialization_slow(image, thresh_uncertainty):
     print("Number of patches to be inpainted: ", nodes_count)
 
 
-# using the rgb values of the patches for comparison, as opposed to their descriptors
 def initialization(image, thresh_uncertainty):
     
     global nodes
@@ -360,6 +359,70 @@ def initialization(image, thresh_uncertainty):
                 # the higher priority the higher priority :D
                 node.priority = len(node.labels) / max(node_uncertainty, 1)
 
+    elif image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS_CUBE:
+
+        raise NotImplementedError(
+            "The other parts of the inpainting are not (yet) implemented to work with descriptors cube.")
+
+        # for i, node in enumerate(nodes.values()):
+        #
+        #     sys.stdout.write("\rInitialising node " + str(i + 1) + "/" + str(nodes_count))
+        #
+        #     if node.overlap_source_region:
+        #
+        #         node_descr = image.descriptor_cube[node.x_coord, node.y_coord, :]
+        #
+        #         # compare the node patch to all patches that are completely in the source region
+        #         for y_compare in range(max(node.y_coord - labels_diametar, 0),
+        #                                min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
+        #             for x_compare in range(max(node.x_coord - labels_diametar, 0),
+        #                                    min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+        #
+        #                 patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
+        #                                              y_compare: y_compare + image.patch_size]
+        #                 patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+        #
+        #                 if patch_compare_mask_overlap_nonzero_elements == 0:
+        #                     patch_compare_descr = image.descriptor_cube[x_compare, y_compare, :]
+        #
+        #                     patch_difference = rmse(node_descr, patch_compare_descr)
+        #
+        #                     patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height,
+        #                                                                      image.patch_size)
+        #                     node.differences[patch_compare_position] = patch_difference
+        #                     node.labels.append(patch_compare_position)
+        #
+        #         temp_min_diff = min(node.differences.values())
+        #         temp = np.array(list(node.differences.values())) - temp_min_diff
+        #         # TODO change thresh_uncertainty such that only patches which are completely in the target region
+        #         #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
+        #         node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty, temp)))
+        #
+        #     # if the patch is completely in the target region
+        #     else:
+        #
+        #         # make all patches that are completely in the source region be the label of the patch
+        #         for y_compare in range(max(node.y_coord - labels_diametar, 0),
+        #                                min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
+        #             for x_compare in range(max(node.x_coord - labels_diametar, 0),
+        #                                    min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+        #
+        #                 patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
+        #                                              y_compare: y_compare + image.patch_size]
+        #                 patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
+        #
+        #                 if patch_compare_mask_overlap_nonzero_elements == 0:
+        #                     patch_compare_position = coordinates_to_position(x_compare, y_compare, image.height,
+        #                                                                      image.patch_size)
+        #                     node.differences[patch_compare_position] = 0
+        #                     node.labels.append(patch_compare_position)
+        #
+        #         node_uncertainty = len(node.labels)
+        #
+        #     # the higher priority the higher priority :D
+        #     node.priority = len(node.labels) / max(node_uncertainty, 1)
+
+
     else:
         raise AssertionError("Inpainting approach has not been properly set.")
 
@@ -429,6 +492,10 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
             update_neighbors_priority_stored_descrs_halves(node, node_neighbor_down, DOWN, image, thresh_uncertainty)
             update_neighbors_priority_stored_descrs_halves(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
             update_neighbors_priority_stored_descrs_halves(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
+        elif image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS_CUBE:
+            update_neighbors_priority_stored_descrs_cube(node, node_neighbor_up, UP, image, thresh_uncertainty)
+
+
         else:
             raise AssertionError("Inpainting approach has not been properly set.")
 
@@ -718,6 +785,72 @@ def update_neighbors_priority_stored_descrs_halves(node, neighbor, side, image, 
         neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
 
 
+# # using the stored descriptors cube
+# def update_neighbors_priority_stored_descrs_cube(node, neighbor, side, image, thresh_uncertainty):
+#
+#     # if neighbor is a node that hasn't been committed yet
+#     if neighbor is not None and not neighbor.committed:
+#
+#         min_additional_difference = sys.maxsize
+#         additional_differences = {}
+#
+#         position_shift_down = image.stride
+#         position_shift_right = image.stride * (image.height - image.patch_size + 1)
+#
+#         for neighbors_label_id in neighbor.labels:
+#
+#             if opposite_side(side) == UP:
+#                 neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
+#                 neighbor_position = coordinates_to_position(neighbors_label_x_coord, neighbors_label_y_coord, image.height, image.stride)
+#                 patch_neighbors_label_half_descr = image.half_patch_landscape_descriptors[neighbor_position]
+#             elif opposite_side(side) == DOWN:
+#                 neighbors_label_x_coord, neighbors_label_y_coord = position_to_coordinates(neighbors_label_id, image.height, image.patch_size)
+#                 neighbor_position = coordinates_to_position(neighbors_label_x_coord, neighbors_label_y_coord, image.height, image.stride)
+#                 patch_neighbors_label_half_descr = image.half_patch_landscape_descriptors[neighbor_position + position_shift_down]
+#             elif opposite_side(side) == LEFT:
+#                 patch_neighbors_label_half_descr = image.half_patch_portrait_descriptors[neighbors_label_id]
+#             else:
+#                 patch_neighbors_label_half_descr = image.half_patch_portrait_descriptors[neighbors_label_id + position_shift_right]
+#
+#             for node_label_id in node.pruned_labels:
+#
+#                 if side == UP:
+#                     node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+#                     node_position = coordinates_to_position(node_label_x_coord, node_label_y_coord, image.height, image.stride)
+#                     patchs_label_half_descr = image.half_patch_landscape_descriptors[node_position]
+#                 elif side == DOWN:
+#                     node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+#                     node_position = coordinates_to_position(node_label_x_coord, node_label_y_coord, image.height, image.stride)
+#                     patchs_label_half_descr = image.half_patch_landscape_descriptors[node_position + position_shift_down]
+#                 elif side == LEFT:
+#                     patchs_label_half_descr = image.half_patch_portrait_descriptors[node_label_id]
+#                 else:
+#                     patchs_label_half_descr = image.half_patch_portrait_descriptors[node_label_id + position_shift_right]
+#
+#                 difference = np.sum(np.subtract(patch_neighbors_label_half_descr, patchs_label_half_descr, dtype=np.float32) ** 2)
+#
+#                 if difference < (min_additional_difference):
+#                     min_additional_difference = difference
+#
+#             additional_differences[neighbors_label_id] = min_additional_difference
+#             min_additional_difference = sys.maxsize
+#
+#         for key in additional_differences.keys():
+#             if key in neighbor.additional_differences:
+#                 neighbor.additional_differences[key] += additional_differences[key]
+#             else:
+#                 neighbor.additional_differences[key] = additional_differences[key]
+#                 print("Will it ever come to this? (2) (TODO delete if unnecessary)")
+#
+#         temp_min_diff = min(neighbor.additional_differences.values())
+#         temp = [value - temp_min_diff for value in
+#                 list(neighbor.additional_differences.values())]
+#         neighbor_uncertainty = [value < thresh_uncertainty for (i, value) in enumerate(temp)].count(True)
+#
+#         neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
+#
+#
+#
 
 
 

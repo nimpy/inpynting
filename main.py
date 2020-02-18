@@ -79,46 +79,49 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
             print(len(range(0, image.width - image.patch_size + 1)) * len(range(0, image.height - image.stride + 1)))
             print(len(range(0, image.width - image.stride + 1)) * len(range(0, image.height - image.patch_size + 1)))
 
-            # compute descriptors for the whole patches
-            for y in range(0, image.width - image.patch_size + 1):
-                for x in range(0, image.height - image.patch_size + 1):
-                    sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
-                    count += 1
+            raise NotImplementedError(
+                "The other parts of the inpainting are not (yet) implemented to work with descriptors cube.")
 
-                    patch = image.rgb[x: x + image.patch_size, y: y + image.patch_size, :]
-
-                    patch_descr = ae_descriptor.compute_descriptor(patch, encoder_whole_patch)
-                    patch_descr = patch_descr.flatten()
-
-                    image.descriptor_cube[x, y] = patch_descr
-
-            # compute descriptors for the half patches (landscape)
-            for y in range(0, image.width - image.patch_size + 1):
-                for x in range(0, image.height - image.stride + 1):
-                    sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
-                    count += 1
-
-                    patch_half_landscape = image.rgb[x: x + image.patch_size // 2, y: y + image.patch_size, :]
-
-                    patch_descr_half_landscape = ae_descriptor.compute_descriptor(patch_half_landscape, encoder_landscape_half_patch)
-                    patch_descr_half_landscape = patch_descr_half_landscape.flatten()
-
-                    image.half_patch_landscape_descriptor_cube[x, y] = patch_descr_half_landscape
-
-            # compute descriptors for the half patches (portrait)
-            for y in range(0, image.width - image.stride + 1):
-                for x in range(0, image.height - image.patch_size + 1):
-                    sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
-                    count += 1
-
-                    patch_half_portrait = image.rgb[x: x + image.patch_size, y: y + image.patch_size // 2, :]
-
-                    patch_descr_half_portrait = ae_descriptor.compute_descriptor(patch_half_portrait, encoder_portrait_half_patch)
-                    patch_descr_half_portrait = patch_descr_half_portrait.flatten()
-
-                    image.half_patch_portrait_descriptor_cube[x, y] = patch_descr_half_portrait
-
-            sys.stdout.write("\rComputing descriptor " + str(total_count) + "/" + str(total_count) + " ... Done! \n")
+            # # compute descriptors for the whole patches
+            # for y in range(0, image.width - image.patch_size + 1):
+            #     for x in range(0, image.height - image.patch_size + 1):
+            #         sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
+            #         count += 1
+            #
+            #         patch = image.rgb[x: x + image.patch_size, y: y + image.patch_size, :]
+            #
+            #         patch_descr = ae_descriptor.compute_descriptor(patch, encoder_whole_patch)
+            #         patch_descr = patch_descr.flatten()
+            #
+            #         image.descriptor_cube[x, y, :] = patch_descr
+            #
+            # # compute descriptors for the half patches (landscape)
+            # for y in range(0, image.width - image.patch_size + 1):
+            #     for x in range(0, image.height - image.stride + 1):
+            #         sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
+            #         count += 1
+            #
+            #         patch_half_landscape = image.rgb[x: x + image.patch_size // 2, y: y + image.patch_size, :]
+            #
+            #         patch_descr_half_landscape = ae_descriptor.compute_descriptor(patch_half_landscape, encoder_landscape_half_patch)
+            #         patch_descr_half_landscape = patch_descr_half_landscape.flatten()
+            #
+            #         image.half_patch_landscape_descriptor_cube[x, y, :] = patch_descr_half_landscape
+            #
+            # # compute descriptors for the half patches (portrait)
+            # for y in range(0, image.width - image.stride + 1):
+            #     for x in range(0, image.height - image.patch_size + 1):
+            #         sys.stdout.write("\rComputing descriptor " + str(count + 1) + "/" + str(total_count))
+            #         count += 1
+            #
+            #         patch_half_portrait = image.rgb[x: x + image.patch_size, y: y + image.patch_size // 2, :]
+            #
+            #         patch_descr_half_portrait = ae_descriptor.compute_descriptor(patch_half_portrait, encoder_portrait_half_patch)
+            #         patch_descr_half_portrait = patch_descr_half_portrait.flatten()
+            #
+            #         image.half_patch_portrait_descriptor_cube[x, y, :] = patch_descr_half_portrait
+            #
+            # sys.stdout.write("\rComputing descriptor " + str(total_count) + "/" + str(total_count) + " ... Done! \n")
 
         else:
 
@@ -133,6 +136,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
             # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
             ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
             image.ir = ir
+            # image.inverted_mask_Nch = 1 - np.repeat(mask, image.ir.shape[2], axis=1).reshape((image.height, image.width, image.ir.shape[2]))
 
             if store_descriptors_halves:
 
