@@ -136,7 +136,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
             # TODO check if the image is normalised (divided by 255), and check if data types are causing problems
             ir = ae_descriptor.compute_IR(image.rgb / 255, encoder_ir)
             image.ir = ir
-            # image.inverted_mask_Nch = 1 - np.repeat(mask, image.ir.shape[2], axis=1).reshape((image.height, image.width, image.ir.shape[2]))
+            image.inverted_mask_Nch = 1 - np.repeat(mask, image.ir.shape[2], axis=1).reshape((image.height, image.width, image.ir.shape[2]))
 
             if store_descriptors_halves:
 
@@ -296,9 +296,9 @@ def main():
     # valid states of these variables:
     #  if use_descriptors is False, then other two should be False
     #  if use_descriptors is True, then at most one other can be True (and at least zero :D)
-    use_descriptors = True
+    use_descriptors = False
     store_descriptors_halves = False
-    store_descriptors_cube = True
+    store_descriptors_cube = False
 
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'

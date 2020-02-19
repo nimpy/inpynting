@@ -29,8 +29,8 @@ class Image2BInpainted:
         self.inpainted = inpainted
         self.order_image = order_image
         # TODO use this!
-        # self.inverted_mask_3ch = 1 - np.repeat(mask, 3, axis=1).reshape((self.height, self.width, 3))
-        # self.inverted_mask_Nch = None
+        self.inverted_mask_3ch = 1 - np.repeat(mask, 3, axis=1).reshape((self.height, self.width, 3))
+        self.inverted_mask_Nch = None
 
 # a patch to be inpainted
 class Node:
