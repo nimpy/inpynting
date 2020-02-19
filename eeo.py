@@ -4,6 +4,7 @@ import pickle
 import math
 from scipy import signal
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import imageio
 
 from data_structures import Image2BInpainted
@@ -470,6 +471,41 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
 
         node.prune_labels(max_nr_labels)
 
+        # insert here visualisation
+
+        # Create figure and axes
+        fig, ax = plt.subplots(1)
+        ax.imshow(image.rgb)
+        rect = patches.Rectangle((node.x_coord, node.y_coord), image.patch_size, image.patch_size, linewidth=1, edgecolor='r', facecolor='none')
+        ax.add_patch(rect)
+        colour_string_original = "#00"
+
+        for node_label_count in range(len(node.pruned_labels) - 1, -1, -1):
+            node_label_id = node.pruned_labels[node_label_count]
+            node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+            if node_label_count == 0:
+                colour_string = "#FFFF00"
+            else:
+                # going from green (the most similar) to blue ()
+                colour_string = colour_string_original + "%0.2X" % ((9 - (node_label_count - 1)) * 28) + "%0.2X" % ((node_label_count - 1) * 28)
+            rect = patches.Rectangle((node_label_x_coord, node_label_y_coord), image.patch_size, image.patch_size, linewidth=1,
+                                     edgecolor=colour_string, facecolor='none')
+            ax.add_patch(rect)
+        plt.show()
+
+        # for (node_label_count, node_label_id) in enumerate(node.pruned_labels):
+        #     node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+        #     if node_label_count == 0:
+        #         colour_string = "#FFFF00"
+        #     else:
+        #         # going from green (the most similar) to blue ()
+        #         colour_string = colour_string_original + "%0.2X" % ((9 - (node_label_count - 1)) * 28) + "%0.2X" % ((node_label_count - 1) * 28)
+        #     rect = patches.Rectangle((node_label_x_coord, node_label_y_coord), image.patch_size, image.patch_size, linewidth=1,
+        #                              edgecolor=colour_string, facecolor='none')
+        #     ax.add_patch(rect)
+
+        # visualisation end
+
         print('Highest priority node {0:3d}/{1:3d}: {2:d}'.format(i + 1, nodes_count, node_highest_priority_id))
         nodes_order.append(node_highest_priority_id)
 
@@ -499,9 +535,9 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
             update_neighbors_priority_stored_descrs_halves(node, node_neighbor_left, LEFT, image, thresh_uncertainty)
             update_neighbors_priority_stored_descrs_halves(node, node_neighbor_right, RIGHT, image, thresh_uncertainty)
         elif image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS_CUBE:
-            update_neighbors_priority_stored_descrs_cube(node, node_neighbor_up, UP, image, thresh_uncertainty)
-
-
+            raise NotImplementedError(
+                "The other parts of the inpainting are not (yet) implemented to work with descriptors cube.")
+            # update_neighbors_priority_stored_descrs_cube(node, node_neighbor_up, UP, image, thresh_uncertainty)
         else:
             raise AssertionError("Inpainting approach has not been properly set.")
 
