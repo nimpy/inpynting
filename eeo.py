@@ -452,6 +452,10 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
     for node in nodes.values():
         node.additional_differences = node.differences.copy()
 
+    fig, ax = plt.subplots(1)
+    ax.imshow(image.rgb)
+
+
     # for all the patches that have an overlap with the target region (aka nodes)
     for i in range(nodes_count):
 
@@ -472,26 +476,30 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
         node.prune_labels(max_nr_labels)
 
         # insert here visualisation
-
-        # Create figure and axes
-        fig, ax = plt.subplots(1)
-        ax.imshow(image.rgb)
-        rect = patches.Rectangle((node.x_coord, node.y_coord), image.patch_size, image.patch_size, linewidth=1, edgecolor='r', facecolor='none')
+        rect = patches.Rectangle((node.y_coord, image.height - node.x_coord - image.patch_size),
+                                 image.patch_size, image.patch_size, linewidth=1, edgecolor='r', facecolor='none')
         ax.add_patch(rect)
-        colour_string_original = "#00"
-
-        for node_label_count in range(len(node.pruned_labels) - 1, -1, -1):
-            node_label_id = node.pruned_labels[node_label_count]
-            node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
-            if node_label_count == 0:
-                colour_string = "#FFFF00"
-            else:
-                # going from green (the most similar) to blue ()
-                colour_string = colour_string_original + "%0.2X" % ((9 - (node_label_count - 1)) * 28) + "%0.2X" % ((node_label_count - 1) * 28)
-            rect = patches.Rectangle((node_label_x_coord, node_label_y_coord), image.patch_size, image.patch_size, linewidth=1,
-                                     edgecolor=colour_string, facecolor='none')
-            ax.add_patch(rect)
-        plt.show()
+        # Create figure and axes
+        # fig, ax = plt.subplots(1)
+        # ax.imshow(image.rgb)
+        # rect = patches.Rectangle((node.y_coord, image.height - node.x_coord - image.patch_size),
+        #                          image.patch_size, image.patch_size, linewidth=1, edgecolor='r', facecolor='none')
+        # ax.add_patch(rect)
+        # colour_string_original = "#00"
+        #
+        # for node_label_count in range(len(node.pruned_labels) - 1, -1, -1):
+        #     node_label_id = node.pruned_labels[node_label_count]
+        #     node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+        #     if node_label_count == 0:
+        #         colour_string = "#FFFF00"
+        #     else:
+        #         # going from green (the most similar) to blue ()
+        #         colour_string = colour_string_original + "%0.2X" % ((9 - (node_label_count - 1)) * 28) + "%0.2X" % ((node_label_count - 1) * 28)
+        #     rect = patches.Rectangle((node_label_y_coord, image.height - node_label_x_coord - image.patch_size),
+        #                              image.patch_size, image.patch_size, linewidth=1,
+        #                              edgecolor=colour_string, facecolor='none')
+        #     ax.add_patch(rect)
+        # plt.show()
 
         # for (node_label_count, node_label_id) in enumerate(node.pruned_labels):
         #     node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
@@ -541,6 +549,7 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
         else:
             raise AssertionError("Inpainting approach has not been properly set.")
 
+    plt.show()
 
 def update_neighbors_priority_slow(node, neighbor, side, image, thresh_uncertainty):
 
