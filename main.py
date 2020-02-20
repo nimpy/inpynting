@@ -296,8 +296,8 @@ def main():
     # valid states of these variables:
     #  if use_descriptors is False, then other two should be False
     #  if use_descriptors is True, then at most one other can be True (and at least zero :D)
-    use_descriptors = False
-    store_descriptors_halves = False
+    use_descriptors = True
+    store_descriptors_halves = True
     store_descriptors_cube = False  # not yet implemented
 
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
