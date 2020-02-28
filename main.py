@@ -37,7 +37,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
     mask = np.greater_equal(mask, mask_thresh).astype(np.uint8)
 
     # on the image: set everything that's under the mask to cyan (for debugging purposes
-    cyan = [0, 255, 255]
+    cyan = [0, 255, 255]  # [127, 127, 127]  # [0, 255, 255]
     image_rgb[mask.astype(bool), :] = cyan
 
     if b_debug:

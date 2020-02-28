@@ -118,7 +118,8 @@ def initialization(image, thresh_uncertainty):
                0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
                0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
                0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,]
-    
+    use_inverted_masks = True
+
     # for all the patches in an image with stride $stride
     for y in range(0, image.width - image.patch_size + 1, image.stride):
         for x in range(0, image.height - image.patch_size + 1, image.stride):
@@ -159,9 +160,12 @@ def initialization(image, thresh_uncertainty):
                 # mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
                 # mask_3ch = np.repeat(mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
                 # node_rgb = node_rgb * (1 - mask_3ch)
-                mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
-                # node_rgb = node_rgb * mask
-                node_rgb[mask.astype(bool), :] = grey_rgb
+                if use_inverted_masks:
+                    mask = image.inverted_mask_3ch[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
+                    node_rgb = node_rgb * mask
+                else:
+                    mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+                    node_rgb[mask.astype(bool), :] = grey_rgb
 
                 # compare the node patch to all patches that are completely in the source region
                 for y_compare in range(max(node.y_coord - labels_diameter, 0),
@@ -174,8 +178,10 @@ def initialization(image, thresh_uncertainty):
 
                         if patch_compare_mask_overlap_nonzero_elements == 0:
                             patch_compare_rgb = image.rgb[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size, :]
-                            # patch_compare_rgb = patch_compare_rgb * mask
-                            patch_compare_rgb[mask.astype(bool), :] = grey_rgb
+                            if use_inverted_masks:
+                                patch_compare_rgb = patch_compare_rgb * mask
+                            else:
+                                patch_compare_rgb[mask.astype(bool), :] = grey_rgb
 
                             patch_difference = rmse(node_rgb, patch_compare_rgb)
                             
@@ -240,10 +246,13 @@ def initialization(image, thresh_uncertainty):
                     # mask_more_ch = np.repeat(mask, nr_channels, axis=1).reshape(
                     #     (image.patch_size, image.patch_size, nr_channels))
                     # node_ir = node_ir * (1 - mask_more_ch)
-                    mask = image.mask[node.x_coord: node.x_coord + image.patch_size,
-                           node.y_coord: node.y_coord + image.patch_size]
-                    # node_ir = node_ir * mask
-                    node_ir[mask.astype(bool), ...] = grey_ir
+
+                    if use_inverted_masks:
+                        mask = image.inverted_mask_Nch[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
+                        node_ir = node_ir * mask
+                    else:
+                        mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+                        node_ir[mask.astype(bool), ...] = grey_ir
                     node_descr = max_pool(node_ir)
 
                     # compare the node patch to all patches that are completely in the source region
@@ -259,8 +268,10 @@ def initialization(image, thresh_uncertainty):
                             if patch_compare_mask_overlap_nonzero_elements == 0:
                                 patch_compare_ir = image.ir[x_compare: x_compare + image.patch_size,
                                                    y_compare: y_compare + image.patch_size, :]
-                                # patch_compare_ir = patch_compare_ir * mask
-                                patch_compare_ir[mask.astype(bool), ...] = grey_ir
+                                if use_inverted_masks:
+                                    patch_compare_ir = patch_compare_ir * mask
+                                else:
+                                    patch_compare_ir[mask.astype(bool), ...] = grey_ir
                                 patch_compare_descr = max_pool(patch_compare_ir)
 
                                 patch_difference = rmse(node_descr, patch_compare_descr)
@@ -341,12 +352,16 @@ def initialization(image, thresh_uncertainty):
                     # mask_more_ch = np.repeat(mask, nr_channels, axis=1).reshape(
                     #     (image.patch_size, image.patch_size, nr_channels))
                     # node_ir = node_ir * (1 - mask_more_ch)
-                    mask = image.mask[node.x_coord: node.x_coord + image.patch_size,
-                           node.y_coord: node.y_coord + image.patch_size]
-                    # node_ir = node_ir * mask
-                    node_ir[mask.astype(bool), ...] = grey_ir
+
+                    if use_inverted_masks:
+                        mask = image.inverted_mask_Nch[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
+                        node_ir = node_ir * mask
+                    else:
+                        mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+                        node_ir[mask.astype(bool), ...] = grey_ir
                     node_descr = max_pool_padding(node_ir, padding_height_left, padding_height_right,
                                                   padding_width_left, padding_width_right)
+
 
 
                     # compare the node patch to all patches that are completely in the source region
@@ -362,8 +377,10 @@ def initialization(image, thresh_uncertainty):
                             if patch_compare_mask_overlap_nonzero_elements == 0:
                                 patch_compare_ir = image.ir[x_compare: x_compare + image.patch_size,
                                                    y_compare: y_compare + image.patch_size, :]
-                                # patch_compare_ir = patch_compare_ir * mask
-                                patch_compare_ir[mask.astype(bool), ...] = grey_ir
+                                if use_inverted_masks:
+                                    patch_compare_ir = patch_compare_ir * mask
+                                else:
+                                    patch_compare_ir[mask.astype(bool), ...] = grey_ir
                                 patch_compare_descr = max_pool_padding(patch_compare_ir, padding_height_left,
                                                                        padding_height_right, padding_width_left,
                                                                        padding_width_right)
