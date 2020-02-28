@@ -112,6 +112,12 @@ def initialization(image, thresh_uncertainty):
     nodes = {}  # the indices in this list patches match the node_id
     nodes_count = 0
     nodes_order = []
+
+    grey_rgb = [127, 127, 127]
+    grey_ir = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+               0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+               0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+               0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,]
     
     # for all the patches in an image with stride $stride
     for y in range(0, image.width - image.patch_size + 1, image.stride):
@@ -133,11 +139,12 @@ def initialization(image, thresh_uncertainty):
 
             if patch_overlap_target_region:
                 patch_position = coordinates_to_position(x, y, image.height, image.patch_size)
-                node = Node(patch_position, patch_overlap_source_region, x, y)
+                node_priority = 1 - (patch_mask_overlap_nonzero_elements / image.patch_size**2)
+                node = Node(patch_position, patch_overlap_source_region, x, y, priority=node_priority)
                 nodes[patch_position] = node
                 nodes_count += 1
 
-    labels_diametar = 100
+    labels_diameter = 100
 
     # using the rgb values of the patches for comparison, as opposed to their descriptors
     if image.inpainting_approach == Image2BInpainted.USING_RBG_VALUES:
@@ -152,21 +159,23 @@ def initialization(image, thresh_uncertainty):
                 # mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
                 # mask_3ch = np.repeat(mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
                 # node_rgb = node_rgb * (1 - mask_3ch)
-                mask = image.inverted_mask_3ch[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
-                node_rgb = node_rgb * mask
+                mask = image.mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+                # node_rgb = node_rgb * mask
+                node_rgb[mask.astype(bool), :] = grey_rgb
 
                 # compare the node patch to all patches that are completely in the source region
-                for y_compare in range(max(node.y_coord - labels_diametar, 0),
-                                       min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-                    for x_compare in range(max(node.x_coord - labels_diametar, 0),
-                                           min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+                for y_compare in range(max(node.y_coord - labels_diameter, 0),
+                                       min(node.y_coord + labels_diameter, image.width - image.patch_size + 1)):
+                    for x_compare in range(max(node.x_coord - labels_diameter, 0),
+                                           min(node.x_coord + labels_diameter, image.height - image.patch_size + 1)):
 
                         patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
                         patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
 
                         if patch_compare_mask_overlap_nonzero_elements == 0:
                             patch_compare_rgb = image.rgb[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size, :]
-                            patch_compare_rgb = patch_compare_rgb * mask
+                            # patch_compare_rgb = patch_compare_rgb * mask
+                            patch_compare_rgb[mask.astype(bool), :] = grey_rgb
 
                             patch_difference = rmse(node_rgb, patch_compare_rgb)
                             
@@ -179,15 +188,16 @@ def initialization(image, thresh_uncertainty):
                 #TODO change thresh_uncertainty such that only patches which are completely in the target region
                 #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
                 node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty, temp)))
+                node.priority *= len(node.labels) / max(node_uncertainty, 1)
         
             # if the patch is completely in the target region
             else:
 
                 # make all patches that are completely in the source region be the label of the patch
-                for y_compare in range(max(node.y_coord - labels_diametar, 0),
-                                       min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-                    for x_compare in range(max(node.x_coord - labels_diametar, 0),
-                                           min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+                for y_compare in range(max(node.y_coord - labels_diameter, 0),
+                                       min(node.y_coord + labels_diameter, image.width - image.patch_size + 1)):
+                    for x_compare in range(max(node.x_coord - labels_diameter, 0),
+                                           min(node.x_coord + labels_diameter, image.height - image.patch_size + 1)):
 
                         patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size, y_compare: y_compare + image.patch_size]
                         patch_compare_mask_overlap_nonzero_elements = np.count_nonzero(patch_compare_mask_overlap)
@@ -198,9 +208,13 @@ def initialization(image, thresh_uncertainty):
                             node.labels.append(patch_compare_position)
 
                 node_uncertainty = len(node.labels)
+                node.priority = 0.01
 
             # the higher priority the higher priority :D
-            node.priority = len(node.labels) / max(node_uncertainty, 1)
+            # node.priority = len(node.labels) / max(node_uncertainty, 1)
+            print()
+            print(node.priority)
+            print(" ", end=" ")
 
     # using the descriptors from the IR or stored descriptors halves
     elif image.inpainting_approach == Image2BInpainted.USING_IR or image.inpainting_approach == Image2BInpainted.USING_STORED_DESCRIPTORS_HALVES:
@@ -216,6 +230,9 @@ def initialization(image, thresh_uncertainty):
 
                 if node.overlap_source_region:
 
+                    if (i == 13) or (i == 28) or (i == 43):
+                        print('hey!')
+
                     node_ir = image.ir[node.x_coord: node.x_coord + image.patch_size,
                               node.y_coord: node.y_coord + image.patch_size, :]
                     # mask = image.mask[node.x_coord: node.x_coord + image.patch_size,
@@ -223,16 +240,17 @@ def initialization(image, thresh_uncertainty):
                     # mask_more_ch = np.repeat(mask, nr_channels, axis=1).reshape(
                     #     (image.patch_size, image.patch_size, nr_channels))
                     # node_ir = node_ir * (1 - mask_more_ch)
-                    mask = image.inverted_mask_Nch[node.x_coord: node.x_coord + image.patch_size,
-                           node.y_coord: node.y_coord + image.patch_size, :]
-                    node_ir = node_ir * mask
+                    mask = image.mask[node.x_coord: node.x_coord + image.patch_size,
+                           node.y_coord: node.y_coord + image.patch_size]
+                    # node_ir = node_ir * mask
+                    node_ir[mask.astype(bool), ...] = grey_ir
                     node_descr = max_pool(node_ir)
 
                     # compare the node patch to all patches that are completely in the source region
-                    for y_compare in range(max(node.y_coord - labels_diametar, 0),
-                                           min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-                        for x_compare in range(max(node.x_coord - labels_diametar, 0),
-                                               min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+                    for y_compare in range(max(node.y_coord - labels_diameter, 0),
+                                           min(node.y_coord + labels_diameter, image.width - image.patch_size + 1)):
+                        for x_compare in range(max(node.x_coord - labels_diameter, 0),
+                                               min(node.x_coord + labels_diameter, image.height - image.patch_size + 1)):
 
                             patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
                                                          y_compare: y_compare + image.patch_size]
@@ -241,7 +259,8 @@ def initialization(image, thresh_uncertainty):
                             if patch_compare_mask_overlap_nonzero_elements == 0:
                                 patch_compare_ir = image.ir[x_compare: x_compare + image.patch_size,
                                                    y_compare: y_compare + image.patch_size, :]
-                                patch_compare_ir = patch_compare_ir * mask
+                                # patch_compare_ir = patch_compare_ir * mask
+                                patch_compare_ir[mask.astype(bool), ...] = grey_ir
                                 patch_compare_descr = max_pool(patch_compare_ir)
 
                                 patch_difference = rmse(node_descr, patch_compare_descr)
@@ -250,21 +269,32 @@ def initialization(image, thresh_uncertainty):
                                                                                  image.patch_size)
                                 node.differences[patch_compare_position] = patch_difference
                                 node.labels.append(patch_compare_position)
+                    if (i == 13) or (i == 28) or (i == 43):
+                        print('hey!')
+                    temp_node_diffs_values = np.array(list(node.differences.values()))
+                    print()
+                    print("    mean " + str(np.mean(temp_node_diffs_values)))
+                    print("    std " + str(np.std(temp_node_diffs_values)))
+                    print("    median " + str(np.median(temp_node_diffs_values)))
+                    print("    min " + str(np.min(temp_node_diffs_values)))
+                    print("    max " + str(np.max(temp_node_diffs_values)))
+
 
                     temp_min_diff = min(node.differences.values())
                     temp = np.array(list(node.differences.values())) - temp_min_diff
                     #TODO change thresh_uncertainty such that only patches which are completely in the target region
                     #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
-                    node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty, temp)))
+                    node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty/250., temp)))
+                    node.priority *= len(node.labels) / max(node_uncertainty, 1)
 
                 # if the patch is completely in the target region
                 else:
 
                     # make all patches that are completely in the source region be the label of the patch
-                    for y_compare in range(max(node.y_coord - labels_diametar, 0),
-                                           min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-                        for x_compare in range(max(node.x_coord - labels_diametar, 0),
-                                               min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+                    for y_compare in range(max(node.y_coord - labels_diameter, 0),
+                                           min(node.y_coord + labels_diameter, image.width - image.patch_size + 1)):
+                        for x_compare in range(max(node.x_coord - labels_diameter, 0),
+                                               min(node.x_coord + labels_diameter, image.height - image.patch_size + 1)):
 
                             patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
                                                          y_compare: y_compare + image.patch_size]
@@ -277,9 +307,13 @@ def initialization(image, thresh_uncertainty):
                                 node.labels.append(patch_compare_position)
 
                     node_uncertainty = len(node.labels)
+                    node.priority = 0.01
 
                 # the higher priority the higher priority :D
-                node.priority = len(node.labels) / max(node_uncertainty, 1)
+                # node.priority = len(node.labels) / max(node_uncertainty, 1)
+                print()
+                print("node.priority: " + str(node.priority))
+                print(" ", end=" ")
 
         # when patch_size is not divisible by pooling size, so padding is needed
         else:
@@ -307,18 +341,19 @@ def initialization(image, thresh_uncertainty):
                     # mask_more_ch = np.repeat(mask, nr_channels, axis=1).reshape(
                     #     (image.patch_size, image.patch_size, nr_channels))
                     # node_ir = node_ir * (1 - mask_more_ch)
-                    mask = image.inverted_mask_Nch[node.x_coord: node.x_coord + image.patch_size,
-                           node.y_coord: node.y_coord + image.patch_size, :]
-                    node_ir = node_ir * mask
+                    mask = image.mask[node.x_coord: node.x_coord + image.patch_size,
+                           node.y_coord: node.y_coord + image.patch_size]
+                    # node_ir = node_ir * mask
+                    node_ir[mask.astype(bool), ...] = grey_ir
                     node_descr = max_pool_padding(node_ir, padding_height_left, padding_height_right,
                                                   padding_width_left, padding_width_right)
 
 
                     # compare the node patch to all patches that are completely in the source region
-                    for y_compare in range(max(node.y_coord - labels_diametar, 0),
-                                           min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-                        for x_compare in range(max(node.x_coord - labels_diametar, 0),
-                                               min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+                    for y_compare in range(max(node.y_coord - labels_diameter, 0),
+                                           min(node.y_coord + labels_diameter, image.width - image.patch_size + 1)):
+                        for x_compare in range(max(node.x_coord - labels_diameter, 0),
+                                               min(node.x_coord + labels_diameter, image.height - image.patch_size + 1)):
 
                             patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
                                                          y_compare: y_compare + image.patch_size]
@@ -327,7 +362,8 @@ def initialization(image, thresh_uncertainty):
                             if patch_compare_mask_overlap_nonzero_elements == 0:
                                 patch_compare_ir = image.ir[x_compare: x_compare + image.patch_size,
                                                    y_compare: y_compare + image.patch_size, :]
-                                patch_compare_ir = patch_compare_ir * mask
+                                # patch_compare_ir = patch_compare_ir * mask
+                                patch_compare_ir[mask.astype(bool), ...] = grey_ir
                                 patch_compare_descr = max_pool_padding(patch_compare_ir, padding_height_left,
                                                                        padding_height_right, padding_width_left,
                                                                        padding_width_right)
@@ -349,10 +385,10 @@ def initialization(image, thresh_uncertainty):
                 else:
 
                     # make all patches that are completely in the source region be the label of the patch
-                    for y_compare in range(max(node.y_coord - labels_diametar, 0),
-                                           min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-                        for x_compare in range(max(node.x_coord - labels_diametar, 0),
-                                               min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+                    for y_compare in range(max(node.y_coord - labels_diameter, 0),
+                                           min(node.y_coord + labels_diameter, image.width - image.patch_size + 1)):
+                        for x_compare in range(max(node.x_coord - labels_diameter, 0),
+                                               min(node.x_coord + labels_diameter, image.height - image.patch_size + 1)):
 
                             patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
                                                          y_compare: y_compare + image.patch_size]
@@ -383,10 +419,10 @@ def initialization(image, thresh_uncertainty):
         #         node_descr = image.descriptor_cube[node.x_coord, node.y_coord, :]
         #
         #         # compare the node patch to all patches that are completely in the source region
-        #         for y_compare in range(max(node.y_coord - labels_diametar, 0),
-        #                                min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-        #             for x_compare in range(max(node.x_coord - labels_diametar, 0),
-        #                                    min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+        #         for y_compare in range(max(node.y_coord - labels_diameter, 0),
+        #                                min(node.y_coord + labels_diameter, image.width - image.patch_size + 1)):
+        #             for x_compare in range(max(node.x_coord - labels_diameter, 0),
+        #                                    min(node.x_coord + labels_diameter, image.height - image.patch_size + 1)):
         #
         #                 patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
         #                                              y_compare: y_compare + image.patch_size]
@@ -412,10 +448,10 @@ def initialization(image, thresh_uncertainty):
         #     else:
         #
         #         # make all patches that are completely in the source region be the label of the patch
-        #         for y_compare in range(max(node.y_coord - labels_diametar, 0),
-        #                                min(node.y_coord + labels_diametar, image.width - image.patch_size + 1)):
-        #             for x_compare in range(max(node.x_coord - labels_diametar, 0),
-        #                                    min(node.x_coord + labels_diametar, image.height - image.patch_size + 1)):
+        #         for y_compare in range(max(node.y_coord - labels_diameter, 0),
+        #                                min(node.y_coord + labels_diameter, image.width - image.patch_size + 1)):
+        #             for x_compare in range(max(node.x_coord - labels_diameter, 0),
+        #                                    min(node.x_coord + labels_diameter, image.height - image.patch_size + 1)):
         #
         #                 patch_compare_mask_overlap = image.mask[x_compare: x_compare + image.patch_size,
         #                                              y_compare: y_compare + image.patch_size]
@@ -435,6 +471,16 @@ def initialization(image, thresh_uncertainty):
 
     else:
         raise AssertionError("Inpainting approach has not been properly set.")
+
+    print()
+    for i, node in enumerate(nodes.values()):
+        print(node.priority, end=' ')
+
+    try:
+        pickle.dump(nodes, open("/home/niaki/Downloads/nodes.pickle", "wb"))
+    except Exception as e:
+        print("Problem while trying to pickle: ", str(e))
+
 
     print("\nTotal number of patches: ", len(nodes))
     print("Number of patches to be inpainted: ", nodes_count)
@@ -480,9 +526,9 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
         #                          image.patch_size, image.patch_size, linewidth=1, edgecolor='r', facecolor='none')
         # ax.add_patch(rect)
 
-        visualise_nodes_pruned_labels(node, image)
+        # visualise_nodes_pruned_labels(node, image)
 
-        print('Highest priority node {0:3d}/{1:3d}: {2:d}'.format(i + 1, nodes_count, node_highest_priority_id))
+        print('Highest priority node {0:3d}/{1:3d}: ID {2:d}, priority {3:.2f}'.format(i + 1, nodes_count, node_highest_priority_id, node_highest_priority.priority))
         nodes_order.append(node_highest_priority_id)
 
         # get the neighbors if they exist and have overlap with the target region
@@ -637,7 +683,7 @@ def update_neighbors_priority_rgb(node, neighbor, side, image, thresh_uncertaint
         temp_min_diff = min(neighbor.additional_differences.values())
         temp = [value - temp_min_diff for value in
                 list(neighbor.additional_differences.values())]
-        neighbor_uncertainty = [value < thresh_uncertainty for (i, value) in enumerate(temp)].count(True)
+        neighbor_uncertainty = [value < (thresh_uncertainty) for (i, value) in enumerate(temp)].count(True)
 
         neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
 
@@ -824,9 +870,11 @@ def update_neighbors_priority_stored_descrs_halves(node, neighbor, side, image, 
         temp_min_diff = min(neighbor.additional_differences.values())
         temp = [value - temp_min_diff for value in
                 list(neighbor.additional_differences.values())]
-        neighbor_uncertainty = [value < thresh_uncertainty for (i, value) in enumerate(temp)].count(True)
+        neighbor_uncertainty = [value < (thresh_uncertainty*250) for (i, value) in enumerate(temp)].count(True)
 
         neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
+        print(neighbor.priority)
+
 
 
 # # using the stored descriptors cube

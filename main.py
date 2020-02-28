@@ -227,12 +227,12 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
     # already done and pickled - start
 
-
     print()
     print("... Initialization ...")
     eeo.initialization(image, thresh_uncertainty)
 
     eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
+    # eeo.unpickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
 
     print()
     print("... Label pruning ...")
@@ -289,7 +289,7 @@ def main():
     # inputs
     patch_size = 16  # needs to be an even number
     stride = patch_size // 2 #TODO fix problem when stride isn't exactly half of patch size!
-    thresh_uncertainty = 40 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
+    thresh_uncertainty = 40 #40 #5555360 #35360 #85360 #155360 # 6755360  #155360  # 100000 #155360 #255360 #6755360
     max_nr_labels = 10
     max_nr_iterations = 10
 
@@ -298,7 +298,7 @@ def main():
     #  if use_descriptors is True, then at most one other can be True (and at least zero :D)
     use_descriptors = True
     store_descriptors_halves = True
-    store_descriptors_cube = False  # not yet implemented
+    store_descriptors_cube = False  # TODO not yet implemented
 
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'
