@@ -874,8 +874,8 @@ def update_neighbors_priority_stored_descrs_halves(node, neighbor, side, image, 
                 else:
                     patchs_label_half_descr = image.half_patch_portrait_descriptors[node_label_id + position_shift_right]
 
-                # difference = np.sum(np.subtract(patch_neighbors_label_half_descr, patchs_label_half_descr, dtype=np.float32) ** 2)
-                difference = rmse(patch_neighbors_label_half_descr, patchs_label_half_descr)
+                difference = np.sum(np.subtract(patch_neighbors_label_half_descr, patchs_label_half_descr, dtype=np.float32) ** 2)
+                # difference = rmse(patch_neighbors_label_half_descr, patchs_label_half_descr)
 
                 if difference < (min_additional_difference):
                     min_additional_difference = difference
@@ -893,7 +893,7 @@ def update_neighbors_priority_stored_descrs_halves(node, neighbor, side, image, 
         temp_min_diff = min(neighbor.additional_differences.values())
         temp = [value - temp_min_diff for value in
                 list(neighbor.additional_differences.values())]
-        neighbor_uncertainty = [value < (thresh_uncertainty/250.) for (i, value) in enumerate(temp)].count(True)
+        neighbor_uncertainty = [value < (thresh_uncertainty*250) for (i, value) in enumerate(temp)].count(True)
 
         neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
 
