@@ -298,7 +298,7 @@ def main():
     #  if use_descriptors is True, then at most one other can be True (and at least zero :D)
     use_descriptors = True
     store_descriptors_halves = True
-    store_descriptors_cube = False  # TODO not yet implemented
+    store_descriptors_cube = False  # TODO implemented this
 
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
     image_filename = 'Lenna.png'

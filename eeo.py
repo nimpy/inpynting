@@ -195,6 +195,8 @@ def initialization(image, thresh_uncertainty):
                 #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
                 node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty, temp)))
                 node.priority *= len(node.labels) / max(node_uncertainty, 1)
+                # node_uncertainty_alternative = np.median(sorted(node.differences.values())[:10]) TODO
+                # node.priority *= 1 / node_uncertainty_alternative
         
             # if the patch is completely in the target region
             else:
@@ -296,7 +298,10 @@ def initialization(image, thresh_uncertainty):
                     #TODO change thresh_uncertainty such that only patches which are completely in the target region
                     #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
                     node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty/250., temp)))
-                    node.priority *= len(node.labels) / max(node_uncertainty, 1)
+                    node_uncertainty_alternative = np.median(sorted(node.differences.values())[:10])
+                    # node.priority *= len(node.labels) / max(node_uncertainty, 1)
+                    node_uncertainty_alternative = np.median(sorted(node.differences.values())[:10])
+                    node.priority *= 1 / node_uncertainty_alternative
 
                 # if the patch is completely in the target region
                 else:
@@ -869,7 +874,8 @@ def update_neighbors_priority_stored_descrs_halves(node, neighbor, side, image, 
                 else:
                     patchs_label_half_descr = image.half_patch_portrait_descriptors[node_label_id + position_shift_right]
 
-                difference = np.sum(np.subtract(patch_neighbors_label_half_descr, patchs_label_half_descr, dtype=np.float32) ** 2)
+                # difference = np.sum(np.subtract(patch_neighbors_label_half_descr, patchs_label_half_descr, dtype=np.float32) ** 2)
+                difference = rmse(patch_neighbors_label_half_descr, patchs_label_half_descr)
 
                 if difference < (min_additional_difference):
                     min_additional_difference = difference
@@ -887,10 +893,18 @@ def update_neighbors_priority_stored_descrs_halves(node, neighbor, side, image, 
         temp_min_diff = min(neighbor.additional_differences.values())
         temp = [value - temp_min_diff for value in
                 list(neighbor.additional_differences.values())]
-        neighbor_uncertainty = [value < (thresh_uncertainty*250) for (i, value) in enumerate(temp)].count(True)
+        neighbor_uncertainty = [value < (thresh_uncertainty/250.) for (i, value) in enumerate(temp)].count(True)
 
         neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
+
+        # if np.median(sorted(neighbor.additional_differences.values())[:10]) == 0:
+        #     print("sta se desava")
+        # # neighbor.priority += 1 / np.median(sorted(neighbor.additional_differences.values())[:10])
+        #
+        # temp_first_non_zero_index = next((i for i, x in enumerate(sorted(neighbor.additional_differences.values())) if x), None)
+        # neighbor.priority += 1 / np.median(sorted(neighbor.additional_differences.values())[temp_first_non_zero_index: temp_first_non_zero_index + 10])
         print(neighbor.priority)
+
 
 
 
