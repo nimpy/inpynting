@@ -140,7 +140,7 @@ def initialization(image, thresh_uncertainty):
 
             if patch_overlap_target_region:
                 patch_position = coordinates_to_position(x, y, image.height, image.patch_size)
-                node_priority = 1 - (patch_mask_overlap_nonzero_elements / image.patch_size**2)
+                node_priority = 2 * (1 - (patch_mask_overlap_nonzero_elements / image.patch_size**2)) ** 2
                 node = Node(patch_position, patch_overlap_source_region, x, y, priority=node_priority)
                 nodes[patch_position] = node
                 nodes_count += 1
@@ -148,7 +148,7 @@ def initialization(image, thresh_uncertainty):
     labels_diameter = 100
 
     # using the rgb values of the patches for comparison, as opposed to their descriptors
-    if image.inpainting_approach == Image2BInpainted.USING_RBG_VALUES:
+    if True or image.inpainting_approach == Image2BInpainted.USING_RBG_VALUES:
 
         for i, node in enumerate(nodes.values()):
 
@@ -189,14 +189,22 @@ def initialization(image, thresh_uncertainty):
                             node.differences[patch_compare_position] = patch_difference
                             node.labels.append(patch_compare_position)
 
-                temp_min_diff = min(node.differences.values())
-                temp = np.array(list(node.differences.values())) - temp_min_diff
-                #TODO change thresh_uncertainty such that only patches which are completely in the target region
-                #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
-                node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty, temp)))
-                node.priority *= len(node.labels) / max(node_uncertainty, 1)
-                # node_uncertainty_alternative = np.median(sorted(node.differences.values())[:10]) TODO
-                # node.priority *= 1 / node_uncertainty_alternative
+                # temp_min_diff = min(node.differences.values())
+                # temp = np.array(list(node.differences.values())) - temp_min_diff
+                # #TODO change thresh_uncertainty such that only patches which are completely in the target region
+                # #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
+                # node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty, temp)))
+                # node.priority *= len(node.labels) / max(node_uncertainty, 1)
+
+                # OR
+
+
+                print(*sorted(node.differences.values())[:10], sep=' ')
+                temp_first_non_zero_index = next(
+                    (i for i, x in enumerate(sorted(node.differences.values())) if x), None)
+                node_uncertainty_alternative = np.median(sorted(node.differences.values())[temp_first_non_zero_index: temp_first_non_zero_index + 10])
+                node.priority *= 2 / node_uncertainty_alternative
+
         
             # if the patch is completely in the target region
             else:
@@ -874,8 +882,8 @@ def update_neighbors_priority_stored_descrs_halves(node, neighbor, side, image, 
                 else:
                     patchs_label_half_descr = image.half_patch_portrait_descriptors[node_label_id + position_shift_right]
 
-                difference = np.sum(np.subtract(patch_neighbors_label_half_descr, patchs_label_half_descr, dtype=np.float32) ** 2)
-                # difference = rmse(patch_neighbors_label_half_descr, patchs_label_half_descr)
+                # difference = np.sum(np.subtract(patch_neighbors_label_half_descr, patchs_label_half_descr, dtype=np.float32) ** 2)
+                difference = rmse(patch_neighbors_label_half_descr, patchs_label_half_descr)
 
                 if difference < (min_additional_difference):
                     min_additional_difference = difference
@@ -893,17 +901,17 @@ def update_neighbors_priority_stored_descrs_halves(node, neighbor, side, image, 
         temp_min_diff = min(neighbor.additional_differences.values())
         temp = [value - temp_min_diff for value in
                 list(neighbor.additional_differences.values())]
-        neighbor_uncertainty = [value < (thresh_uncertainty*250) for (i, value) in enumerate(temp)].count(True)
+        neighbor_uncertainty = [value < (thresh_uncertainty/250.) for (i, value) in enumerate(temp)].count(True)
 
-        neighbor.priority = len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
+        neighbor.priority = (1./1000) * len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
 
-        # if np.median(sorted(neighbor.additional_differences.values())[:10]) == 0:
-        #     print("sta se desava")
-        # # neighbor.priority += 1 / np.median(sorted(neighbor.additional_differences.values())[:10])
-        #
+        if np.median(sorted(neighbor.additional_differences.values())[:10]) == 0:
+            print("sta se desava")
+        # neighbor.priority += 1 / np.median(sorted(neighbor.additional_differences.values())[:10])
+
         # temp_first_non_zero_index = next((i for i, x in enumerate(sorted(neighbor.additional_differences.values())) if x), None)
         # neighbor.priority += 1 / np.median(sorted(neighbor.additional_differences.values())[temp_first_non_zero_index: temp_first_non_zero_index + 10])
-        print(neighbor.priority)
+        # print(neighbor.priority)
 
 
 
