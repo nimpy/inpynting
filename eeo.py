@@ -203,7 +203,7 @@ def initialization(image, thresh_uncertainty):
                 temp_first_non_zero_index = next(
                     (i for i, x in enumerate(sorted(node.differences.values())) if x), None)
                 node_uncertainty_alternative = np.median(sorted(node.differences.values())[temp_first_non_zero_index: temp_first_non_zero_index + 10])
-                node.priority *= 2 / node_uncertainty_alternative
+                node.priority *= 20 / node_uncertainty_alternative
 
         
             # if the patch is completely in the target region
