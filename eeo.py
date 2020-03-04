@@ -142,12 +142,13 @@ def initialization(image, thresh_uncertainty, max_nr_labels):
                 patch_edges_overlap = image.edges[x: x + image.patch_size, y: y + image.patch_size]
                 patch_edges_overlap_nonzero_elements = np.count_nonzero(patch_edges_overlap)
                 patch_position = coordinates_to_position(x, y, image.height, image.patch_size)
-                print("patch id", patch_position, "edges ", patch_edges_overlap_nonzero_elements)
-                node_priority = 1 * (1 - (patch_mask_overlap_nonzero_elements / image.patch_size**2)) ** 2 + \
-                                20 * patch_edges_overlap_nonzero_elements / image.patch_size**2
-                print(1 * (1 - (patch_mask_overlap_nonzero_elements / image.patch_size**2)) ** 2)
-                print(20 * patch_edges_overlap_nonzero_elements / image.patch_size**2)
-                print()
+                # print("patch id", patch_position, "edges ", patch_edges_overlap_nonzero_elements)
+                node_priority = 2 * (1 - (patch_mask_overlap_nonzero_elements / image.patch_size ** 2)) ** 2
+                # node_priority = 1 * (1 - (patch_mask_overlap_nonzero_elements / image.patch_size**2)) ** 2 + \
+                #                 20 * patch_edges_overlap_nonzero_elements / image.patch_size**2
+                # print(1 * (1 - (patch_mask_overlap_nonzero_elements / image.patch_size**2)) ** 2)
+                # print(20 * patch_edges_overlap_nonzero_elements / image.patch_size**2)
+                # print()
                 node = Node(patch_position, patch_overlap_source_region, x, y, priority=node_priority)
                 nodes[patch_position] = node
                 nodes_count += 1
@@ -211,7 +212,7 @@ def initialization(image, thresh_uncertainty, max_nr_labels):
                     (i for i, x in enumerate(sorted(node.differences.values())) if x), None)
                 node_uncertainty_alternative = np.median(sorted(node.differences.values())[temp_first_non_zero_index: temp_first_non_zero_index + max_nr_labels])
                 # node.priority *= 1 / node_uncertainty_alternative  # 20
-
+                node.priority *= 20 / node_uncertainty_alternative
         
             # if the patch is completely in the target region
             else:
@@ -910,7 +911,7 @@ def update_neighbors_priority_stored_descrs_halves(node, neighbor, side, image, 
                 list(neighbor.additional_differences.values())]
         neighbor_uncertainty = [value < (thresh_uncertainty/250.) for (i, value) in enumerate(temp)].count(True)
 
-        neighbor.priority = (1./1000) * len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)?
+        neighbor.priority = (2/1000.) * len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)? #2/1000.
 
         if np.median(sorted(neighbor.additional_differences.values())[:10]) == 0:
             print("sta se desava")
