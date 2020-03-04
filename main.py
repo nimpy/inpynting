@@ -45,7 +45,9 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
         plt.imshow(image_rgb)
         plt.show()
 
-    image = Image2BInpainted(image_rgb, mask, patch_size=patch_size, stride=stride)
+    edges = imageio.imread(folder_path + '/' + image_filename[:image_filename.find('.')] + '_edges.png')
+
+    image = Image2BInpainted(image_rgb, mask, edges, patch_size=patch_size, stride=stride)
 
     image.inpainting_approach = Image2BInpainted.USING_RBG_VALUES
 
@@ -229,7 +231,7 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
     print()
     print("... Initialization ...")
-    eeo.initialization(image, thresh_uncertainty)
+    eeo.initialization(image, thresh_uncertainty, max_nr_labels)
 
     eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
     # eeo.unpickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
@@ -296,8 +298,8 @@ def main():
     # valid states of these variables:
     #  if use_descriptors is False, then other two should be False
     #  if use_descriptors is True, then at most one other can be True (and at least zero :D)
-    use_descriptors = True
-    store_descriptors_halves = True
+    use_descriptors = False
+    store_descriptors_halves = False
     store_descriptors_cube = False  # TODO implemented this
 
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'

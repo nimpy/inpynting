@@ -7,13 +7,14 @@ class Image2BInpainted:
     USING_STORED_DESCRIPTORS_HALVES = 2
     USING_STORED_DESCRIPTORS_CUBE = 3
 
-    def __init__(self, rgb, mask, patch_size, stride, inpainting_approach=-1,
+    def __init__(self, rgb, mask, edges, patch_size, stride, inpainting_approach=-1,
                  descriptor_cube=None, half_patch_landscape_descriptor_cube=None, half_patch_portrait_descriptor_cube=None,
                  ir=None, patch_descriptors=None,
                  half_patch_landscape_descriptors=None, half_patch_portrait_descriptors=None,
                  inpainted=None, order_image=None):
         self.rgb = rgb
         self.mask = mask
+        self.edges = edges
         self.patch_size = patch_size
         self.stride = stride
         self.height = self.rgb.shape[0]

@@ -103,7 +103,7 @@ def initialization_slow(image, thresh_uncertainty):
     print("Number of patches to be inpainted: ", nodes_count)
 
 
-def initialization(image, thresh_uncertainty):
+def initialization(image, thresh_uncertainty, max_nr_labels):
     
     global nodes
     global nodes_count
@@ -139,8 +139,15 @@ def initialization(image, thresh_uncertainty):
                 patch_overlap_target_region = True
 
             if patch_overlap_target_region:
+                patch_edges_overlap = image.edges[x: x + image.patch_size, y: y + image.patch_size]
+                patch_edges_overlap_nonzero_elements = np.count_nonzero(patch_edges_overlap)
                 patch_position = coordinates_to_position(x, y, image.height, image.patch_size)
-                node_priority = 2 * (1 - (patch_mask_overlap_nonzero_elements / image.patch_size**2)) ** 2
+                print("patch id", patch_position, "edges ", patch_edges_overlap_nonzero_elements)
+                node_priority = 1 * (1 - (patch_mask_overlap_nonzero_elements / image.patch_size**2)) ** 2 + \
+                                20 * patch_edges_overlap_nonzero_elements / image.patch_size**2
+                print(1 * (1 - (patch_mask_overlap_nonzero_elements / image.patch_size**2)) ** 2)
+                print(20 * patch_edges_overlap_nonzero_elements / image.patch_size**2)
+                print()
                 node = Node(patch_position, patch_overlap_source_region, x, y, priority=node_priority)
                 nodes[patch_position] = node
                 nodes_count += 1
@@ -199,11 +206,11 @@ def initialization(image, thresh_uncertainty):
                 # OR
 
 
-                print(*sorted(node.differences.values())[:10], sep=' ')
+                print(*sorted(node.differences.values())[: max_nr_labels], sep=' ')
                 temp_first_non_zero_index = next(
                     (i for i, x in enumerate(sorted(node.differences.values())) if x), None)
-                node_uncertainty_alternative = np.median(sorted(node.differences.values())[temp_first_non_zero_index: temp_first_non_zero_index + 10])
-                node.priority *= 20 / node_uncertainty_alternative
+                node_uncertainty_alternative = np.median(sorted(node.differences.values())[temp_first_non_zero_index: temp_first_non_zero_index + max_nr_labels])
+                # node.priority *= 1 / node_uncertainty_alternative  # 20
 
         
             # if the patch is completely in the target region
@@ -306,9 +313,9 @@ def initialization(image, thresh_uncertainty):
                     #TODO change thresh_uncertainty such that only patches which are completely in the target region
                     #     get assigned the priority value 1.0 (but keep in mind it is used elsewhere)
                     node_uncertainty = len(list(filter(lambda x: x < thresh_uncertainty/250., temp)))
-                    node_uncertainty_alternative = np.median(sorted(node.differences.values())[:10])
+                    node_uncertainty_alternative = np.median(sorted(node.differences.values())[:max_nr_labels])
                     # node.priority *= len(node.labels) / max(node_uncertainty, 1)
-                    node_uncertainty_alternative = np.median(sorted(node.differences.values())[:10])
+                    node_uncertainty_alternative = np.median(sorted(node.differences.values())[:max_nr_labels])
                     node.priority *= 1 / node_uncertainty_alternative
 
                 # if the patch is completely in the target region
