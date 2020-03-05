@@ -333,10 +333,10 @@ def main():
     mask_filename = 'Jian_small_' + jian_number + 'Mask_inverted2.png'
 
 
-    # jian_number = '1'
-    # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
-    # image_filename = 'Jian' + jian_number + '_degra.png'
-    # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
+    jian_number = '1'
+    folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
+    image_filename = 'Jian' + jian_number + '_degra.png'
+    mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
 
     # folder_path = '/scratch/data/hand'  # don't forget to also change the descriptor
     # image_filename = 'clean.tif'
