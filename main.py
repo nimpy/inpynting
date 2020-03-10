@@ -14,7 +14,7 @@ import eeo
 
 def loading_data(folder_path, image_filename, mask_filename, patch_size, stride, use_descriptors,
                  store_descriptors_halves, store_descriptors_cube,
-                 mask_thresh=50, b_debug=False):
+                 mask_thresh=254, b_debug=False):
     """
 
     :param mask_thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
@@ -37,7 +37,7 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
     mask = np.greater_equal(mask, mask_thresh).astype(np.uint8)
 
     # on the image: set everything that's under the mask to cyan (for debugging purposes
-    cyan = [0, 255, 255]  # [127, 127, 127]  # [0, 255, 255]
+    cyan = [0, 0, 0]  # [0, 255, 255]  # [127, 127, 127]  # [0, 255, 255]
     image_rgb[mask.astype(bool), :] = cyan
 
     if b_debug:
@@ -194,12 +194,12 @@ def loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
 
 def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride, thresh_uncertainty:int,
                   max_nr_labels, max_nr_iterations, use_descriptors, store_descriptors_halves, store_descriptors_cube,
-                  thresh:int=128, b_debug=False):
+                  mask_thresh:int=254, b_debug=False):
 
     """
 
     :param: thresh_uncertainty: thresh for distance function. Value in [0.; 1.] or [0;255]
-    :param thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
+    :param: mask_thresh: value between 0 and 255 where a high values means the mask has to be extremely certain before it is inpainted.
     :return:
     """
 
@@ -209,7 +209,7 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
     image, image_inpainted_name = loading_data(folder_path, image_filename, mask_filename, patch_size, stride,
                                                use_descriptors, store_descriptors_halves, store_descriptors_cube,
-                                               mask_thresh=thresh, b_debug=b_debug)
+                                               mask_thresh=mask_thresh, b_debug=b_debug)
     image_inpainted_version = datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(patch_size) + "_" + str(stride) + "_" + str(thresh_uncertainty) + "_" + str(max_nr_labels) + "_" + str(max_nr_iterations)
     if use_descriptors:
         image_inpainted_version += '_descr'
@@ -231,10 +231,10 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
     print()
     print("... Initialization ...")
-    eeo.initialization(image, thresh_uncertainty, max_nr_labels)
+    # eeo.initialization(image, thresh_uncertainty, max_nr_labels)
 
-    eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
-    # eeo.unpickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
+    # eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
+    eeo.unpickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
 
     print()
     print("... Label pruning ...")
@@ -333,7 +333,7 @@ def main():
     mask_filename = 'Jian_small_' + jian_number + 'Mask_inverted2.png'
 
 
-    jian_number = '1'
+    jian_number = '3'
     folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
     image_filename = 'Jian' + jian_number + '_degra.png'
     mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
