@@ -327,13 +327,13 @@ def main():
     image_filename = 'beach_small_degra1.bmp'
     mask_filename = 'beach_small_mask1.bmp'  # 'mask128.png' 'mask128_ULcorner.png'
 
-    jian_number = '1'
+    jian_number = '11'
     folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8_downscaled'
     image_filename = 'Jian_small_' + jian_number + '_degra2.png'
     mask_filename = 'Jian_small_' + jian_number + 'Mask_inverted2.png'
 
 
-    jian_number = '3'
+    jian_number = '8'
     folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
     image_filename = 'Jian' + jian_number + '_degra.png'
     mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'

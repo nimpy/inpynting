@@ -564,7 +564,7 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
         #                          image.patch_size, image.patch_size, linewidth=1, edgecolor='r', facecolor='none')
         # ax.add_patch(rect)
 
-        visualise_nodes_pruned_labels(node, image)
+        # visualise_nodes_pruned_labels(node, image)
 
         print('Highest priority node {0:3d}/{1:3d}: ID {2:d}, priority {3:.2f}'.format(i + 1, nodes_count, node_highest_priority_id, node_highest_priority.priority))
         nodes_order.append(node_highest_priority_id)
@@ -911,7 +911,7 @@ def update_neighbors_priority_stored_descrs_halves(node, neighbor, side, image, 
                 list(neighbor.additional_differences.values())]
         neighbor_uncertainty = [value < (thresh_uncertainty/250.) for (i, value) in enumerate(temp)].count(True)
 
-        neighbor.priority = (100/1000.) * len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)? #2/1000.
+        neighbor.priority = (1/1000.) * len(neighbor.additional_differences) / neighbor_uncertainty #len(patch_neighbor.differences)? #2/1000.
 
         if np.median(sorted(neighbor.additional_differences.values())[:10]) == 0:
             print("sta se desava")
