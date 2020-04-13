@@ -564,7 +564,7 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
         #                          image.patch_size, image.patch_size, linewidth=1, edgecolor='r', facecolor='none')
         # ax.add_patch(rect)
 
-        # visualise_nodes_pruned_labels(node, image)
+        visualise_nodes_pruned_labels(node, image)
 
         print('Highest priority node {0:3d}/{1:3d}: ID {2:d}, priority {3:.2f}'.format(i + 1, nodes_count, node_highest_priority_id, node_highest_priority.priority))
         nodes_order.append(node_highest_priority_id)
@@ -626,6 +626,28 @@ def visualise_nodes_pruned_labels(node, image):
                                  edgecolor=colour_string, facecolor='none')
         ax.add_patch(rect)
     plt.show()
+
+    fig, ax = plt.subplots(1)
+    ax.imshow(image.rgb)
+    rect = patches.Rectangle((node.y_coord, node.x_coord),
+                             image.patch_size, image.patch_size, linewidth=1, edgecolor='r', facecolor='none')
+    # ax.add_patch(rect)
+    # colour_string_original = "#00"
+    # nodes_sorted_differences = sorted(node.differences.items(), key=lambda kv: kv[1])[:10]
+    # for node_label_count in range(len(nodes_sorted_differences) - 1, -1, -1):
+    #     node_label_id = nodes_sorted_differences[node_label_count]
+    #     node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
+    #     if node_label_count == 0:
+    #         colour_string = "#FFFF00"
+    #     else:
+    #         # going from green (the most similar) to blue ()
+    #         colour_string = colour_string_original + "%0.2X" % ((9 - (node_label_count - 1)) * 28) + "%0.2X" % (
+    #                 (node_label_count - 1) * 28)
+    #     rect = patches.Rectangle((node_label_y_coord, node_label_x_coord),
+    #                              image.patch_size, image.patch_size, linewidth=1,
+    #                              edgecolor=colour_string, facecolor='none')
+    #     ax.add_patch(rect)
+    # plt.show()
 
 
 def update_neighbors_priority_slow(node, neighbor, side, image, thresh_uncertainty):
