@@ -229,41 +229,41 @@ def inpaint_image(folder_path, image_filename, mask_filename, patch_size, stride
 
     # already done and pickled - start
 
-    print()
-    print("... Initialization ...")
+    # print()
+    # print("... Initialization ...")
     # eeo.initialization(image, thresh_uncertainty, max_nr_labels)
-
+    #
     # eeo.pickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
-    eeo.unpickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
-
-    print()
-    print("... Label pruning ...")
-    eeo.label_pruning(image, thresh_uncertainty, max_nr_labels)
-
-    eeo.pickle_global_vars(image_inpainted_name + eeo.label_pruning.__name__)
-
-    print()
-    print("... Computing pairwise potential matrix ...")
-    eeo.compute_pairwise_potential_matrix(image, max_nr_labels)
-
-    eeo.pickle_global_vars(image_inpainted_name + eeo.compute_pairwise_potential_matrix.__name__)
-
-    print()
-    print("... Computing label cost ...")
-    eeo.compute_label_cost(image, max_nr_labels)
-
-    eeo.pickle_global_vars(image_inpainted_name + eeo.compute_label_cost.__name__)
-
-    print()
-    print("... Neighborhood consensus message passing ...")
-    eeo.neighborhood_consensus_message_passing(image, max_nr_labels, max_nr_iterations)
-
-    eeo.pickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
+    # # eeo.unpickle_global_vars(image_inpainted_name + eeo.initialization.__name__)
+    #
+    # print()
+    # print("... Label pruning ...")
+    # eeo.label_pruning(image, thresh_uncertainty, max_nr_labels)
+    #
+    # eeo.pickle_global_vars(image_inpainted_name + eeo.label_pruning.__name__)
+    #
+    # print()
+    # print("... Computing pairwise potential matrix ...")
+    # eeo.compute_pairwise_potential_matrix(image, max_nr_labels)
+    #
+    # eeo.pickle_global_vars(image_inpainted_name + eeo.compute_pairwise_potential_matrix.__name__)
+    #
+    # print()
+    # print("... Computing label cost ...")
+    # eeo.compute_label_cost(image, max_nr_labels)
+    #
+    # eeo.pickle_global_vars(image_inpainted_name + eeo.compute_label_cost.__name__)
+    #
+    # print()
+    # print("... Neighborhood consensus message passing ...")
+    # eeo.neighborhood_consensus_message_passing(image, max_nr_labels, max_nr_iterations)
+    #
+    # eeo.pickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
 
     # already done and pickled - end
 
 
-    # eeo.unpickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
+    eeo.unpickle_global_vars(image_inpainted_name + eeo.neighborhood_consensus_message_passing.__name__)
 
     print()
     print("... Generating inpainted image ...")
@@ -298,8 +298,8 @@ def main():
     # valid states of these variables:
     #  if use_descriptors is False, then other two should be False
     #  if use_descriptors is True, then at most one other can be True (and at least zero :D)
-    use_descriptors = True
-    store_descriptors_halves = True
+    use_descriptors = False
+    store_descriptors_halves = False
     store_descriptors_cube = False  # TODO implemented this
 
     folder_path = '/home/niaki/Code/inpynting_images/Lenna'
@@ -327,16 +327,16 @@ def main():
     image_filename = 'beach_small_degra1.bmp'
     mask_filename = 'beach_small_mask1.bmp'  # 'mask128.png' 'mask128_ULcorner.png'
 
-    jian_number = '11'
+    jian_number = '1'
     folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8_downscaled'
     image_filename = 'Jian_small_' + jian_number + '_degra2.png'
     mask_filename = 'Jian_small_' + jian_number + 'Mask_inverted2.png'
 
 
-    jian_number = '8'
-    folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
-    image_filename = 'Jian' + jian_number + '_degra.png'
-    mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
+    # jian_number = '9'
+    # folder_path = '/home/niaki/Code/inpynting_images/Tijana/Jian' + jian_number + '_uint8'
+    # image_filename = 'Jian' + jian_number + '_degra.png'
+    # mask_filename = 'Jian' + jian_number + 'Mask_inverted.png'
 
     # folder_path = '/scratch/data/hand'  # don't forget to also change the descriptor
     # image_filename = 'clean.tif'

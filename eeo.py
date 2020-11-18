@@ -6,6 +6,7 @@ from scipy import signal
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import imageio
+import traceback
 
 from data_structures import Image2BInpainted
 from data_structures import Node, coordinates_to_position, position_to_coordinates
@@ -535,6 +536,7 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
     # make a copy of the differences which we can edit and use in this method, and afterwards discard
     for node in nodes.values():
         node.additional_differences = node.differences.copy()
+        node.differences = None  # because they are no longer used for determining the node priority
 
     # visualisation of nodes only
     # fig, ax = plt.subplots(1)
@@ -564,7 +566,7 @@ def label_pruning(image, thresh_uncertainty, max_nr_labels):
         #                          image.patch_size, image.patch_size, linewidth=1, edgecolor='r', facecolor='none')
         # ax.add_patch(rect)
 
-        visualise_nodes_pruned_labels(node, image)
+        # visualise_nodes_pruned_labels(node, image)
 
         print('Highest priority node {0:3d}/{1:3d}: ID {2:d}, priority {3:.2f}'.format(i + 1, nodes_count, node_highest_priority_id, node_highest_priority.priority))
         nodes_order.append(node_highest_priority_id)
@@ -1417,7 +1419,7 @@ def neighborhood_consensus_message_passing(image, max_nr_labels, max_nr_iteratio
             node.beliefs = node.beliefs_new
 
 
-def generate_inpainted_image(image, blend_method=1, mask_type=1):
+def generate_inpainted_image(image, blend_method=1, mask_type=0):
     """
     
     :param image:
@@ -1433,7 +1435,7 @@ def generate_inpainted_image(image, blend_method=1, mask_type=1):
     assert blend_method in [0, 1], 'blend_method should be either 0 or 1'
     assert mask_type in [0, 1], 'mask_type should be either 0 or 1'
 
-    target_region = np.copy(image.mask).astype('bool')
+    target_region = np.copy(image.mask).astype('bool')  # this will get updated with what's already been filled in
     original_mask = np.copy(image.mask).astype('bool')
     
     cyan = np.reshape([0, 255, 255], (1, 1, 3))
@@ -1458,7 +1460,7 @@ def generate_inpainted_image(image, blend_method=1, mask_type=1):
         node_id = nodes_order[i]
         node = nodes[node_id]
 
-        node_mask_patch_x_coord, node_mask_patch_y_coord =  position_to_coordinates(node.pruned_labels[node.mask], image.height, image.patch_size)
+        node_mask_patch_x_coord, node_mask_patch_y_coord = position_to_coordinates(node.pruned_labels[node.mask], image.height, image.patch_size)
 
         node_rgb = image.inpainted[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :]
 
@@ -1479,11 +1481,11 @@ def generate_inpainted_image(image, blend_method=1, mask_type=1):
 
             # average out with previous values
             mask_prev = np.logical_and(mask_new_orig, np.logical_not(mask_new))
-            
+
             image.inpainted[node.x_coord: node.x_coord + image.patch_size,
                             node.y_coord: node.y_coord + image.patch_size, :][mask_prev] = \
                 (node_rgb*blend_mask_rgb + node_rgb_new*(1 - blend_mask_rgb))[mask_prev]
-                
+
         else:
             ValueError(f'Unknown inpainting strategy: {blend_method}')
 
@@ -1495,6 +1497,7 @@ def generate_inpainted_image(image, blend_method=1, mask_type=1):
         # imageio.imwrite('/home/niaki/Code/inpynting_images/building/ordering2/building_' + str(i).zfill(4) + '.png', image.inpainted)
 
     image.inpainted = image.inpainted.astype(np.uint8)
+
 
 
 # def generate_inpainted_image_inverse_order(image):
@@ -1713,7 +1716,7 @@ def pickle_global_vars(file_version):
         pickle.dump((nodes, nodes_count, nodes_order), open(pickle_patches_file_path, "wb"))
     except Exception as e:
         print("Problem while trying to pickle: ", str(e))
-
+        traceback.print_tb(e.__traceback__)
 
 def unpickle_global_vars(file_version):
     global nodes
@@ -1725,7 +1728,7 @@ def unpickle_global_vars(file_version):
         nodes, nodes_count, nodes_order = pickle.load(open(pickle_patches_file_path, "rb"))
     except Exception as e:
         print("Problem while trying to unpickle: ", str(e))
-
+        traceback.print_tb(e.__traceback__)
 
 # def visualise_nodes_priorities(image):
 #     global nodes
