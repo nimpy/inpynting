@@ -1421,9 +1421,9 @@ def neighborhood_consensus_message_passing(image, max_nr_labels, max_nr_iteratio
 
 def generate_inpainted_image(image, blend_method=1, mask_type=0):
     """
-    
+
     :param image:
-    :param blend_method: Either 0 or 1
+    :param blend_method: Either 0 or 1 (0 is not working well)
     :param mask_type: Either 0 or 1
     :return:
     """
@@ -1435,18 +1435,18 @@ def generate_inpainted_image(image, blend_method=1, mask_type=0):
     assert blend_method in [0, 1], 'blend_method should be either 0 or 1'
     assert mask_type in [0, 1], 'mask_type should be either 0 or 1'
 
-    target_region = np.copy(image.mask).astype('bool')  # this will get updated with what's already been filled in
-    original_mask = np.copy(image.mask).astype('bool')
+    current_target_region = np.copy(image.mask).astype('bool')  # this will get updated with what's already been filled in
+    original_target_region = np.copy(image.mask).astype('bool')
     
     cyan = np.reshape([0, 255, 255], (1, 1, 3))
     image.inpainted = np.copy(image.rgb)
-    image.inpainted[target_region, :] = cyan    # To make clear in debugging mode
+    image.inpainted[current_target_region, :] = cyan    # To make clear in debugging mode
 
     if mask_type == 0:
         filter_size = max(2, image.patch_size // 2)  # should be > 1
         smooth_filter = generate_smooth_filter(filter_size)
         
-        blend_mask = generate_blend_mask(image.patch_size)
+        blend_mask = generate_blend_mask_diagonal(image.patch_size)  # generate_blend_mask(image.patch_size)  # TODO check from which side it's inpainting and use different diagonal?
         blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
     elif mask_type == 1:
         blend_mask = generate_linear_diamond_mask(image.patch_size)
@@ -1467,13 +1467,14 @@ def generate_inpainted_image(image, blend_method=1, mask_type=0):
         node_rgb_new = image.inpainted[node_mask_patch_x_coord: node_mask_patch_x_coord + image.patch_size, node_mask_patch_y_coord: node_mask_patch_y_coord + image.patch_size, :]
 
         if blend_method == 0:
-            image.inpainted[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :] =\
-                node_rgb*blend_mask_rgb + node_rgb_new*(1 - blend_mask_rgb)
+            pass  # this is not working well
+            # image.inpainted[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :] =\
+            #     node_rgb*blend_mask_rgb + node_rgb_new*(1 - blend_mask_rgb)
         
         # Only inpaint/update pixels belonging to mask
         elif blend_method == 1:
-            mask_new = target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
-            mask_new_orig = original_mask[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+            mask_new = current_target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+            mask_new_orig = original_target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
 
             # only inpaint the mask part
             image.inpainted[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :][mask_new]=\
@@ -1489,8 +1490,8 @@ def generate_inpainted_image(image, blend_method=1, mask_type=0):
         else:
             ValueError(f'Unknown inpainting strategy: {blend_method}')
 
-        # update the mask
-        target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size] = False
+        # update the target region
+        current_target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size] = False
 
         # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
         # plt.show()
@@ -1657,12 +1658,22 @@ def generate_blend_mask_diamond(patch_size):
     return blend_mask
 
 
-#TODO this is just a hacky way to implement something similar to what is needed
+# TODO this is just a hacky way to implement something similar to what is needed
 def generate_blend_mask(patch_size):
 
     blend_mask = np.zeros((patch_size, patch_size))
     blend_mask[:patch_size // 3, :] = 1
     blend_mask[:, :patch_size // 3] = 1
+
+    return blend_mask
+
+
+def generate_blend_mask_diagonal(patch_size):
+    blend_mask = np.zeros((patch_size, patch_size))
+    for i in range(blend_mask.shape[0]):
+        for j in range(blend_mask.shape[1]):
+            if i > j:
+                blend_mask[i, j] = 1
 
     return blend_mask
 
