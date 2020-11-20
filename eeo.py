@@ -1288,11 +1288,10 @@ def neighborhood_consensus_message_passing(image, max_nr_labels, max_nr_iteratio
             node.beliefs = node.beliefs_new
 
 
-def generate_inpainted_image(image, blend_method=1, mask_type=0):
+def generate_inpainted_image(image, mask_type=0):
     """
 
     :param image:
-    :param blend_method: Either 0 or 1 (0 is not working well)
     :param mask_type: Either 0 or 1
     :return:
     """
@@ -1301,7 +1300,6 @@ def generate_inpainted_image(image, blend_method=1, mask_type=0):
     global nodes_count
     global nodes_order
     
-    assert blend_method in [0, 1], 'blend_method should be either 0 or 1'
     assert mask_type in [0, 1], 'mask_type should be either 0 or 1'
 
     current_target_region = np.copy(image.mask).astype('bool')  # this will get updated with what's already been filled in
@@ -1335,31 +1333,21 @@ def generate_inpainted_image(image, blend_method=1, mask_type=0):
 
         node_rgb_new = image.inpainted[node_mask_patch_x_coord: node_mask_patch_x_coord + image.patch_size, node_mask_patch_y_coord: node_mask_patch_y_coord + image.patch_size, :]
 
-        if blend_method == 0:
-            pass  # this is not working well
-            # image.inpainted[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :] =\
-            #     node_rgb*blend_mask_rgb + node_rgb_new*(1 - blend_mask_rgb)
-        
-        # Only inpaint/update pixels belonging to mask
-        elif blend_method == 1:
-            mask_new = current_target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
-            mask_new_orig = original_target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+        mask_new = current_target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
+        mask_new_orig = original_target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size]
 
-            # only inpaint the mask part
-            image.inpainted[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :][mask_new]=\
-                (node_rgb_new)[mask_new]   # TODO
+        # only inpaint the mask part
+        image.inpainted[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size, :][mask_new]=\
+            (node_rgb_new)[mask_new]
 
-            # average out with previous values
-            mask_prev = np.logical_and(mask_new_orig, np.logical_not(mask_new))
+        # average out with previous values
+        mask_prev = np.logical_and(mask_new_orig, np.logical_not(mask_new))
 
-            image.inpainted[node.x_coord: node.x_coord + image.patch_size,
-                            node.y_coord: node.y_coord + image.patch_size, :][mask_prev] = \
-                (node_rgb*blend_mask_rgb + node_rgb_new*(1 - blend_mask_rgb))[mask_prev]
+        image.inpainted[node.x_coord: node.x_coord + image.patch_size,
+                        node.y_coord: node.y_coord + image.patch_size, :][mask_prev] = \
+            (node_rgb*blend_mask_rgb + node_rgb_new*(1 - blend_mask_rgb))[mask_prev]
 
-        else:
-            ValueError(f'Unknown inpainting strategy: {blend_method}')
-
-        # update the target region
+        # update the target region not to include what's already been inpainted
         current_target_region[node.x_coord: node.x_coord + image.patch_size, node.y_coord: node.y_coord + image.patch_size] = False
 
         # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
