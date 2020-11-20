@@ -1669,6 +1669,7 @@ def generate_blend_mask(patch_size):
 
 
 def generate_blend_mask_diagonal(patch_size):
+    
     blend_mask = np.zeros((patch_size, patch_size))
     for i in range(blend_mask.shape[0]):
         for j in range(blend_mask.shape[1]):
