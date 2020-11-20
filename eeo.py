@@ -126,7 +126,7 @@ def initialization(image, thresh_uncertainty, max_nr_labels):
                 # OR
 
 
-                print(*sorted(node.differences.values())[: max_nr_labels], sep=' ')
+                print(' ', *sorted(node.differences.values())[: max_nr_labels], sep=' ')
                 temp_first_non_zero_index = next(
                     (i for i, x in enumerate(sorted(node.differences.values())) if x), None)
                 node_uncertainty_alternative = np.median(sorted(node.differences.values())[temp_first_non_zero_index: temp_first_non_zero_index + max_nr_labels])
@@ -425,7 +425,6 @@ def initialization(image, thresh_uncertainty, max_nr_labels):
         #     # the higher priority the higher priority :D
         #     node.priority = len(node.labels) / max(node_uncertainty, 1)
 
-
     else:
         raise AssertionError("Inpainting approach has not been properly set.")
 
@@ -540,28 +539,6 @@ def visualise_nodes_pruned_labels(node, image):
                                  edgecolor=colour_string, facecolor='none')
         ax.add_patch(rect)
     plt.show()
-
-    fig, ax = plt.subplots(1)
-    ax.imshow(image.rgb)
-    rect = patches.Rectangle((node.y_coord, node.x_coord),
-                             image.patch_size, image.patch_size, linewidth=1, edgecolor='r', facecolor='none')
-    # ax.add_patch(rect)
-    # colour_string_original = "#00"
-    # nodes_sorted_differences = sorted(node.differences.items(), key=lambda kv: kv[1])[:10]
-    # for node_label_count in range(len(nodes_sorted_differences) - 1, -1, -1):
-    #     node_label_id = nodes_sorted_differences[node_label_count]
-    #     node_label_x_coord, node_label_y_coord = position_to_coordinates(node_label_id, image.height, image.patch_size)
-    #     if node_label_count == 0:
-    #         colour_string = "#FFFF00"
-    #     else:
-    #         # going from green (the most similar) to blue ()
-    #         colour_string = colour_string_original + "%0.2X" % ((9 - (node_label_count - 1)) * 28) + "%0.2X" % (
-    #                 (node_label_count - 1) * 28)
-    #     rect = patches.Rectangle((node_label_y_coord, node_label_x_coord),
-    #                              image.patch_size, image.patch_size, linewidth=1,
-    #                              edgecolor=colour_string, facecolor='none')
-    #     ax.add_patch(rect)
-    # plt.show()
 
 
 # using the rgb values of the patches for comparison, as opposed to their descriptors
@@ -1351,120 +1328,6 @@ def generate_inpainted_image(image, mask_type=0):
     image.inpainted = image.inpainted.astype(np.uint8)
 
 
-
-# def generate_inpainted_image_inverse_order(image):
-#
-#         global nodes
-#         global nodes_count
-#         global nodes_order
-#
-#         target_region = image.mask
-#
-#         image.inpainted = np.multiply(image.rgb,
-#                                       np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
-#
-#         filter_size = 4  # should be > 1
-#         smooth_filter = generate_smooth_filter(filter_size)
-#         blend_mask = generate_blend_mask(image.patch_size)
-#         blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
-#         blend_mask_rgb = np.repeat(blend_mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
-#
-#         # for i in range(len(nodes_order)):
-#         for i in range(len(nodes_order) - 1, -1, -1):
-#             patch_id = nodes_order[i]
-#             patch = nodes[patch_id]
-#
-#             patchs_mask_patch = nodes[patch.pruned_labels[patch.mask]]
-#
-#             patch_rgb = image.inpainted[patch.x_coord: patch.x_coord + image.patch_size,
-#                         patch.y_coord: patch.y_coord + image.patch_size, :]
-#
-#             patch_rgb_new = image.inpainted[patchs_mask_patch.x_coord: patchs_mask_patch.x_coord + image.patch_size,
-#                             patchs_mask_patch.y_coord: patchs_mask_patch.y_coord + image.patch_size, :]
-#
-#             image.inpainted[patch.x_coord: patch.x_coord + image.patch_size,
-#             patch.y_coord: patch.y_coord + image.patch_size, :] = np.multiply(patch_rgb, blend_mask_rgb) + \
-#                                                                   np.multiply(patch_rgb_new, 1 - blend_mask_rgb)
-#
-#             target_region[patch.x_coord: patch.x_coord + image.patch_size,
-#             patch.y_coord: patch.y_coord + image.patch_size] = 0
-#
-#             # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
-#             # plt.show()
-#             # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.png', image.inpainted)
-#
-#         image.inpainted = image.inpainted.astype(np.uint8)
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-# def generate_inpainted_image_blended(image):
-#
-#     global nodes
-#     global nodes_count
-#     global nodes_order
-#
-#     target_region = image.mask
-#
-#     image.inpainted = np.multiply(image.rgb,
-#                                   np.repeat(1 - target_region, 3, axis=1).reshape((image.height, image.width, 3)))
-#
-#     filter_size = 2  # should be > 1
-#     smooth_filter = generate_smooth_filter(filter_size)
-#     blend_mask = generate_blend_mask_diamond(image.patch_size)  # here it's "diamond" blend mask
-#     blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
-#     blend_mask_rgb = np.repeat(blend_mask, 3, axis=1).reshape((image.patch_size, image.patch_size, 3))
-#
-#     for i in range(len(nodes_order)):
-#
-#         patch_id = nodes_order[i]
-#         patch = nodes[patch_id]
-#
-#         patchs_mask_patch = nodes[patch.pruned_labels[patch.mask]]
-#
-#         patch_rgb = image.inpainted[patch.x_coord: patch.x_coord + image.patch_size,
-#                     patch.y_coord: patch.y_coord + image.patch_size, :]
-#
-#         patch_rgb_new = image.inpainted[patchs_mask_patch.x_coord: patchs_mask_patch.x_coord + image.patch_size,
-#                         patchs_mask_patch.y_coord: patchs_mask_patch.y_coord + image.patch_size, :]
-#
-#         image.inpainted[patch.x_coord: patch.x_coord + image.patch_size,
-#             patch.y_coord: patch.y_coord + image.patch_size, :] = np.multiply(patch_rgb, 1 - blend_mask_rgb) + \
-#                                                              np.multiply(patch_rgb_new, blend_mask_rgb)
-#
-#         target_region[patch.x_coord: patch.x_coord + image.patch_size, patch.y_coord: patch.y_coord + image.patch_size] = 0
-#
-#         # plt.imshow(image.inpainted.astype(np.uint8), interpolation='nearest')
-#         # plt.show()
-#         # imageio.imwrite('/home/niaki/Code/inpynting_images/Tijana/Jian10_uint8/ordering_process1/Jian10_' + str(i).zfill(4) + '.png', image.inpainted)
-#
-#     image.inpainted = image.inpainted.astype(np.uint8)
-#
-#
-#
-#
-
-
-
-
-
-
-
-
-
-
 def generate_smooth_filter(kernel_size):
 
     if kernel_size <= 1:
@@ -1581,6 +1444,7 @@ def pickle_global_vars(file_version):
         print("Problem while trying to pickle: ", str(e))
         traceback.print_tb(e.__traceback__)
 
+
 def unpickle_global_vars(file_version):
     global nodes
     global nodes_count
@@ -1592,29 +1456,3 @@ def unpickle_global_vars(file_version):
     except Exception as e:
         print("Problem while trying to unpickle: ", str(e))
         traceback.print_tb(e.__traceback__)
-
-# def visualise_nodes_priorities(image):
-#     global nodes
-#
-#     priority_image = np.multiply(image.rgb,
-#                               np.repeat(1 - image.mask, 3, axis=1).reshape((image.height, image.width, 3)))
-#
-#     max_priority = 0
-#     for patch in nodes:
-#         if patch.overlap_target_region:
-#
-#             if patch.priority > max_priority:
-#                 max_priority = patch.priority
-#
-#     for patch in nodes:
-#         if patch.overlap_target_region:
-#
-#             pixel_value = math.floor(patch.priority * 255 / max_priority)
-#             for j in range(3):
-#                 priority_image[patch.x_coord: patch.x_coord + image.patch_size,
-#                 patch.y_coord: patch.y_coord + image.patch_size, j] = pixel_value
-#
-#     priority_image = priority_image.astype(np.uint8)
-#
-#     return priority_image
-#
