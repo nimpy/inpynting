@@ -1439,7 +1439,8 @@ def pickle_global_vars(file_version):
 
     pickle_patches_file_path = '/home/niaki/Code/inpynting_images/pickles/eeo_global_vars_' + file_version + '.pickle'
     try:
-        pickle.dump((nodes, nodes_count, nodes_order), open(pickle_patches_file_path, "wb"))
+        with open(pickle_patches_file_path, "wb") as f:
+            pickle.dump((nodes, nodes_count, nodes_order), f)
     except Exception as e:
         print("Problem while trying to pickle: ", str(e))
         traceback.print_tb(e.__traceback__)
