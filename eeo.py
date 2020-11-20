@@ -433,12 +433,6 @@ def initialization(image, thresh_uncertainty, max_nr_labels):
     for i, node in enumerate(nodes.values()):
         print(node.priority, end=' ')
 
-    try:
-        pickle.dump(nodes, open("/home/niaki/Downloads/nodes.pickle", "wb"))
-    except Exception as e:
-        print("Problem while trying to pickle: ", str(e))
-
-
     print("\nTotal number of patches: ", len(nodes))
     print("Number of patches to be inpainted: ", nodes_count)
 
