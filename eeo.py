@@ -1284,7 +1284,7 @@ def generate_inpainted_image(image, mask_type=0):
         filter_size = max(2, image.patch_size // 2)  # should be > 1
         smooth_filter = generate_smooth_filter(filter_size)
         
-        blend_mask = generate_blend_mask_diagonal(image.patch_size)  # generate_blend_mask(image.patch_size)  # TODO check from which side it's inpainting and use different diagonal?
+        blend_mask = generate_blend_mask(image.patch_size)  # generate_blend_mask(image.patch_size)  # TODO check from which side it's inpainting and use different diagonal?
         blend_mask = signal.convolve2d(blend_mask, smooth_filter, boundary='symm', mode='same')
     elif mask_type == 1:
         blend_mask = generate_linear_diamond_mask(image.patch_size)
