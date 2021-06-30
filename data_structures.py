@@ -1,37 +1,26 @@
-import numpy as np
-
 class Image2BInpainted:
 
     USING_RBG_VALUES = 0
     USING_IR = 1
-    USING_STORED_DESCRIPTORS_HALVES = 2
-    USING_STORED_DESCRIPTORS_CUBE = 3
+    USING_STORED_DESCRIPTORS = 2
 
-    def __init__(self, rgb, mask, edges, patch_size, stride, inpainting_approach=-1,
-                 descriptor_cube=None, half_patch_landscape_descriptor_cube=None, half_patch_portrait_descriptor_cube=None,
-                 ir=None, patch_descriptors=None,
+    def __init__(self, rgb, mask, patch_size, stride, inpainting_approach=-1, ir=None, patch_descriptors=None,
                  half_patch_landscape_descriptors=None, half_patch_portrait_descriptors=None,
                  inpainted=None, order_image=None):
         self.rgb = rgb
         self.mask = mask
-        self.edges = edges
         self.patch_size = patch_size
         self.stride = stride
         self.height = self.rgb.shape[0]
         self.width = self.rgb.shape[1]
         self.inpainting_approach = inpainting_approach
-        self.descriptor_cube = descriptor_cube
-        self.half_patch_landscape_descriptor_cube = half_patch_landscape_descriptor_cube
-        self.half_patch_portrait_descriptor_cube = half_patch_portrait_descriptor_cube
         self.ir = ir
         self.patch_descriptors = patch_descriptors
         self.half_patch_landscape_descriptors = half_patch_landscape_descriptors
         self.half_patch_portrait_descriptors = half_patch_portrait_descriptors
         self.inpainted = inpainted
         self.order_image = order_image
-        # TODO
-        self.inverted_mask_3ch = 1 - np.repeat(mask, 3, axis=1).reshape((self.height, self.width, 3))
-        self.inverted_mask_Nch = None
+
 
 # a patch to be inpainted
 class Node:
